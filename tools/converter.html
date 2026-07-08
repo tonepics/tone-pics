@@ -9,7 +9,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/avif-decoder@1.0.1/dist/avif-decoder.min.js"></script>
 </head>
 
 <body>
@@ -194,7 +193,7 @@
             createDownload(blob, file.name.replace(/\.(heic|heif)$/i, "") + ".jpg");
         }
 
-        // تحسين الـ AVIF: محاولة القراءة محلياً، والتحول للمكتبة الاحتياطية في حال عدم الدعم
+        // النسخة الآمنة والمستقرة والمستندة لمعالجة المتصفح لملفات AVIF بناءً على طلبك
         async function convertAVIF(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -206,45 +205,22 @@
                     ctx.drawImage(img, 0, 0);
 
                     canvas.toBlob((blob) => {
-                        if (!blob) { reject(new Error("AVIF Blob failed")); return; }
+                        if (!blob) {
+                            reject(new Error("AVIF conversion failed"));
+                            return;
+                        }
                         createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 };
-                
-                img.onerror = async function () {
-                    // إذا فشل المتصفح القديم، نستخدم فك التشفير البرمجي احتياطياً
-                    try {
-                        if (typeof AvifDecoder === "undefined") {
-                            throw new Error("AVIF Decoder library missing");
-                        }
-                        const buffer = await file.arrayBuffer();
-                        const avifImage = await AvifDecoder.decode(buffer);
-                        
-                        const canvas = document.createElement("canvas");
-                        canvas.width = avifImage.width;
-                        canvas.height = avifImage.height;
-                        const ctx = canvas.getContext("2d");
-                        
-                        const imageData = ctx.createImageData(avifImage.width, avifImage.height);
-                        imageData.data.set(avifImage.data);
-                        ctx.putImageData(imageData, 0, 0);
-                        
-                        canvas.toBlob((blob) => {
-                            if (!blob) { reject(new Error("AVIF fallback blob failed")); return; }
-                            createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
-                            resolve();
-                        }, "image/jpeg", Number(quality.value) / 100);
-                    } catch (fallbackError) {
-                        alert("Your browser/system does not support AVIF decoding.");
-                        reject(fallbackError);
-                    }
+
+                img.onerror = function () {
+                    reject(new Error("Browser cannot decode AVIF"));
                 };
                 img.src = URL.createObjectURL(file);
             });
         }
 
-        // نسختك المعدلة والمصححة منطقياً لدالة الـ PDF مع رمي الخطأ للحلقة الرئيسية
         async function convertPDF(file) {
             try {
                 const buffer = await file.arrayBuffer();
@@ -271,7 +247,7 @@
                 });
             } catch (error) {
                 console.error(error);
-                throw error; // يعيد تمرير الخطأ لكي تلتقطه حلقة for...of وتظهر علامة الـ ❌
+                throw error;
             }
         }
 
