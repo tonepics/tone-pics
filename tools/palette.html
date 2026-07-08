@@ -54,6 +54,8 @@ img{
     padding:30px 10px;
     border-radius:15px;
     font-weight:bold;
+    color:white;
+    text-shadow:0 1px 3px black;
 }
 
 button{
@@ -68,9 +70,7 @@ button{
 
 </head>
 
-
 <body>
-
 
 <div class="container">
 
@@ -87,7 +87,6 @@ button{
 
 <img id="preview">
 
-
 </div>
 
 
@@ -99,107 +98,116 @@ button{
 
 <script>
 
-const input=document.getElementById("imageInput");
-const preview=document.getElementById("preview");
-const palette=document.getElementById("palette");
+const input = document.getElementById("imageInput");
+const preview = document.getElementById("preview");
+const palette = document.getElementById("palette");
 
 
-input.addEventListener("change",function(){
+input.addEventListener("change", function(){
 
-const file=this.files[0];
+    const file = this.files[0];
 
-if(!file) return;
-
-
-const imgURL=URL.createObjectURL(file);
-
-preview.src=imgURL;
+    if(!file) return;
 
 
-preview.onload=()=>{
+    const imgURL = URL.createObjectURL(file);
 
-const canvas=document.createElement("canvas");
-
-const ctx=canvas.getContext("2d");
+    preview.src = imgURL;
 
 
-canvas.width=100;
-canvas.height=100;
+    preview.onload = function(){
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
 
-ctx.drawImage(preview,0,0,100,100);
+        canvas.width = 100;
+        canvas.height = 100;
 
 
-const data=ctx.getImageData(0,0,100,100).data;
+        ctx.drawImage(
+            preview,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
 
 
-let colors={};
+        const data = ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        ).data;
 
 
-for(let i=0;i<data.length;i+=4){
-
-let r=data[i];
-let g=data[i+1];
-let b=data[i+2];
+        let colors = {};
 
 
-let key=`${Math.round(r/20)*20},${Math.round(g/20)*20},${Math.round(b/20)*20}`;
+        for(let i = 0; i < data.length; i += 4){
+
+            let r = data[i];
+            let g = data[i+1];
+            let b = data[i+2];
 
 
-colors[key]=(colors[key]||0)+1;
-
-}
-
-
-let result=Object.entries(colors)
-.sort((a,b)=>b[1]-a[1])
-.slice(0,5);
+            let key =
+            `${Math.round(r/20)*20},${Math.round(g/20)*20},${Math.round(b/20)*20}`;
 
 
-palette.innerHTML="";
+            colors[key] = (colors[key] || 0) + 1;
+
+        }
 
 
-result.forEach(item=>{
-
-let rgb=item[0].split(",");
-
-let hex="#"+rgb.map(x=>{
-
-let h=Number(x).toString(16);
-
-return h.length==1?"0"+h:h;
-
-}).join("");
+        let result = Object.entries(colors)
+        .sort((a,b)=> b[1] - a[1])
+        .slice(0,5);
 
 
-let card=document.createElement("div");
-
-card.className="color";
-
-card.style.background=hex;
+        palette.innerHTML = "";
 
 
-card.innerHTML=`
-
-<div>${hex}</div>
-
-<button onclick="copyColor('${hex}')">
-Copy
-</button>
-
-`;
+        result.forEach(item=>{
 
 
-palette.appendChild(card);
+            let rgb = item[0].split(",");
 
 
-});
+            let hex =
+            "#" +
+            rgb.map(x=>{
+
+                let h = Number(x).toString(16);
+
+                return h.length === 1 ? "0"+h : h;
+
+            }).join("");
 
 
-}
+            let card = document.createElement("div");
+
+            card.className = "color";
+
+            card.style.background = hex;
 
 
-});
+            card.innerHTML = `
+                <div>${hex.toUpperCase()}</div>
+                <button onclick="copyColor('${hex}')">
+                    Copy
+                </button>
+            `;
+
+
+            palette.appendChild(card);
+
+
+        });
+
+
+    };
 
 
 });
@@ -207,9 +215,9 @@ palette.appendChild(card);
 
 function copyColor(color){
 
-navigator.clipboard.writeText(color);
+    navigator.clipboard.writeText(color);
 
-alert("Copied "+color);
+    alert("Copied " + color.toUpperCase());
 
 }
 
