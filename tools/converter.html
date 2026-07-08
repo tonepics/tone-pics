@@ -88,8 +88,8 @@
         let selectedFiles = [];
         let convertedBlobs = [];
         let currentPreviewUrl = null;
-        let activeDownloadUrls = []; 
-        let isConverting = false;    
+        let activeDownloadUrls = [];
+        let isConverting = false;
 
         const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.avif', '.pdf'];
 
@@ -125,7 +125,7 @@
             const rawFiles = Array.from(files);
             selectedFiles = rawFiles.filter(file => {
                 const lastDot = file.name.lastIndexOf('.');
-                if (lastDot === -1) return false; 
+                if (lastDot === -1) return false;
                 const ext = file.name.substring(lastDot).toLowerCase();
                 return ALLOWED_EXTENSIONS.includes(ext);
             });
@@ -184,7 +184,7 @@
         }
 
         convertBtn.addEventListener("click", async () => {
-            if (isConverting) return; 
+            if (isConverting) return;
 
             if (selectedFiles.length === 0) {
                 alert("Choose files first");
@@ -242,7 +242,7 @@
 
             downloadZipBtn.disabled = true;
             const zip = new JSZip();
-            
+
             // حل مشكلة تكرار نفس اسم الملف المرفوع لمنع الـ Overwrite داخل الـ ZIP
             const usedNames = {};
             convertedBlobs.forEach(item => {
@@ -271,8 +271,9 @@
 
                 setTimeout(() => {
                     URL.revokeObjectURL(zipUrl);
-                    // تحرير مصفوفة الـ Blobs من الذاكرة تماماً فور تنزيل الـ ZIP لحفظ الـ RAM
                     convertedBlobs = [];
+                    // إخفاء الزر بعد تفريغ البيانات لمنع ضغطة "شبحية" بلا أي أثر أو رسالة
+                    downloadZipBtn.style.display = "none";
                 }, 60000);
 
                 info.textContent = "ZIP downloaded successfully! ✔";
@@ -300,10 +301,10 @@
             canvas.width = imgWidth;
             canvas.height = imgHeight;
             const ctx = canvas.getContext("2d");
-            
+
             // تحصين شامل لخلفية مسار الشفافية عند التحويل لـ JPG عبر كل الدوال
             if (targetMime === "image/jpeg") {
-                ctx.fillStyle = "#FFFFFF"; 
+                ctx.fillStyle = "#FFFFFF";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
             return { canvas, ctx };
@@ -318,14 +319,13 @@
                     try {
                         const { mimeType, extension } = getTargetFormat();
                         const { canvas, ctx } = setupCanvas(img.naturalWidth, img.naturalHeight, mimeType);
-                        
+
                         ctx.drawImage(img, 0, 0);
 
                         canvas.toBlob((blob) => {
                             URL.revokeObjectURL(objectUrl);
-                            // تدمير الـ canvas فوراً لتحرير الـ RAM
                             canvas.width = canvas.height = 0;
-                            
+
                             if (!blob) { reject(new Error("Blob generation failed")); return; }
                             const outputName = getBaseName(file.name) + "." + extension;
                             createDownload(blob, outputName);
@@ -351,7 +351,7 @@
             }
 
             const { mimeType: finalMime, extension: finalExt } = getTargetFormat();
-            
+
             // مكتبة heic2any ترجع دائماً إما jpeg أو png بشكل حقيقي.
             const heicTargetMime = finalMime === "image/webp" ? "image/jpeg" : finalMime;
 
@@ -362,9 +362,12 @@
             });
 
             let rawBlob = Array.isArray(result) ? result[0] : result;
-            
-            // تمرير إجباري عبر تابع blobToFormat لمعالجة ثبات الصيغة، جودة الـ Canvas، وحظر الشفافية السوداء
-            const finalBlob = await blobToFormat(rawBlob, finalMime, Number(quality.value) / 100);
+
+            // إعادة الترميز فقط عند الحاجة الفعلية (اختيار WebP)، لتفادي فقدان جودة مضاعف
+            // ناتج عن ضغط JPEG مرتين متتاليتين بلا داعٍ
+            const finalBlob = (heicTargetMime === finalMime)
+                ? rawBlob
+                : await blobToFormat(rawBlob, finalMime, Number(quality.value) / 100);
 
             const outputName = getBaseName(file.name) + "." + finalExt;
             createDownload(finalBlob, outputName);
@@ -380,7 +383,7 @@
                     ctx.drawImage(img, 0, 0);
                     canvas.toBlob((outBlob) => {
                         URL.revokeObjectURL(objectUrl);
-                        canvas.width = canvas.height = 0; // تنظيف الذاكرة فوراً
+                        canvas.width = canvas.height = 0;
                         if (!outBlob) { reject(new Error("Re-encoding failed")); return; }
                         resolve(outBlob);
                     }, mimeType, qualityValue);
@@ -402,7 +405,7 @@
                     try {
                         const { mimeType, extension } = getTargetFormat();
                         const { canvas, ctx } = setupCanvas(img.naturalWidth, img.naturalHeight, mimeType);
-                        
+
                         ctx.drawImage(img, 0, 0);
 
                         canvas.toBlob((blob) => {
@@ -421,7 +424,7 @@
                 };
                 img.onerror = () => {
                     URL.revokeObjectURL(objectUrl);
-                    reject(new Error("AVIF encoding not supported natively by this device/browser."));
+                    reject(new Error("AVIF decoding not supported natively by this device/browser."));
                 };
                 img.src = objectUrl;
             });
@@ -439,7 +442,7 @@
 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({ scale: 1.5 }); 
+                    const viewport = page.getViewport({ scale: 1.5 });
 
                     const { canvas, ctx } = setupCanvas(viewport.width, viewport.height, mimeType);
                     const renderContext = { canvasContext: ctx, viewport: viewport };
@@ -448,7 +451,7 @@
                     try {
                         await renderTask.promise;
                     } catch (renderErr) {
-                        renderTask.cancel();
+                        try { renderTask.cancel(); } catch (cancelErr) { /* تجاهل أخطاء الإلغاء الثانوية */ }
                         canvas.width = canvas.height = 0;
                         throw renderErr;
                     }
@@ -456,8 +459,8 @@
                     await new Promise((resolve, reject) => {
                         canvas.toBlob((blob) => {
                             // إجبار المتصفح على تفريغ مساحة الـ Canvas من كارت الشاشة والـ RAM فوراً بعد استخراج الـ Blob
-                            canvas.width = canvas.height = 0; 
-                            
+                            canvas.width = canvas.height = 0;
+
                             if (!blob) { reject(new Error(`PDF page ${i} failed`)); return; }
                             const outputName = getBaseName(file.name) + `_page_${i}.` + extension;
                             createDownload(blob, outputName);
@@ -476,7 +479,7 @@
 
         function createDownload(blob, fileName) {
             const url = URL.createObjectURL(blob);
-            activeDownloadUrls.push(url); 
+            activeDownloadUrls.push(url);
 
             const item = document.createElement("div");
             item.style.margin = "15px 0";
@@ -495,7 +498,7 @@
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
-                
+
                 // تنظيف الذاكرة تلقائياً بعد دقيقتين لضمان انتهاء المعالجة في الخلفية تماماً
                 setTimeout(() => {
                     const index = activeDownloadUrls.indexOf(url);
