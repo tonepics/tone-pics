@@ -10,7 +10,6 @@
 
 <link rel="stylesheet" href="tool-style.css">
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 </head>
@@ -32,7 +31,7 @@
 <h1>🔄 Image Converter</h1>
 
 <p>
-Convert images and PDF files online.
+Convert JPG, PNG, WebP and PDF files online.
 </p>
 
 </div>
@@ -47,7 +46,6 @@ type="file"
 id="fileInput"
 accept="image/*,.pdf"
 >
-
 
 
 <br><br>
@@ -80,7 +78,7 @@ WebP
 
 
 <label>
-Quality
+Quality:
 </label>
 
 
@@ -115,8 +113,7 @@ class="preview-image"
 
 <button 
 class="button"
-id="convertBtn"
->
+id="convertBtn">
 Convert
 </button>
 
@@ -125,8 +122,7 @@ Convert
 <button 
 class="button"
 id="downloadBtn"
-style="display:none;"
->
+style="display:none;">
 Download
 </button>
 
@@ -144,6 +140,7 @@ Download
 © 2026 Tone.pics
 
 </footer>
+
 
 
 
@@ -182,68 +179,75 @@ const downloadBtn =
 document.getElementById("downloadBtn");
 
 
-let file;
 
-let resultURL="";
+let selectedFile = null;
+
+let downloadURL = "";
 
 
 
-quality.oninput=function(){
+
+quality.addEventListener("input",()=>{
 
 qualityValue.textContent =
-quality.value+"%";
+quality.value + "%";
 
-};
-
-
-
-fileInput.onchange=function(){
-
-file=this.files[0];
+});
 
 
-if(!file)return;
+
+
+fileInput.addEventListener("change",function(){
+
+
+selectedFile =
+this.files[0];
+
+
+if(!selectedFile)return;
+
 
 
 info.textContent =
 "Original size: "
 +
-formatSize(file.size);
+formatSize(selectedFile.size);
 
 
 
-if(file.type==="application/pdf"){
+if(selectedFile.type === "application/pdf"){
+
+preview.style.display="none";
 
 info.textContent +=
-" PDF file detected";
+" | PDF detected";
 
 return;
 
 }
 
+
+
+preview.style.display="block";
 
 
 preview.src =
-URL.createObjectURL(file);
+URL.createObjectURL(selectedFile);
 
 
 
-};
+});
 
 
 
 
 
-convertBtn.onclick=function(){
+convertBtn.addEventListener("click",()=>{
 
 
-if(!file)return;
+if(!selectedFile){
 
-
-
-if(file.type==="application/pdf"){
-
-convertPDF();
+alert("Choose a file first");
 
 return;
 
@@ -251,12 +255,21 @@ return;
 
 
 
+if(selectedFile.type === "application/pdf"){
+
+convertPDF();
+
+}
+
+else{
+
 convertImage();
 
+}
 
 
-};
 
+});
 
 
 
@@ -265,11 +278,12 @@ convertImage();
 function convertImage(){
 
 
-const img=new Image();
+const img = new Image();
 
 
 
 img.onload=function(){
+
 
 
 const canvas =
@@ -284,8 +298,10 @@ canvas.height =
 img.height;
 
 
+
 const ctx =
 canvas.getContext("2d");
+
 
 
 ctx.drawImage(
@@ -296,31 +312,94 @@ img,
 
 
 
+
+let mimeType;
+
+
+let extension;
+
+
+
+if(format.value==="webp"){
+
+mimeType="image/webp";
+
+extension="webp";
+
+}
+
+else if(format.value==="png"){
+
+mimeType="image/png";
+
+extension="png";
+
+}
+
+else{
+
+mimeType="image/jpeg";
+
+extension="jpg";
+
+}
+
+
+
+
+
 canvas.toBlob(function(blob){
 
 
-resultURL =
+
+if(!blob){
+
+alert("Conversion failed");
+
+return;
+
+}
+
+
+
+downloadURL =
 URL.createObjectURL(blob);
 
 
+
 preview.src =
-resultURL;
+downloadURL;
+
 
 
 downloadBtn.style.display =
 "inline-block";
 
 
-info.textContent +=
-" | Done: "
+
+downloadBtn.onclick=function(){
+
+
+downloadFile(
+downloadURL,
+"converted-image."+extension
+);
+
+
+};
+
+
+
+info.textContent =
+"Converted size: "
 +
 formatSize(blob.size);
 
 
 
 },
-"image/"+format.value,
-quality.value/100);
+mimeType,
+Number(quality.value)/100);
 
 
 
@@ -329,7 +408,7 @@ quality.value/100);
 
 
 img.src =
-URL.createObjectURL(file);
+URL.createObjectURL(selectedFile);
 
 
 
@@ -338,11 +417,12 @@ URL.createObjectURL(file);
 
 
 
+
 async function convertPDF(){
 
 
 const buffer =
-await file.arrayBuffer();
+await selectedFile.arrayBuffer();
 
 
 
@@ -377,6 +457,7 @@ canvas.height =
 viewport.height;
 
 
+
 const ctx =
 canvas.getContext("2d");
 
@@ -392,19 +473,40 @@ viewport:viewport
 
 
 
+
 canvas.toBlob(function(blob){
 
 
-resultURL =
+
+downloadURL =
 URL.createObjectURL(blob);
 
 
+
+preview.style.display="block";
+
+
 preview.src =
-resultURL;
+downloadURL;
+
 
 
 downloadBtn.style.display =
 "inline-block";
+
+
+
+downloadBtn.onclick=function(){
+
+
+downloadFile(
+downloadURL,
+"pdf-page.jpg"
+);
+
+
+};
+
 
 
 },
@@ -418,25 +520,23 @@ downloadBtn.style.display =
 
 
 
-downloadBtn.onclick=function(){
+function downloadFile(url,name){
 
 
 const link =
 document.createElement("a");
 
 
-link.href =
-resultURL;
+link.href=url;
 
 
-link.download =
-"converted-image.jpg";
+link.download=name;
 
 
 link.click();
 
 
-};
+}
 
 
 
@@ -445,14 +545,18 @@ link.click();
 function formatSize(bytes){
 
 
-if(bytes<1024)
+if(bytes < 1024){
 
 return bytes+" Bytes";
 
+}
 
-if(bytes<1024*1024)
+
+if(bytes < 1024*1024){
 
 return (bytes/1024).toFixed(2)+" KB";
+
+}
 
 
 return (bytes/(1024*1024)).toFixed(2)+" MB";
