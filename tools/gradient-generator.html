@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gradient Generator - Tone.pics</title>
+
+<link rel="stylesheet" href="tool-style.css">
+
+<style>
+.gradient-preview {
+    width:100%;
+    height:300px;
+    border-radius:15px;
+    margin:20px 0;
+    border:2px solid #333;
+}
+
+.controls {
+    display:grid;
+    gap:15px;
+}
+
+.row {
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+input[type="color"] {
+    width:60px;
+    height:40px;
+    border:none;
+}
+
+select,input {
+    padding:10px;
+    border-radius:8px;
+}
+
+.code-box {
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+    word-break:break-all;
+    margin-top:15px;
+}
+</style>
+
+</head>
+
+<body>
+
+
+<div class="tool-container">
+
+<a class="back-home" href="../index.html">
+← Back Home
+</a>
+
+
+<div class="tool-header">
+
+<h1>🌈 Gradient Generator</h1>
+
+<p>Create beautiful CSS gradients.</p>
+
+</div>
+
+
+<div class="tool-box">
+
+
+<div id="preview" class="gradient-preview"></div>
+
+
+<div class="controls">
+
+
+<div class="row">
+
+<label>Color 1</label>
+
+<input type="color" id="color1" value="#ff0000">
+
+</div>
+
+
+<div class="row">
+
+<label>Color 2</label>
+
+<input type="color" id="color2" value="#0000ff">
+
+</div>
+
+
+<div class="row">
+
+<label>Direction</label>
+
+<select id="direction">
+
+<option value="to right">
+Left → Right
+</option>
+
+<option value="to bottom">
+Top → Bottom
+</option>
+
+<option value="135deg">
+Diagonal
+</option>
+
+<option value="45deg">
+Reverse Diagonal
+</option>
+
+</select>
+
+</div>
+
+
+
+<div class="row">
+
+<label>
+Type
+</label>
+
+
+<select id="type">
+
+<option value="linear-gradient">
+Linear
+</option>
+
+<option value="radial-gradient">
+Radial
+</option>
+
+</select>
+
+
+</div>
+
+
+</div>
+
+
+<br>
+
+
+<button class="button" onclick="copyCSS()">
+Copy CSS 📋
+</button>
+
+
+<div class="code-box">
+
+<code id="cssCode"></code>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<footer>
+© 2026 Tone.pics
+</footer>
+
+
+
+<script>
+
+
+const color1=document.getElementById("color1");
+const color2=document.getElementById("color2");
+const direction=document.getElementById("direction");
+const type=document.getElementById("type");
+
+const preview=document.getElementById("preview");
+const cssCode=document.getElementById("cssCode");
+
+
+function updateGradient(){
+
+let gradient;
+
+
+if(type.value==="linear-gradient"){
+
+gradient=
+`linear-gradient(${direction.value}, ${color1.value}, ${color2.value})`;
+
+}else{
+
+gradient=
+`radial-gradient(circle, ${color1.value}, ${color2.value})`;
+
+}
+
+
+preview.style.background=gradient;
+
+
+cssCode.textContent=
+`background: ${gradient};`;
+
+}
+
+
+
+color1.oninput=updateGradient;
+color2.oninput=updateGradient;
+direction.onchange=updateGradient;
+type.onchange=updateGradient;
+
+
+
+function copyCSS(){
+
+navigator.clipboard.writeText(
+cssCode.textContent
+);
+
+
+alert("CSS copied!");
+
+}
+
+
+updateGradient();
+
+
+</script>
+
+
+</body>
+</html>
