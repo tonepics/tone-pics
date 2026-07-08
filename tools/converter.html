@@ -24,7 +24,7 @@
         <div class="tool-box">
             <div class="drop-zone" id="dropZone" style="cursor: pointer;">
                 <p>📁 Drag & Drop files here<br>or click to select</p>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf,image/*" multiple style="display: none;">
+                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf" multiple style="display: none;">
             </div>
 
             <br>
@@ -171,7 +171,11 @@
             });
         }
 
+        // 2) دالة HEIC المعدلة مع فحص وجود المكتبة بأمان
         async function convertHEIC(file) {
+            if (typeof heic2any === "undefined") {
+                throw new Error("HEIC library not loaded");
+            }
             const result = await heic2any({
                 blob: file,
                 toType: "image/jpeg",
@@ -193,7 +197,6 @@
 
                     canvas.toBlob((blob) => {
                         if (!blob) { reject(); return; }
-                        // 2) تعديل الـ regex لضمان استبدال الامتداد بشكل آمن وبغض النظر عن حالة الأحرف
                         createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
@@ -207,7 +210,6 @@
             });
         }
 
-        // 3) إضافة تحسين الأمان واستخدام try/catch بداخل دالة الـ PDF لحمايتها من الملفات التالفة
         async function convertPDF(file) {
             try {
                 const buffer = await file.arrayBuffer();
