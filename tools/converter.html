@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Converter - Tone.pics</title>
     <link rel="stylesheet" href="tool-style.css">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -19,13 +19,14 @@
 
         <div class="tool-header">
             <h1>🔄 Image Converter</h1>
-            <p>Convert images and PDF files online.</p>
+            <p>Convert images and PDF files online securely.</p>
         </div>
 
         <div class="tool-box">
             <div class="drop-zone" id="dropZone" style="cursor: pointer;">
                 <p>📁 Drag & Drop files here<br>or click to select</p>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf" multiple style="display: none;">
+                <input type="file" id="fileInput" multiple
+                    accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf" style="display: none;">
             </div>
 
             <br>
@@ -51,7 +52,6 @@
             <p id="info">Choose files to start.</p>
 
             <button class="button" id="convertBtn">Convert All</button>
-            
             <button class="button" id="downloadZipBtn" style="display: none; background-color: #28a745; margin-top: 10px;">Download All (ZIP) 📦</button>
 
             <br><br>
@@ -64,6 +64,8 @@
     </footer>
 
     <script>
+        // 1) تصحيح جلب الـ Worker لـ PDF.js المتوافق مع الـ CDN بشكل مضمون
+        const pdfjsLib = window['pdfjsLib'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         const fileInput = document.getElementById("fileInput");
@@ -79,15 +81,23 @@
         const results = document.getElementById("results");
 
         let selectedFiles = [];
-        let convertedBlobs = []; // مصفوفة لتخزين الملفات المحولة من أجل الـ ZIP
+        let convertedBlobs = [];
+        let currentPreviewUrl = null;
+        let activeDownloadUrls = []; // لتتبع وتحرير كل الروابط المنشأة أثناء التحويل الحالي
+        let isConverting = false;    // لمنع الضغط المزدوج/التحويل المتزامن
+
+        // قائمة الامتدادات المسموح بها رسمياً
+        const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.avif', '.pdf'];
 
         quality.addEventListener("input", () => {
             qualityValue.textContent = quality.value + "%";
         });
 
+        // 2) حماية ثنائية صارمة لـ Input عند الضغط والاختيار اليدوي لمنع تجاوز الـ accept
         fileInput.addEventListener("change", () => {
-            selectedFiles = Array.from(fileInput.files);
-            showFiles();
+            handleFileSelection(fileInput.files);
+            // تصفير القيمة للسماح باختيار نفس الملف مرة أخرى لاحقاً
+            fileInput.value = "";
         });
 
         dropZone.addEventListener("dragover", (e) => {
@@ -99,21 +109,52 @@
             dropZone.classList.remove("active");
         });
 
+        // حماية عند السحب والإفلات
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("active");
-            selectedFiles = Array.from(e.dataTransfer.files);
-            showFiles();
+            handleFileSelection(e.dataTransfer.files);
         });
 
         dropZone.addEventListener("click", () => {
             fileInput.click();
         });
 
+        // دالة الفلترة المركزية الصارمة بناءً على الامتداد الحقيقي وليس نوع المتصفح الوهمي
+        function handleFileSelection(files) {
+            const rawFiles = Array.from(files);
+            selectedFiles = rawFiles.filter(file => {
+                const lastDot = file.name.lastIndexOf('.');
+                if (lastDot === -1) return false; // حظر الملفات التي بدون امتداد فوراً
+                const ext = file.name.substring(lastDot).toLowerCase();
+                return ALLOWED_EXTENSIONS.includes(ext);
+            });
+
+            if (selectedFiles.length < rawFiles.length) {
+                alert("Some files were blocked because they are not supported images or PDFs.");
+            }
+
+            // تنظيف نتائج أي تحويل سابق عند اختيار ملفات جديدة
+            clearPreviousResults();
+            showFiles();
+        }
+
         function showFiles() {
             fileList.innerHTML = "";
-            preview.style.display = "none"; // إعادة تصفير المعاينة
-            
+
+            // تحرير ذاكرة الـ Preview السابقة دورياً لمنع الـ Memory Leak
+            if (currentPreviewUrl) {
+                URL.revokeObjectURL(currentPreviewUrl);
+                currentPreviewUrl = null;
+            }
+            preview.style.display = "none";
+            preview.removeAttribute("src");
+
+            if (selectedFiles.length === 0) {
+                info.textContent = "Choose files to start.";
+                return;
+            }
+
             selectedFiles.forEach((file, index) => {
                 const item = document.createElement("p");
                 item.textContent = (index + 1) + ". " + file.name + " (" + formatSize(file.size) + ")";
@@ -121,34 +162,57 @@
             });
             info.textContent = selectedFiles.length + " file(s) ready";
 
-            // 1) إضافة ميزة الـ Preview الذكية لأول صورة مختارة
-            if (selectedFiles[0] && selectedFiles[0].type.startsWith("image/")) {
+            const file = selectedFiles[0];
+            const lastDot = file.name.lastIndexOf('.');
+            const ext = lastDot !== -1 ? file.name.substring(lastDot).toLowerCase() : '';
+
+            // 3) حل مشكلة الـ HEIC Preview: المتصفحات لا تعرضه natively، لذا نقوم بإخفاء الـ Preview له منعاً لظهور مربع مكسور
+            if (ext === '.heic' || ext === '.heif') {
+                info.textContent += " (Preview not available for HEIC until converted)";
+            } else if (ext === '.pdf' || file.type === 'application/pdf') {
+                info.textContent += " (PDF pages will be rendered on conversion)";
+            } else if (file.type.startsWith("image/") || ['.jpg', '.jpeg', '.png', '.webp', '.avif'].includes(ext)) {
                 preview.style.display = "block";
-                preview.src = URL.createObjectURL(selectedFiles[0]);
+                currentPreviewUrl = URL.createObjectURL(file);
+                preview.src = currentPreviewUrl;
             }
         }
 
+        // تنظيف نتائج وروابط التحويل السابق قبل بدء تحويل جديد لمنع تسريب الذاكرة
+        function clearPreviousResults() {
+            activeDownloadUrls.forEach(url => URL.revokeObjectURL(url));
+            activeDownloadUrls = [];
+            convertedBlobs = [];
+            results.innerHTML = "";
+            downloadZipBtn.style.display = "none";
+        }
+
         convertBtn.addEventListener("click", async () => {
+            if (isConverting) return; // منع النقر المزدوج أثناء التحويل
+
             if (selectedFiles.length === 0) {
                 alert("Choose files first");
                 return;
             }
 
-            results.innerHTML = "";
-            convertedBlobs = []; // تصفير المصفوفة قبل كل عملية تحويل جديدة
-            downloadZipBtn.style.display = "none";
+            isConverting = true;
+            convertBtn.disabled = true;
+            convertBtn.textContent = "Converting...";
+
+            clearPreviousResults();
             let failedCount = 0;
 
             for (const file of selectedFiles) {
                 try {
-                    const name = file.name.toLowerCase();
+                    const lastDot = file.name.lastIndexOf('.');
+                    const ext = lastDot !== -1 ? file.name.substring(lastDot).toLowerCase() : '';
                     info.textContent = "Converting: " + file.name;
 
-                    if (name.endsWith(".heic") || name.endsWith(".heif")) {
+                    if (ext === ".heic" || ext === ".heif") {
                         await convertHEIC(file);
-                    } else if (file.type === "application/pdf" || name.endsWith(".pdf")) {
+                    } else if (file.type === "application/pdf" || ext === ".pdf") {
                         await convertPDF(file);
-                    } else if (name.endsWith(".avif")) {
+                    } else if (ext === ".avif") {
                         await convertAVIF(file);
                     } else {
                         await convertImage(file);
@@ -156,70 +220,100 @@
                 } catch (error) {
                     console.error(error);
                     failedCount++;
-                    showResult(file.name, "Failed ❌");
+                    showResult(file.name, `Failed: ${error.message || "Error"} ❌`);
                 }
             }
 
             if (failedCount === selectedFiles.length) {
                 info.textContent = "Conversions failed ❌";
             } else {
-                if (failedCount > 0) {
-                    info.textContent = `Finished with ${failedCount} error(s) ⚠️`;
-                } else {
-                    info.textContent = "All conversions finished ✔";
-                }
-                
-                // إظهار زر تحميل الـ ZIP إذا كان هناك أكثر من ملف تم تحويله بنجاح
+                info.textContent = failedCount > 0 ? `Finished with ${failedCount} error(s) ⚠️` : "All conversions finished ✔";
                 if (convertedBlobs.length > 1) {
                     downloadZipBtn.style.display = "inline-block";
                 }
             }
+
+            isConverting = false;
+            convertBtn.disabled = false;
+            convertBtn.textContent = "Convert All";
         });
 
-        // تفعيل زر تحميل الكل كملف ZIP
         downloadZipBtn.addEventListener("click", () => {
             if (convertedBlobs.length === 0) return;
-            
+
+            downloadZipBtn.disabled = true;
             const zip = new JSZip();
             convertedBlobs.forEach(item => {
                 zip.file(item.name, item.blob);
             });
-            
+
             info.textContent = "Generating ZIP file... ⏳";
             zip.generateAsync({ type: "blob" }).then((content) => {
                 const link = document.createElement("a");
-                link.href = URL.createObjectURL(content);
+                const zipUrl = URL.createObjectURL(content);
+                link.href = zipUrl;
                 link.download = "converted_files_tone_pics.zip";
+                document.body.appendChild(link);
                 link.click();
+                link.remove();
+
+                // تحرير الـ ZIP بعد دقيقة لضمان اكتمال التنزيل في الأنظمة البطيئة دون تسريب ذاكرة
+                setTimeout(() => URL.revokeObjectURL(zipUrl), 60000);
                 info.textContent = "ZIP downloaded successfully! ✔";
+                downloadZipBtn.disabled = false;
+            }).catch((error) => {
+                console.error(error);
+                info.textContent = "Failed to generate ZIP ❌";
+                downloadZipBtn.disabled = false;
             });
         });
 
+        // 4) دالة آمنة لاستخراج اسم الملف النظيف بدون امتداد وتدعم الملفات التي بها نقاط متعددة أو بدون امتداد
+        function getBaseName(fileName) {
+            const lastDot = fileName.lastIndexOf('.');
+            return lastDot !== -1 ? fileName.substring(0, lastDot) : fileName;
+        }
+
+        // دالة موحّدة لتحديد نوع الـ MIME والامتداد بناءً على اختيار المستخدم
+        function getTargetFormat() {
+            if (format.value === "webp") return { mimeType: "image/webp", extension: "webp" };
+            if (format.value === "png") return { mimeType: "image/png", extension: "png" };
+            return { mimeType: "image/jpeg", extension: "jpg" };
+        }
+
         function convertImage(file) {
             return new Promise((resolve, reject) => {
+                const objectUrl = URL.createObjectURL(file);
                 const img = new Image();
+
                 img.onload = function () {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0);
+                    try {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0);
 
-                    let mimeType, extension;
-                    if (format.value === "webp") { mimeType = "image/webp"; extension = "webp"; }
-                    else if (format.value === "png") { mimeType = "image/png"; extension = "png"; }
-                    else { mimeType = "image/jpeg"; extension = "jpg"; }
+                        const { mimeType, extension } = getTargetFormat();
 
-                    canvas.toBlob((blob) => {
-                        if (!blob) { reject(new Error("Blob generation failed")); return; }
-                        const outputName = file.name.split(".")[0] + "." + extension;
-                        createDownload(blob, outputName);
-                        convertedBlobs.push({ blob, name: outputName }); // تخزين للـ ZIP
-                        resolve();
-                    }, mimeType, Number(quality.value) / 100);
+                        canvas.toBlob((blob) => {
+                            URL.revokeObjectURL(objectUrl);
+                            if (!blob) { reject(new Error("Blob generation failed")); return; }
+                            const outputName = getBaseName(file.name) + "." + extension;
+                            createDownload(blob, outputName);
+                            convertedBlobs.push({ blob, name: outputName });
+                            resolve();
+                        }, mimeType, Number(quality.value) / 100);
+                    } catch (err) {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(err);
+                    }
                 };
-                img.onerror = reject;
-                img.src = URL.createObjectURL(file);
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error("Corrupted image or unsupported format"));
+                };
+                img.src = objectUrl;
             });
         }
 
@@ -227,50 +321,104 @@
             if (typeof heic2any === "undefined") {
                 throw new Error("HEIC library not loaded");
             }
+
+            // heic2any يدعم رسمياً jpeg وpng فقط، لذا نحوّل webp إلى jpeg كوسيط ثم للصيغة النهائية عبر canvas
+            const wantsWebp = format.value === "webp";
+            const heicTargetMime = wantsWebp ? "image/jpeg" : (format.value === "png" ? "image/png" : "image/jpeg");
+
             const result = await heic2any({
                 blob: file,
-                toType: "image/jpeg",
+                toType: heicTargetMime,
                 quality: Number(quality.value) / 100
             });
-            const blob = Array.isArray(result) ? result[0] : result;
-            const outputName = file.name.replace(/\.(heic|heif)$/i, "") + ".jpg";
+
+            // 5) التعامل الصحيح مع مخرجات heic2any سواء أعادت Array أو Blob مفرد
+            let blob = Array.isArray(result) ? result[0] : result;
+            let extension = wantsWebp ? "jpg" : (format.value === "png" ? "png" : "jpg");
+
+            if (wantsWebp) {
+                // تحويل ثانٍ من jpeg إلى webp عبر canvas لأن heic2any لا يدعم webp مباشرة
+                blob = await blobToFormat(blob, "image/webp", Number(quality.value) / 100);
+                extension = "webp";
+            }
+
+            const outputName = getBaseName(file.name) + "." + extension;
             createDownload(blob, outputName);
             convertedBlobs.push({ blob, name: outputName });
         }
 
-        async function convertAVIF(file) {
+        // مساعد عام لإعادة ترميز أي Blob صورة إلى صيغة أخرى عبر canvas
+        function blobToFormat(blob, mimeType, quality) {
             return new Promise((resolve, reject) => {
+                const objectUrl = URL.createObjectURL(blob);
                 const img = new Image();
                 img.onload = function () {
                     const canvas = document.createElement("canvas");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(img, 0, 0);
-
-                    canvas.toBlob((blob) => {
-                        if (!blob) { reject(new Error("AVIF conversion failed")); return; }
-                        const outputName = file.name.replace(/\.avif$/i, ".jpg");
-                        createDownload(blob, outputName);
-                        convertedBlobs.push({ blob, name: outputName });
-                        resolve();
-                    }, "image/jpeg", Number(quality.value) / 100);
+                    canvas.toBlob((outBlob) => {
+                        URL.revokeObjectURL(objectUrl);
+                        if (!outBlob) { reject(new Error("Re-encoding failed")); return; }
+                        resolve(outBlob);
+                    }, mimeType, quality);
                 };
-                img.onerror = function () { reject(new Error("Browser cannot decode AVIF")); };
-                img.src = URL.createObjectURL(file);
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error("Re-encoding failed"));
+                };
+                img.src = objectUrl;
             });
         }
 
-        // 3) دالة الـ PDF الاحترافية: تحويل كافة صفحات الملف إلى صور منفصلة ودعم تجميعها في الـ ZIP
+        async function convertAVIF(file) {
+            return new Promise((resolve, reject) => {
+                const objectUrl = URL.createObjectURL(file);
+                const img = new Image();
+
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0);
+
+                        const { mimeType, extension } = getTargetFormat();
+
+                        canvas.toBlob((blob) => {
+                            URL.revokeObjectURL(objectUrl);
+                            if (!blob) { reject(new Error("AVIF conversion failed")); return; }
+                            const outputName = getBaseName(file.name) + "." + extension;
+                            createDownload(blob, outputName);
+                            convertedBlobs.push({ blob, name: outputName });
+                            resolve();
+                        }, mimeType, Number(quality.value) / 100);
+                    } catch (err) {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(err);
+                    }
+                };
+                // رسالة واضحة للمستخدم في حال كان متصفحه/جهازه قديماً ولا يدعم فك تشفير الـ AVIF
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error("AVIF decoding not supported by this browser."));
+                };
+                img.src = objectUrl;
+            });
+        }
+
         async function convertPDF(file) {
             try {
                 const buffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-                
-                // حلقة تكرارية للمرور على كافة صفحات ملف الـ PDF وتحويلها بالكامل
+
+                const { mimeType, extension } = getTargetFormat();
+
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({ scale: 2 });
+                    const viewport = page.getViewport({ scale: 1.5 }); // وضع ميزان أداء متزن للـ RAM
 
                     const canvas = document.createElement("canvas");
                     canvas.width = viewport.width;
@@ -281,26 +429,27 @@
 
                     await new Promise((resolve, reject) => {
                         canvas.toBlob((blob) => {
-                            if (!blob) {
-                                reject(new Error(`PDF page ${i} creation failed`));
-                                return;
-                            }
-                            // تسمية الصفحات بشكل منسق: FileName_page_1.jpg
-                            const outputName = file.name.replace(/\.pdf$/i, "") + `_page_${i}.jpg`;
+                            if (!blob) { reject(new Error(`PDF page ${i} failed`)); return; }
+                            const outputName = getBaseName(file.name) + `_page_${i}.` + extension;
                             createDownload(blob, outputName);
                             convertedBlobs.push({ blob, name: outputName });
                             resolve();
-                        }, "image/jpeg", Number(quality.value) / 100);
+                        }, mimeType, Number(quality.value) / 100);
                     });
+
+                    // تحرير موارد الصفحة فور الانتهاء منها لتقليل استهلاك الذاكرة في ملفات PDF الكبيرة
+                    page.cleanup();
                 }
             } catch (error) {
                 console.error(error);
-                throw error;
+                throw new Error("Failed to parse PDF file.");
             }
         }
 
         function createDownload(blob, fileName) {
             const url = URL.createObjectURL(blob);
+            activeDownloadUrls.push(url); // تتبّع الرابط لتحريره لاحقاً عند بدء تحويل جديد
+
             const item = document.createElement("div");
             item.style.margin = "15px 0";
 
@@ -315,7 +464,11 @@
                 const link = document.createElement("a");
                 link.href = url;
                 link.download = fileName;
+                document.body.appendChild(link);
                 link.click();
+                link.remove();
+                // لا نُحرر الرابط فوراً هنا حتى لا يفشل التنزيل على بعض المتصفحات؛
+                // يتم تحرير الرابط تلقائياً عند بدء تحويل جديد عبر clearPreviousResults()
             };
 
             item.appendChild(text);
