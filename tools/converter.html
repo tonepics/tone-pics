@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Image Converter - Tone.pics</title>
+
+<link rel="stylesheet" href="tool-style.css">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+</head>
+
+
+<body>
+
+
+<div class="tool-container">
+
+
+<a class="back-home" href="../index.html">
+← Back Home
+</a>
+
+
+<div class="tool-header">
+
+<h1>🔄 Image Converter</h1>
+
+<p>
+Convert images and PDF files online.
+</p>
+
+</div>
+
+
+
+<div class="tool-box">
+
+
+<input 
+type="file"
+id="fileInput"
+accept="image/*,.pdf"
+>
+
+
+
+<br><br>
+
+
+<label>
+Convert To:
+</label>
+
+
+<select id="format">
+
+<option value="jpeg">
+JPG
+</option>
+
+<option value="png">
+PNG
+</option>
+
+<option value="webp">
+WebP
+</option>
+
+</select>
+
+
+
+<br><br>
+
+
+<label>
+Quality
+</label>
+
+
+<input 
+type="range"
+id="quality"
+min="10"
+max="100"
+value="90"
+>
+
+
+<span id="qualityValue">
+90%
+</span>
+
+
+
+<br><br>
+
+
+<img 
+id="preview"
+class="preview-image"
+>
+
+
+
+<p id="info"></p>
+
+
+
+<button 
+class="button"
+id="convertBtn"
+>
+Convert
+</button>
+
+
+
+<button 
+class="button"
+id="downloadBtn"
+style="display:none;"
+>
+Download
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+<footer>
+
+© 2026 Tone.pics
+
+</footer>
+
+
+
+<script>
+
+
+const fileInput =
+document.getElementById("fileInput");
+
+
+const format =
+document.getElementById("format");
+
+
+const quality =
+document.getElementById("quality");
+
+
+const qualityValue =
+document.getElementById("qualityValue");
+
+
+const preview =
+document.getElementById("preview");
+
+
+const info =
+document.getElementById("info");
+
+
+const convertBtn =
+document.getElementById("convertBtn");
+
+
+const downloadBtn =
+document.getElementById("downloadBtn");
+
+
+let file;
+
+let resultURL="";
+
+
+
+quality.oninput=function(){
+
+qualityValue.textContent =
+quality.value+"%";
+
+};
+
+
+
+fileInput.onchange=function(){
+
+file=this.files[0];
+
+
+if(!file)return;
+
+
+info.textContent =
+"Original size: "
++
+formatSize(file.size);
+
+
+
+if(file.type==="application/pdf"){
+
+info.textContent +=
+" PDF file detected";
+
+return;
+
+}
+
+
+
+preview.src =
+URL.createObjectURL(file);
+
+
+
+};
+
+
+
+
+
+convertBtn.onclick=function(){
+
+
+if(!file)return;
+
+
+
+if(file.type==="application/pdf"){
+
+convertPDF();
+
+return;
+
+}
+
+
+
+convertImage();
+
+
+
+};
+
+
+
+
+
+
+function convertImage(){
+
+
+const img=new Image();
+
+
+
+img.onload=function(){
+
+
+const canvas =
+document.createElement("canvas");
+
+
+canvas.width =
+img.width;
+
+
+canvas.height =
+img.height;
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+ctx.drawImage(
+img,
+0,
+0
+);
+
+
+
+canvas.toBlob(function(blob){
+
+
+resultURL =
+URL.createObjectURL(blob);
+
+
+preview.src =
+resultURL;
+
+
+downloadBtn.style.display =
+"inline-block";
+
+
+info.textContent +=
+" | Done: "
++
+formatSize(blob.size);
+
+
+
+},
+"image/"+format.value,
+quality.value/100);
+
+
+
+};
+
+
+
+img.src =
+URL.createObjectURL(file);
+
+
+
+}
+
+
+
+
+async function convertPDF(){
+
+
+const buffer =
+await file.arrayBuffer();
+
+
+
+const pdf =
+await pdfjsLib.getDocument({
+data:buffer
+}).promise;
+
+
+
+const page =
+await pdf.getPage(1);
+
+
+
+const viewport =
+page.getViewport({
+scale:2
+});
+
+
+
+const canvas =
+document.createElement("canvas");
+
+
+canvas.width =
+viewport.width;
+
+
+canvas.height =
+viewport.height;
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+
+await page.render({
+
+canvasContext:ctx,
+
+viewport:viewport
+
+}).promise;
+
+
+
+canvas.toBlob(function(blob){
+
+
+resultURL =
+URL.createObjectURL(blob);
+
+
+preview.src =
+resultURL;
+
+
+downloadBtn.style.display =
+"inline-block";
+
+
+},
+"image/jpeg",
+0.9);
+
+
+
+}
+
+
+
+
+downloadBtn.onclick=function(){
+
+
+const link =
+document.createElement("a");
+
+
+link.href =
+resultURL;
+
+
+link.download =
+"converted-image.jpg";
+
+
+link.click();
+
+
+};
+
+
+
+
+
+function formatSize(bytes){
+
+
+if(bytes<1024)
+
+return bytes+" Bytes";
+
+
+if(bytes<1024*1024)
+
+return (bytes/1024).toFixed(2)+" KB";
+
+
+return (bytes/(1024*1024)).toFixed(2)+" MB";
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
