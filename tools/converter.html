@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Converter - Tone.pics</title>
-    <link class="rtl" rel="stylesheet" href="tool-style.css">
+    <link rel="stylesheet" href="tool-style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -24,7 +24,7 @@
         <div class="tool-box">
             <div class="drop-zone" id="dropZone" style="cursor: pointer;">
                 <p>📁 Drag & Drop files here<br>or click to select</p>
-                <input type="file" id="fileInput" accept="image/*,.pdf,.heic,.heif,.avif" multiple style="display: none;">
+                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf,image/*" multiple style="display: none;">
             </div>
 
             <br>
@@ -101,7 +101,6 @@
             showFiles();
         });
 
-        // 1) إضافة تعديلك الذكي لفتح نافذة اختيار الملفات عند الضغط على منطقة السحب
         dropZone.addEventListener("click", () => {
             fileInput.click();
         });
@@ -194,12 +193,12 @@
 
                     canvas.toBlob((blob) => {
                         if (!blob) { reject(); return; }
-                        createDownload(blob, file.name.replace(".avif", ".jpg"));
+                        // 2) تعديل الـ regex لضمان استبدال الامتداد بشكل آمن وبغض النظر عن حالة الأحرف
+                        createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 };
                 
-                // 2) تعديلك الذكي لإظهار رسالة تنبيه للمستخدم بدلاً من الفشل الصامت
                 img.onerror = function () {
                     alert("Your browser cannot read AVIF files");
                     reject();
@@ -208,25 +207,31 @@
             });
         }
 
+        // 3) إضافة تحسين الأمان واستخدام try/catch بداخل دالة الـ PDF لحمايتها من الملفات التالفة
         async function convertPDF(file) {
-            const buffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 2 });
+            try {
+                const buffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 2 });
 
-            const canvas = document.createElement("canvas");
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext("2d");
+                const canvas = document.createElement("canvas");
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext("2d");
 
-            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-            return new Promise((resolve) => {
-                canvas.toBlob((blob) => {
-                    createDownload(blob, file.name.replace(".pdf", ".jpg"));
-                    resolve();
-                }, "image/jpeg", Number(quality.value) / 100);
-            });
+                return new Promise((resolve) => {
+                    canvas.toBlob((blob) => {
+                        createDownload(blob, file.name.replace(/\.pdf$/i, ".jpg"));
+                        resolve();
+                    }, "image/jpeg", Number(quality.value) / 100);
+                });
+            } catch (error) {
+                console.error(error);
+                showResult(file.name, "PDF conversion failed ❌");
+            }
         }
 
         function createDownload(blob, fileName) {
