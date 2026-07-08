@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Converter - Tone.pics</title>
-    <link rel="stylesheet" href="tool-style.css">
+    <link class="rtl" rel="stylesheet" href="tool-style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -22,9 +22,9 @@
         </div>
 
         <div class="tool-box">
-            <div class="drop-zone" id="dropZone">
+            <div class="drop-zone" id="dropZone" style="cursor: pointer;">
                 <p>📁 Drag & Drop files here<br>or click to select</p>
-                <input type="file" id="fileInput" accept="image/*,.pdf,.heic,.heif,.avif" multiple>
+                <input type="file" id="fileInput" accept="image/*,.pdf,.heic,.heif,.avif" multiple style="display: none;">
             </div>
 
             <br>
@@ -61,7 +61,6 @@
     </footer>
 
     <script>
-        // إعداد مكتبة PDF.js لتعمل بدون مشاكل
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         const fileInput = document.getElementById("fileInput");
@@ -77,18 +76,15 @@
 
         let selectedFiles = [];
 
-        // تحديث قيمة الجودة المطروحة أمام المستخدم
         quality.addEventListener("input", () => {
             qualityValue.textContent = quality.value + "%";
         });
 
-        // عند اختيار ملفات من الجهاز
         fileInput.addEventListener("change", () => {
             selectedFiles = Array.from(fileInput.files);
             showFiles();
         });
 
-        // تأثيرات السحب والإفلات (Drag & Drop)
         dropZone.addEventListener("dragover", (e) => {
             e.preventDefault();
             dropZone.classList.add("active");
@@ -105,7 +101,11 @@
             showFiles();
         });
 
-        // دالة عرض الملفات المختارة (تم إصلاح إغلاقها هنا)
+        // 1) إضافة تعديلك الذكي لفتح نافذة اختيار الملفات عند الضغط على منطقة السحب
+        dropZone.addEventListener("click", () => {
+            fileInput.click();
+        });
+
         function showFiles() {
             fileList.innerHTML = "";
             selectedFiles.forEach((file, index) => {
@@ -116,7 +116,6 @@
             info.textContent = selectedFiles.length + " file(s) ready";
         }
 
-        // زر التحويل الرئيسي
         convertBtn.addEventListener("click", async () => {
             if (selectedFiles.length === 0) {
                 alert("Choose files first");
@@ -147,7 +146,6 @@
             info.textContent = "All conversions finished ✔";
         });
 
-        // تحويل الصور العادية (PNG, JPG, WebP)
         function convertImage(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -158,25 +156,13 @@
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(img, 0, 0);
 
-                    let mimeType;
-                    let extension;
-
-                    if (format.value === "webp") {
-                        mimeType = "image/webp";
-                        extension = "webp";
-                    } else if (format.value === "png") {
-                        mimeType = "image/png";
-                        extension = "png";
-                    } else {
-                        mimeType = "image/jpeg";
-                        extension = "jpg";
-                    }
+                    let mimeType, extension;
+                    if (format.value === "webp") { mimeType = "image/webp"; extension = "webp"; }
+                    else if (format.value === "png") { mimeType = "image/png"; extension = "png"; }
+                    else { mimeType = "image/jpeg"; extension = "jpg"; }
 
                     canvas.toBlob((blob) => {
-                        if (!blob) {
-                            reject();
-                            return;
-                        }
+                        if (!blob) { reject(); return; }
                         createDownload(blob, file.name.split(".")[0] + "." + extension);
                         resolve();
                     }, mimeType, Number(quality.value) / 100);
@@ -186,7 +172,6 @@
             });
         }
 
-        // تحويل صور HEIC
         async function convertHEIC(file) {
             const result = await heic2any({
                 blob: file,
@@ -197,7 +182,6 @@
             createDownload(blob, file.name.replace(/\.(heic|heif)$/i, "") + ".jpg");
         }
 
-        // تحويل صور AVIF
         async function convertAVIF(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -209,26 +193,25 @@
                     ctx.drawImage(img, 0, 0);
 
                     canvas.toBlob((blob) => {
-                        if (!blob) {
-                            reject();
-                            return;
-                        }
+                        if (!blob) { reject(); return; }
                         createDownload(blob, file.name.replace(".avif", ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 };
+                
+                // 2) تعديلك الذكي لإظهار رسالة تنبيه للمستخدم بدلاً من الفشل الصامت
                 img.onerror = function () {
-                    reject("AVIF not supported");
+                    alert("Your browser cannot read AVIF files");
+                    reject();
                 };
                 img.src = URL.createObjectURL(file);
             });
         }
 
-        // تحويل ملفات PDF إلى صور
         async function convertPDF(file) {
             const buffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-            const page = await pdf.getPage(1); // تحويل الصفحة الأولى فقط
+            const page = await pdf.getPage(1);
             const viewport = page.getViewport({ scale: 2 });
 
             const canvas = document.createElement("canvas");
@@ -236,10 +219,7 @@
             canvas.height = viewport.height;
             const ctx = canvas.getContext("2d");
 
-            await page.render({
-                canvasContext: ctx,
-                viewport: viewport
-            }).promise;
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
             return new Promise((resolve) => {
                 canvas.toBlob((blob) => {
@@ -249,7 +229,6 @@
             });
         }
 
-        // إنشاء رابط دبلود للملفات الناتجة
         function createDownload(blob, fileName) {
             const url = URL.createObjectURL(blob);
             const item = document.createElement("div");
@@ -274,14 +253,12 @@
             results.appendChild(item);
         }
 
-        // إظهار النتيجة في حال الفشل
         function showResult(name, status) {
             const item = document.createElement("p");
             item.textContent = name + " : " + status;
             results.appendChild(item);
         }
 
-        // حساب حجم الملفات الذكي
         function formatSize(bytes) {
             if (bytes < 1024) { return bytes + " Bytes"; }
             if (bytes < 1024 * 1024) { return (bytes / 1024).toFixed(2) + " KB"; }
