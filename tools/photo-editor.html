@@ -1,474 +1,1544 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Photo Editor</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Courier+Prime&family=Inter:wght@400;700&family=Marck+Script&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* Tool-style.css compatible variables */
-        :root {
-            --bg-primary: #121214;
-            --bg-surface: #1a1a1e;
-            --bg-control: #26262b;
-            --accent: #4f46e5;
-            --accent-hover: #6366f1;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border: #374151;
-            
-            /* Font Styles */
-            --font-classic: 'Cinzel', serif;
-            --font-modern: 'Inter', sans-serif;
-            --font-bold: 'Poppins', sans-serif; /* Handled via font-weight: bold */
-            --font-elegant: 'Poppins', sans-serif; 
-            --font-handwriting: 'Marck Script', cursive;
-            --font-typewriter: 'Courier Prime', monospace;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
+<title>Photo Editor - Tone.pics</title>
 
-        .editor-container {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;700;900&family=Marck+Script&family=Poppins:wght@400;700;900&family=Bungee&family=Press+Start+2P&display=swap" rel="stylesheet">
 
-        @media (max-width: 900px) {
-            .editor-container { grid-template-columns: 1fr; }
-        }
+<style>
 
-        /* Preview & Drag-Drop Zone */
-        .preview-zone {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: var(--bg-primary);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            min-height: 450px;
-            position: relative;
-            overflow: hidden;
-            padding: 10px;
-        }
+:root{
+    --bg:#121214;
+    --surface:#1b1b20;
+    --control:#25252b;
+    --border:#383842;
+    --accent:#6366f1;
+    --text:#f5f5f5;
+}
 
-        .preview-zone.dragover {
-            border-color: var(--accent);
-            background: rgba(79, 70, 229, 0.05);
-        }
 
-        .upload-placeholder {
-            text-align: center;
-            cursor: pointer;
-            pointer-events: none;
-        }
+*{
+    box-sizing:border-box;
+}
 
-        .upload-placeholder i {
-            font-size: 48px;
-            color: var(--accent);
-            display: block;
-            margin-bottom: 10px;
-        }
 
-        canvas {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            display: none;
-        }
+body{
 
-        /* Sidebar Controls */
-        .controls-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
+    margin:0;
+    padding:20px;
 
-        .controls-sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .controls-sidebar::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
+    min-height:100vh;
 
-        .control-section {
-            background: var(--bg-control);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
-        }
+    background:var(--bg);
 
-        .control-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 16px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
-            color: var(--text-main);
-        }
+    color:var(--text);
 
-        .control-group {
-            margin-bottom: 12px;
-        }
+    font-family:Poppins,sans-serif;
 
-        .control-group:last-child { margin-bottom: 0; }
+}
 
-        .control-group label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
 
-        /* Input Elements */
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent);
-            background: var(--border);
-            height: 6px;
-            border-radius: 3px;
-            outline: none;
-        }
+.editor-wrapper{
 
-        select, input[type="text"], input[type="color"] {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+    width:100%;
+    max-width:1300px;
 
-        input[type="color"] {
-            height: 38px;
-            padding: 2px;
-            cursor: pointer;
-        }
+    margin:auto;
 
-        /* Buttons Grid */
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
+    display:grid;
 
-        .btn {
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-            text-align: center;
-        }
+    grid-template-columns:1fr 380px;
 
-        .btn:hover {
-            border-color: var(--accent);
-            background: var(--accent);
-        }
+    gap:20px;
 
-        .btn-primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            font-weight: bold;
-        }
+}
 
-        .btn-primary:hover {
-            background: var(--accent-hover);
-        }
 
-        .save-zone {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .save-zone select { width: 40%; }
-        .save-zone button { width: 60%; }
-    </style>
+
+@media(max-width:950px){
+
+.editor-wrapper{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+
+
+.canvas-area{
+
+background:#0d0d10;
+
+border:2px dashed var(--border);
+
+border-radius:15px;
+
+min-height:600px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+
+
+.canvas-area.active{
+
+border-color:var(--accent);
+
+}
+
+
+
+#canvas{
+
+max-width:100%;
+
+max-height:80vh;
+
+display:none;
+
+border-radius:10px;
+
+box-shadow:0 10px 30px #000;
+
+}
+
+
+
+
+.upload-box{
+
+text-align:center;
+
+cursor:pointer;
+
+color:#aaa;
+
+}
+
+
+
+.upload-box span{
+
+font-size:60px;
+
+display:block;
+
+}
+
+
+
+
+.panel{
+
+background:var(--surface);
+
+border:1px solid var(--border);
+
+border-radius:15px;
+
+padding:15px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:15px;
+
+max-height:85vh;
+
+overflow:auto;
+
+}
+
+
+
+.section{
+
+background:var(--control);
+
+border-radius:10px;
+
+padding:15px;
+
+border:1px solid var(--border);
+
+}
+
+
+
+.section h3{
+
+margin:0 0 12px;
+
+font-size:16px;
+
+border-bottom:1px solid var(--border);
+
+padding-bottom:8px;
+
+}
+
+
+
+
+label{
+
+display:block;
+
+font-size:13px;
+
+color:#aaa;
+
+margin-bottom:5px;
+
+}
+
+
+
+
+input,
+select,
+button{
+
+width:100%;
+
+padding:10px;
+
+border-radius:7px;
+
+border:1px solid var(--border);
+
+background:#111;
+
+color:white;
+
+}
+
+
+
+input[type=color]{
+
+height:40px;
+
+padding:2px;
+
+}
+
+
+
+
+input[type=range]{
+
+accent-color:var(--accent);
+
+padding:0;
+
+}
+
+
+
+
+button{
+
+cursor:pointer;
+
+background:#18181b;
+
+transition:.2s;
+
+}
+
+
+
+button:hover{
+
+background:var(--accent);
+
+}
+
+
+
+
+.grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:8px;
+
+}
+
+
+
+.primary{
+
+background:var(--accent);
+
+font-weight:bold;
+
+}
+
+
+
+
+.text-item{
+
+padding:8px;
+
+margin-top:5px;
+
+border:1px solid var(--border);
+
+border-radius:6px;
+
+cursor:pointer;
+
+}
+
+
+
+.text-item.active{
+
+background:var(--accent);
+
+}
+
+
+
+</style>
+
 </head>
+
+
 <body>
 
-<div class="editor-container">
-    
-    <div class="preview-zone" id="dropZone">
-        <div class="upload-placeholder" id="placeholder">
-            <i>🖼️</i>
-            <p>Drag & Drop Image Here or Click to Browse</p>
-            <input type="file" id="fileInput" accept="image/*" style="display:none">
-        </div>
-        <canvas id="editorCanvas"></canvas>
-    </div>
 
-    <div class="controls-sidebar">
-        
-        <div class="control-section">
-            <h3>Orientation</h3>
-            <div class="btn-grid">
-                <button class="btn" onclick="rotate(90)">🔄 Rotate 90°</button>
-                <button class="btn" onclick="rotate(-90)">🔄 Rotate -90°</button>
-                <button class="btn" onclick="flip('H')">↔️ Flip Horizontal</button>
-                <button class="btn" onclick="flip('V')">↕️ Flip Vertical</button>
-            </div>
-        </div>
 
-        <div class="control-section">
-            <h3>Filters & Adjustments</h3>
-            <div class="control-group">
-                <label>Brightness <span id="val-brightness">100%</span></label>
-                <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateFilter('brightness', this.value, '%')">
-            </div>
-            <div class="control-group">
-                <label>Contrast <span id="val-contrast">100%</span></label>
-                <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateFilter('contrast', this.value, '%')">
-            </div>
-            <div class="control-group">
-                <label>Saturation <span id="val-saturation">100%</span></label>
-                <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateFilter('saturation', this.value, '%')">
-            </div>
-            <div class="control-group">
-                <label>Grayscale <span id="val-grayscale">0%</span></label>
-                <input type="range" id="grayscale" min="0" max="100" value="0" oninput="updateFilter('grayscale', this.value, '%')">
-            </div>
-            <div class="control-group">
-                <label>Sepia <span id="val-sepia">0%</span></label>
-                <input type="range" id="sepia" min="0" max="100" value="0" oninput="updateFilter('sepia', this.value, '%')">
-            </div>
-            <div class="control-group">
-                <label>Blur <span id="val-blur">0px</span></label>
-                <input type="range" id="blur" min="0" max="20" value="0" oninput="updateFilter('blur', this.value, 'px')">
-            </div>
-        </div>
+<div class="editor-wrapper">
 
-        <div class="control-section">
-            <h3>Text Overlay</h3>
-            <div class="control-group">
-                <input type="text" id="textInput" placeholder="Type your text here..." oninput="render()">
-            </div>
-            <div class="control-group">
-                <label>Font Style</label>
-                <select id="fontStyle" onchange="render()">
-                    <option value="var(--font-bold)" style="font-weight: bold;">Bold</option>
-                    <option value="var(--font-classic)">Classic</option>
-                    <option value="var(--font-modern)">Modern</option>
-                    <option value="var(--font-elegant)">Elegant</option>
-                    <option value="var(--font-handwriting)">Handwriting</option>
-                    <option value="var(--font-typewriter)">Typewriter</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label>Font Size <span id="val-fontSize">40px</span></label>
-                <input type="range" id="fontSize" min="10" max="200" value="40" oninput="document.getElementById('val-fontSize').innerText=this.value+'px'; render();">
-            </div>
-            <div class="control-group">
-                <label>Font Color</label>
-                <input type="color" id="textColor" value="#ffffff" onchange="render()">
-            </div>
-            <div class="control-group">
-                <label>Text Opacity <span id="val-textOpacity">100%</span></label>
-                <input type="range" id="textOpacity" min="0" max="100" value="100" oninput="document.getElementById('val-textOpacity').innerText=this.value+'%'; render();">
-            </div>
-            <div class="control-group">
-                <label>Position X</label>
-                <input type="range" id="textX" min="0" max="100" value="50" oninput="render()">
-            </div>
-            <div class="control-group">
-                <label>Position Y</label>
-                <input type="range" id="textY" min="0" max="100" value="50" oninput="render()">
-            </div>
-            <div class="control-group">
-                <label>Text Shadow <span id="val-textShadow">5px</span></label>
-                <input type="range" id="textShadow" min="0" max="30" value="5" oninput="document.getElementById('val-textShadow').innerText=this.value+'px'; render();">
-            </div>
-        </div>
 
-        <div class="control-section">
-            <h3>Export Image</h3>
-            <div class="save-zone">
-                <select id="exportFormat">
-                    <option value="image/jpeg">JPG</option>
-                    <option value="image/png">PNG</option>
-                    <option value="image/webp">WebP</option>
-                </select>
-                <button class="btn btn-primary" onclick="downloadImage()">💾 Save Image</button>
-            </div>
-        </div>
 
-    </div>
+<div class="canvas-area" id="dropZone">
+
+
+<div class="upload-box" id="uploadBox">
+
+<span>🖼️</span>
+
+<p>Drag & Drop Image<br>or Click</p>
+
+<input id="fileInput" type="file" accept="image/*" hidden>
+
 </div>
 
+
+<canvas id="canvas"></canvas>
+
+
+</div>
+
+
+
+
+
+<div class="panel">
+
+
+
+<div class="section">
+
+<h3>History</h3>
+
+
+<div class="grid">
+
+<button onclick="undo()">↶ Undo</button>
+
+<button onclick="redo()">↷ Redo</button>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="section">
+
+<h3>Image</h3>
+
+
+<div class="grid">
+
+<button onclick="rotateImage(90)">Rotate +90</button>
+
+<button onclick="rotateImage(-90)">Rotate -90</button>
+
+<button onclick="flipImage('x')">Flip X</button>
+
+<button onclick="flipImage('y')">Flip Y</button>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="section">
+
+
+<h3>Filters</h3>
+
+
+<label>Brightness</label>
+
+<input type="range" id="brightness" min="0" max="200" value="100">
+
+
+
+<label>Contrast</label>
+
+<input type="range" id="contrast" min="0" max="200" value="100">
+
+
+
+<label>Saturation</label>
+
+<input type="range" id="saturation" min="0" max="200" value="100">
+
+
+
+<label>Blur</label>
+
+<input type="range" id="blur" min="0" max="20" value="0">
+
+
+</div>
+
+
+
+
+
+<div class="section">
+
+
+<h3>Add Text</h3>
+
+
+<input id="newText" placeholder="Write text">
+
+
+<button class="primary" onclick="addText()">+ Add Text</button>
+
+
+<div id="textList"></div>
+
+
+</div>
+
+
+
+
+
+<div class="section">
+
+
+<h3>Text Style</h3>
+
+
+
+<label>Font</label>
+
+<select id="font">
+
+<option value="Poppins">Bold Modern</option>
+
+<option value="Cinzel">Classic</option>
+
+<option value="Inter">Clean</option>
+
+<option value="Marck Script">Handwriting</option>
+
+<option value="Courier Prime">Typewriter</option>
+
+<option value="Bungee">Graffiti</option>
+
+<option value="Press Start 2P">Pixel</option>
+
+</select>
+
+
+
+<label>Size</label>
+
+<input id="fontSize" type="range" min="10" max="200" value="50">
+
+
+
+<label>Color</label>
+
+<input id="fontColor" type="color" value="#ffffff">
+
+
+
+<label>Stroke</label>
+
+<input id="strokeColor" type="color" value="#000000">
+
+
+
+<label>Stroke Width</label>
+
+<input id="strokeWidth" type="range" min="0" max="10" value="2">
+
+
+
+<label>Opacity</label>
+
+<input id="textOpacity" type="range" min="0" max="100" value="100">
+
+
+</div>
+
+
+
+
+<div class="section">
+
+<h3>Export</h3>
+
+
+<select id="exportType">
+
+<option value="image/png">PNG</option>
+
+<option value="image/jpeg">JPG</option>
+
+<option value="image/webp">WebP</option>
+
+</select>
+
+
+<button class="primary" onclick="downloadImage()">
+
+💾 Save Image
+
+</button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
 <script>
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const placeholder = document.getElementById('placeholder');
-    const canvas = document.getElementById('editorCanvas');
-    const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-    let img = new Image();
-    let currentRotation = 0;
-    let flipH = 1;
-    let flipV = 1;
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const uploadBox = document.getElementById("uploadBox");
 
-    // Filters state object
-    let filters = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0, sepia: 0, blur: 0 };
+let image = new Image();
 
-    // Trigger file dialog on container click if no image loaded
-    dropZone.addEventListener('click', () => { if(!img.src) fileInput.click(); });
-    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+let imageLoaded = false;
 
-    // Drag and drop event bindings
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if(e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
+let rotation = 0;
+let flipX = 1;
+let flipY = 1;
 
-    // File processing
-    function handleFile(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            img.src = event.target.result;
-            img.onload = () => {
-                placeholder.style.display = 'none';
-                canvas.style.display = 'block';
-                resetTextPositions();
-                render();
-            };
-        };
-        reader.readAsDataURL(file);
-    }
 
-    // Dynamic Filter handler
-    function updateFilter(type, value, unit) {
-        filters[type] = value;
-        document.getElementById(`val-${type}`).innerText = value + unit;
-        render();
-    }
+let filters = {
+    brightness:100,
+    contrast:100,
+    saturation:100,
+    blur:0
+};
 
-    // Rotations & Flips transformations
-    function rotate(deg) { currentRotation = (currentRotation + deg) % 360; render(); }
-    function flip(dir) {
-        if(dir === 'H') flipH = flipH === 1 ? -1 : 1;
-        if(dir === 'V') flipV = flipV === 1 ? -1 : 1;
-        render();
-    }
 
-    function resetTextPositions() {
-        document.getElementById('textX').max = img.width;
-        document.getElementById('textX').value = img.width / 2;
-        document.getElementById('textY').max = img.height;
-        document.getElementById('textY').value = img.height / 2;
-    }
 
-    // Canvas Engine Renderer
-    function render() {
-        if (!img.src) return;
+let texts = [];
 
-        // Calculate dimensions based on rotation matrix
-        const is90 = Math.abs(currentRotation % 180) === 90;
-        canvas.width = is90 ? img.height : img.width;
-        canvas.height = is90 ? img.width : img.height;
+let selectedText = null;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
+let history = [];
+let future = [];
 
-        // 1. Process transformations
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((currentRotation * Math.PI) / 180);
-        ctx.scale(flipH, flipV);
 
-        // 2. Process graphical filters
-        ctx.filter = `
-            brightness(${filters.brightness}%)
-            contrast(${filters.contrast}%)
-            saturate(${filters.saturation}%)
-            grayscale(${filters.grayscale}%)
-            sepia(${filters.sepia}%)
-            blur(${filters.blur}px)
-        `;
 
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
-        ctx.restore(); // Restore to clear filter/rotation context from text layer
+/* =========================
+   Upload Image
+========================= */
 
-        // 3. Process Text Layer overlay
-        const text = document.getElementById('textInput').value;
-        if (text) {
-            ctx.save();
-            
-            const fontSize = document.getElementById('fontSize').value;
-            const fontStyle = document.getElementById('fontStyle').value;
-            const textColor = document.getElementById('textColor').value;
-            const opacity = document.getElementById('textOpacity').value / 100;
-            const shadow = document.getElementById('textShadow').value;
-            
-            const x = document.getElementById('textX').value;
-            const y = document.getElementById('textY').value;
 
-            // Configure Font settings
-            ctx.font = `${fontStyle === 'var(--font-bold)' ? 'bold' : 'normal'} ${fontSize}px ${fontStyle}`;
-            ctx.fillStyle = textColor;
-            ctx.globalAlpha = opacity;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+dropZone.onclick = ()=>{
 
-            // Configure Text Shadows
-            if(shadow > 0) {
-                ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
-                ctx.shadowBlur = shadow;
-                ctx.shadowOffsetX = shadow / 2;
-                ctx.shadowOffsetY = shadow / 2;
-            }
+    if(!imageLoaded)
+        fileInput.click();
 
-            ctx.fillText(text, x, y);
-            ctx.restore();
+};
+
+
+fileInput.onchange = e=>{
+
+    loadImage(e.target.files[0]);
+
+};
+
+
+
+dropZone.ondragover = e=>{
+
+    e.preventDefault();
+
+    dropZone.classList.add("active");
+
+};
+
+
+dropZone.ondragleave = ()=>{
+
+    dropZone.classList.remove("active");
+
+};
+
+
+
+dropZone.ondrop = e=>{
+
+    e.preventDefault();
+
+    dropZone.classList.remove("active");
+
+    loadImage(e.dataTransfer.files[0]);
+
+};
+
+
+
+
+function loadImage(file){
+
+    if(!file || !file.type.startsWith("image/"))
+        return;
+
+
+    saveState();
+
+
+    const reader = new FileReader();
+
+
+    reader.onload=e=>{
+
+        image.src=e.target.result;
+
+
+        image.onload=()=>{
+
+
+            imageLoaded=true;
+
+
+            canvas.style.display="block";
+
+            uploadBox.style.display="none";
+
+
+            canvas.width=image.width;
+
+            canvas.height=image.height;
+
+
+            render();
+
+
         }
-    }
 
-    // Local Download Handler
-    function downloadImage() {
-        if (!img.src) return alert("Please upload an image first!");
-        
-        const format = document.getElementById('exportFormat').value;
-        const extension = format.split('/')[1];
-        
-        const dataURL = canvas.toDataURL(format, 0.95);
-        const link = document.createElement('a');
-        link.download = `edited-image.${extension}`;
-        link.href = dataURL;
-        link.click();
-    }
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+
+}
+
+
+
+
+
+/* =========================
+   Filters
+========================= */
+
+
+["brightness","contrast","saturation","blur"]
+
+.forEach(id=>{
+
+
+document.getElementById(id).oninput=e=>{
+
+
+filters[id]=e.target.value;
+
+
+render();
+
+
+};
+
+
+});
+
+
+
+
+
+
+/* =========================
+   Image Transform
+========================= */
+
+
+function rotateImage(value){
+
+saveState();
+
+rotation+=value;
+
+render();
+
+}
+
+
+
+
+function flipImage(type){
+
+saveState();
+
+
+if(type==="x")
+
+flipX*=-1;
+
+
+if(type==="y")
+
+flipY*=-1;
+
+
+render();
+
+}
+
+
+
+
+
+
+
+/* =========================
+   Text System
+========================= */
+
+
+function addText(){
+
+
+let value=document.getElementById("newText").value;
+
+
+if(!value)
+return;
+
+
+
+saveState();
+
+
+
+let obj={
+
+id:Date.now(),
+
+text:value,
+
+x:canvas.width/2,
+
+y:canvas.height/2,
+
+font:"Poppins",
+
+size:50,
+
+color:"#ffffff",
+
+stroke:"#000000",
+
+strokeWidth:2,
+
+opacity:1
+
+};
+
+
+texts.push(obj);
+
+
+selectedText=obj;
+
+
+refreshTextList();
+
+
+render();
+
+
+}
+
+
+
+
+
+function refreshTextList(){
+
+
+const list=document.getElementById("textList");
+
+
+list.innerHTML="";
+
+
+texts.forEach(t=>{
+
+
+let div=document.createElement("div");
+
+
+div.className="text-item";
+
+
+if(t===selectedText)
+
+div.classList.add("active");
+
+
+
+div.innerText=t.text;
+
+
+
+div.onclick=()=>{
+
+selectedText=t;
+
+refreshTextList();
+
+render();
+
+};
+
+
+
+list.appendChild(div);
+
+
+
+});
+
+
+
+}
+
+
+
+
+
+/* =========================
+   Text Controls
+========================= */
+
+
+[
+"font",
+"fontSize",
+"fontColor",
+"strokeColor",
+"strokeWidth",
+"textOpacity"
+
+].forEach(id=>{
+
+
+document.getElementById(id).oninput=e=>{
+
+
+if(!selectedText)
+return;
+
+
+
+saveState();
+
+
+
+if(id==="font")
+
+selectedText.font=e.target.value;
+
+
+
+if(id==="fontSize")
+
+selectedText.size=parseInt(e.target.value);
+
+
+
+if(id==="fontColor")
+
+selectedText.color=e.target.value;
+
+
+
+if(id==="strokeColor")
+
+selectedText.stroke=e.target.value;
+
+
+
+if(id==="strokeWidth")
+
+selectedText.strokeWidth=parseInt(e.target.value);
+
+
+
+if(id==="textOpacity")
+
+selectedText.opacity=e.target.value/100;
+
+
+
+render();
+
+
+};
+
+
+});
+
+
+
+
+
+
+
+/* =========================
+   Canvas Rendering
+========================= */
+
+
+function render(){
+
+
+if(!imageLoaded)
+return;
+
+
+
+canvas.width=image.width;
+
+canvas.height=image.height;
+
+
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+
+ctx.save();
+
+
+
+ctx.translate(
+canvas.width/2,
+canvas.height/2
+);
+
+
+
+ctx.rotate(rotation*Math.PI/180);
+
+
+
+ctx.scale(flipX,flipY);
+
+
+
+ctx.filter=`
+
+brightness(${filters.brightness}%)
+
+contrast(${filters.contrast}%)
+
+saturate(${filters.saturation}%)
+
+blur(${filters.blur}px)
+
+`;
+
+
+
+ctx.drawImage(
+image,
+-image.width/2,
+-image.height/2
+);
+
+
+
+ctx.restore();
+
+
+
+drawTexts();
+
+
+}
+
+
+
+
+
+
+function drawTexts(){
+
+
+texts.forEach(t=>{
+
+
+ctx.save();
+
+
+
+ctx.globalAlpha=t.opacity;
+
+
+
+ctx.font=
+
+`${t.size}px "${t.font}"`;
+
+
+
+ctx.textAlign="center";
+
+ctx.textBaseline="middle";
+
+
+
+ctx.lineWidth=t.strokeWidth;
+
+ctx.strokeStyle=t.stroke;
+
+
+ctx.fillStyle=t.color;
+
+
+
+ctx.strokeText(
+t.text,
+t.x,
+t.y
+);
+
+
+
+ctx.fillText(
+t.text,
+t.x,
+t.y
+);
+
+
+
+ctx.restore();
+
+
+
+});
+
+
+
+}
+
+
+
+
+
+
+/* =========================
+ Drag Text With Mouse
+========================= */
+
+
+let dragging=false;
+
+let offsetX=0;
+let offsetY=0;
+
+
+
+canvas.onmousedown=e=>{
+
+
+if(!selectedText)
+return;
+
+
+
+let rect=canvas.getBoundingClientRect();
+
+
+
+let x=e.clientX-rect.left;
+
+let y=e.clientY-rect.top;
+
+
+
+selectedText.x=x;
+
+selectedText.y=y;
+
+
+
+dragging=true;
+
+
+
+};
+
+
+
+canvas.onmousemove=e=>{
+
+
+if(!dragging || !selectedText)
+return;
+
+
+
+let rect=canvas.getBoundingClientRect();
+
+
+
+selectedText.x=e.clientX-rect.left;
+
+selectedText.y=e.clientY-rect.top;
+
+
+
+render();
+
+
+
+};
+
+
+
+window.onmouseup=()=>{
+
+
+dragging=false;
+
+
+};
+
+
+
+
+
+/* =========================
+ Undo / Redo
+========================= */
+
+
+function saveState(){
+
+
+history.push(JSON.stringify({
+
+texts:texts,
+
+rotation:rotation,
+
+flipX:flipX,
+
+flipY:flipY,
+
+filters:filters
+
+
+}));
+
+
+if(history.length>30)
+
+history.shift();
+
+
+future=[];
+
+
+}
+
+
+
+function restore(state){
+
+
+let data=JSON.parse(state);
+
+
+texts=data.texts;
+
+
+rotation=data.rotation;
+
+
+flipX=data.flipX;
+
+
+flipY=data.flipY;
+
+
+filters=data.filters;
+
+
+refreshTextList();
+
+
+render();
+
+
+}
+
+
+
+
+function undo(){
+
+
+if(history.length===0)
+return;
+
+
+future.push(JSON.stringify({
+
+texts:texts,
+
+rotation,
+
+flipX,
+
+flipY,
+
+filters
+
+
+}));
+
+
+restore(history.pop());
+
+
+}
+
+
+
+
+function redo(){
+
+
+if(future.length===0)
+return;
+
+
+history.push(JSON.stringify({
+
+texts:texts,
+
+rotation,
+
+flipX,
+
+flipY,
+
+filters
+
+
+}));
+
+
+restore(future.pop());
+
+
+}
+ 
+/* =========================
+   Mouse Wheel Text Scaling
+========================= */
+
+
+canvas.addEventListener("wheel", e=>{
+
+
+if(!selectedText)
+return;
+
+
+e.preventDefault();
+
+
+saveState();
+
+
+
+if(e.deltaY < 0){
+
+selectedText.size += 5;
+
+}
+else{
+
+selectedText.size -= 5;
+
+}
+
+
+
+if(selectedText.size < 5)
+
+selectedText.size = 5;
+
+
+
+render();
+
+
+});
+
+
+
+
+
+/* =========================
+   Double Click Select Text
+========================= */
+
+
+canvas.addEventListener("dblclick",e=>{
+
+
+let rect=canvas.getBoundingClientRect();
+
+
+let x=e.clientX-rect.left;
+
+let y=e.clientY-rect.top;
+
+
+
+let found=null;
+
+
+
+texts.forEach(t=>{
+
+
+let width=ctx.measureText(t.text).width;
+
+
+if(
+x > t.x-width/2 &&
+x < t.x+width/2 &&
+y > t.y-t.size &&
+y < t.y+t.size
+){
+
+found=t;
+
+}
+
+
+});
+
+
+
+if(found){
+
+
+selectedText=found;
+
+refreshTextList();
+
+render();
+
+
+}
+
+
+
+});
+
+
+
+
+
+/* =========================
+   Export Image
+========================= */
+
+
+function downloadImage(){
+
+
+if(!imageLoaded){
+
+alert("Please upload image first");
+
+return;
+
+}
+
+
+
+const type=document.getElementById("exportType").value;
+
+
+
+const link=document.createElement("a");
+
+
+
+link.download=
+
+"tone-pics-edited-image."+
+
+type.split("/")[1];
+
+
+
+link.href=canvas.toDataURL(
+type,
+0.95
+);
+
+
+
+link.click();
+
+
+
+}
+
+
+
+
+
+
+/* =========================
+   Keyboard Delete Text
+========================= */
+
+
+document.addEventListener("keydown",e=>{
+
+
+if(e.key==="Delete" && selectedText){
+
+
+saveState();
+
+
+texts=texts.filter(
+t=>t!==selectedText
+);
+
+
+selectedText=null;
+
+
+refreshTextList();
+
+
+render();
+
+
+}
+
+
+});
+
+
+
+
+
+
+
+/* =========================
+   Wait For Fonts
+========================= */
+
+
+document.fonts.ready.then(()=>{
+
+console.log("Fonts loaded");
+
+render();
+
+});
+
+
+
 </script>
+
 
 </body>
 </html>
