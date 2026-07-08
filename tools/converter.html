@@ -13,7 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  
+
 </head>
 
 
@@ -33,7 +33,7 @@
 <h1>🔄 Image Converter</h1>
 
 <p>
-Convert JPG, PNG, WebP and PDF files online.
+Convert images and PDF files online.
 </p>
 
 </div>
@@ -48,6 +48,7 @@ type="file"
 id="fileInput"
 accept="image/*,.pdf,.heic,.heif"
 >
+
 
 <br><br>
 
@@ -108,7 +109,9 @@ class="preview-image"
 
 
 
-<p id="info"></p>
+<p id="info">
+Choose a file to start.
+</p>
 
 
 
@@ -141,7 +144,6 @@ Download
 © 2026 Tone.pics
 
 </footer>
-
 
 
 
@@ -187,14 +189,12 @@ let downloadURL = "";
 
 
 
-
 quality.addEventListener("input",()=>{
 
 qualityValue.textContent =
 quality.value + "%";
 
 });
-
 
 
 
@@ -205,7 +205,11 @@ selectedFile =
 this.files[0];
 
 
-if(!selectedFile)return;
+if(!selectedFile){
+
+return;
+
+}
 
 
 
@@ -216,14 +220,23 @@ formatSize(selectedFile.size);
 
 
 
-if(selectedFile.type === "application/pdf"){
+const name =
+selectedFile.name.toLowerCase();
+
+
+
+if(name.endsWith(".pdf")){
+
 
 preview.style.display="none";
 
+
 info.textContent +=
-" | PDF detected";
+" | PDF file detected";
+
 
 return;
+
 
 }
 
@@ -241,9 +254,7 @@ URL.createObjectURL(selectedFile);
 
 
 
-
-
-convertBtn.addEventListener("click",()=>{
+convertBtn.addEventListener("click",async()=>{
 
 
 if(!selectedFile){
@@ -256,27 +267,44 @@ return;
 
 
 
-if(selectedFile.type === "application/pdf"){
+const name =
+selectedFile.name.toLowerCase();
+
+
+
+if(
+name.endsWith(".heic") ||
+name.endsWith(".heif")
+){
+
+convertHEIC();
+
+return;
+
+}
+
+
+
+if(
+selectedFile.type === "application/pdf" ||
+name.endsWith(".pdf")
+){
 
 convertPDF();
 
+return;
+
 }
 
-else{
+
 
 convertImage();
-
-}
 
 
 
 });
 
-
-
-
-
-function convertImage(){
+ function convertImage(){
 
 
 const img = new Image();
@@ -284,7 +312,6 @@ const img = new Image();
 
 
 img.onload=function(){
-
 
 
 const canvas =
@@ -313,34 +340,26 @@ img,
 
 
 
-
 let mimeType;
-
-
 let extension;
 
 
 
-if(format.value==="webp"){
+if(format.value === "webp"){
 
 mimeType="image/webp";
-
 extension="webp";
 
 }
-
-else if(format.value==="png"){
+else if(format.value === "png"){
 
 mimeType="image/png";
-
 extension="png";
 
 }
-
 else{
 
 mimeType="image/jpeg";
-
 extension="jpg";
 
 }
@@ -348,9 +367,7 @@ extension="jpg";
 
 
 
-
 canvas.toBlob(function(blob){
-
 
 
 if(!blob){
@@ -363,38 +380,10 @@ return;
 
 
 
-downloadURL =
-URL.createObjectURL(blob);
-
-
-
-preview.src =
-downloadURL;
-
-
-
-downloadBtn.style.display =
-"inline-block";
-
-
-
-downloadBtn.onclick=function(){
-
-
-downloadFile(
-downloadURL,
+finishConversion(
+blob,
 "converted-image."+extension
 );
-
-
-};
-
-
-
-info.textContent =
-"Converted size: "
-+
-formatSize(blob.size);
 
 
 
@@ -419,7 +408,194 @@ URL.createObjectURL(selectedFile);
 
 
 
+async function convertHEIC(){
+
+
+try{
+
+
+info.textContent =
+"Converting HEIC...";
+
+
+
+const result =
+await heic2any({
+
+blob:selectedFile,
+
+toType:"image/jpeg",
+
+quality:0.9
+
+});
+
+
+
+const blob =
+Array.isArray(result)
+?
+result[0]
+:
+result;
+
+
+
+finishConversion(
+blob,
+"converted-image.jpg"
+);
+
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+alert(
+"HEIC conversion failed"
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+async function convertAVIF(){
+
+
+try{
+
+
+info.textContent =
+"Converting AVIF...";
+
+
+
+const img =
+new Image();
+
+
+
+img.onload=function(){
+
+
+
+const canvas =
+document.createElement("canvas");
+
+
+
+canvas.width =
+img.width;
+
+
+canvas.height =
+img.height;
+
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+
+ctx.drawImage(
+img,
+0,
+0
+);
+
+
+
+canvas.toBlob(function(blob){
+
+
+if(blob){
+
+finishConversion(
+blob,
+"converted-image.jpg"
+);
+
+}
+else{
+
+alert(
+"AVIF conversion not supported"
+);
+
+}
+
+
+
+},
+"image/jpeg",
+0.9);
+
+
+
+};
+
+
+
+img.onerror=function(){
+
+
+alert(
+"Your browser cannot read AVIF files"
+);
+
+
+};
+
+
+
+img.src =
+URL.createObjectURL(selectedFile);
+
+
+
+}
+
+
+catch(error){
+
+
+alert(
+"AVIF conversion failed"
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
 async function convertPDF(){
+
+
+try{
+
+
+info.textContent =
+"Converting PDF...";
+
 
 
 const buffer =
@@ -429,7 +605,9 @@ await selectedFile.arrayBuffer();
 
 const pdf =
 await pdfjsLib.getDocument({
+
 data:buffer
+
 }).promise;
 
 
@@ -441,13 +619,16 @@ await pdf.getPage(1);
 
 const viewport =
 page.getViewport({
+
 scale:2
+
 });
 
 
 
 const canvas =
 document.createElement("canvas");
+
 
 
 canvas.width =
@@ -474,8 +655,46 @@ viewport:viewport
 
 
 
-
 canvas.toBlob(function(blob){
+
+
+finishConversion(
+blob,
+"pdf-page.jpg"
+);
+
+
+
+},
+"image/jpeg",
+0.9);
+
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+alert(
+"PDF conversion failed"
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+function finishConversion(blob,fileName){
 
 
 
@@ -484,7 +703,8 @@ URL.createObjectURL(blob);
 
 
 
-preview.style.display="block";
+preview.style.display =
+"block";
 
 
 preview.src =
@@ -502,7 +722,7 @@ downloadBtn.onclick=function(){
 
 downloadFile(
 downloadURL,
-"pdf-page.jpg"
+fileName
 );
 
 
@@ -510,13 +730,15 @@ downloadURL,
 
 
 
-},
-"image/jpeg",
-0.9);
+info.textContent =
+"Done ✔ Size: "
++
+formatSize(blob.size);
 
 
 
 }
+
 
 
 
@@ -528,10 +750,12 @@ const link =
 document.createElement("a");
 
 
-link.href=url;
+link.href =
+url;
 
 
-link.download=name;
+link.download =
+name;
 
 
 link.click();
@@ -553,15 +777,20 @@ return bytes+" Bytes";
 }
 
 
+
 if(bytes < 1024*1024){
 
-return (bytes/1024).toFixed(2)+" KB";
+return (
+bytes/1024
+).toFixed(2)+" KB";
 
 }
 
 
-return (bytes/(1024*1024)).toFixed(2)+" MB";
 
+return (
+bytes/(1024*1024)
+).toFixed(2)+" MB";
 
 }
 
@@ -572,4 +801,4 @@ return (bytes/(1024*1024)).toFixed(2)+" MB";
 
 </body>
 
-</html>
+</html> 
