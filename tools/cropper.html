@@ -10,6 +10,8 @@
 
 <link rel="stylesheet" href="tool-style.css">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
 </head>
 
 
@@ -29,7 +31,7 @@
 <h1>✂️ Image Cropper</h1>
 
 <p>
-Crop your images directly in your browser.
+Crop your images professionally.
 </p>
 
 </div>
@@ -40,27 +42,50 @@ Crop your images directly in your browser.
 
 
 <input 
-type="file" 
+type="file"
 id="imageInput"
 accept="image/*"
 >
 
 
+<br><br>
+
+
+<div>
+
+<img id="image" style="max-width:100%;">
+
+</div>
+
+
 <br>
 
 
-<canvas id="canvas"></canvas>
-
-
-<br>
-
-
-<button class="button" id="cropBtn">
-Crop Center
+<button class="button" onclick="setRatio(1)">
+1:1
 </button>
 
 
-<button class="button" id="downloadBtn" style="display:none;">
+<button class="button" onclick="setRatio(16/9)">
+16:9
+</button>
+
+
+<button class="button" onclick="setRatio(4/3)">
+4:3
+</button>
+
+
+<button class="button" onclick="cropImage()">
+Crop
+</button>
+
+
+<button 
+class="button"
+id="download"
+style="display:none;"
+>
 Download
 </button>
 
@@ -81,77 +106,40 @@ Download
 
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+
 
 <script>
 
 
-const input = document.getElementById("imageInput");
+let cropper;
 
-const canvas = document.getElementById("canvas");
+const input =
+document.getElementById("imageInput");
 
-const ctx = canvas.getContext("2d");
+const image =
+document.getElementById("image");
 
-const cropBtn = document.getElementById("cropBtn");
-
-const downloadBtn = document.getElementById("downloadBtn");
-
-
-let image = new Image();
-
-let croppedURL = "";
-
-
-
-canvas.style.maxWidth = "100%";
-
-canvas.style.borderRadius = "15px";
+const download =
+document.getElementById("download");
 
 
 
 input.addEventListener("change",function(){
 
 
-const file = this.files[0];
+const file=this.files[0];
 
 
 if(!file) return;
 
 
+if(cropper){
 
-image.onload=function(){
-
-
-const maxWidth = 800;
-
-
-let scale = 1;
-
-
-if(image.width > maxWidth){
-
-scale = maxWidth / image.width;
+cropper.destroy();
 
 }
-
-
-
-canvas.width = image.width * scale;
-
-canvas.height = image.height * scale;
-
-
-
-ctx.drawImage(
-image,
-0,
-0,
-canvas.width,
-canvas.height
-);
-
-
-
-};
 
 
 
@@ -160,95 +148,27 @@ URL.createObjectURL(file);
 
 
 
+image.onload=function(){
+
+
+cropper =
+new Cropper(image,{
+
+viewMode:1,
+
+dragMode:"move",
+
+autoCropArea:0.8,
+
+responsive:true,
+
+background:false
+
+
 });
 
 
-
-
-cropBtn.addEventListener("click",()=>{
-
-
-if(!image.src) return;
-
-
-
-const cropSize =
-Math.min(
-canvas.width,
-canvas.height
-);
-
-
-
-const startX =
-(canvas.width - cropSize) / 2;
-
-
-const startY =
-(canvas.height - cropSize) / 2;
-
-
-
-const cropCanvas =
-document.createElement("canvas");
-
-
-const cropCtx =
-cropCanvas.getContext("2d");
-
-
-
-cropCanvas.width = cropSize;
-
-cropCanvas.height = cropSize;
-
-
-
-cropCtx.drawImage(
-
-canvas,
-
-startX,
-startY,
-
-cropSize,
-cropSize,
-
-0,
-0,
-
-cropSize,
-cropSize
-
-);
-
-
-
-canvas.width = cropSize;
-
-canvas.height = cropSize;
-
-
-ctx.drawImage(
-cropCanvas,
-0,
-0
-);
-
-
-
-cropCanvas.toBlob(blob=>{
-
-
-croppedURL =
-URL.createObjectURL(blob);
-
-
-downloadBtn.style.display =
-"inline-block";
-
-
-},"image/jpeg",0.95);
+};
 
 
 
@@ -257,8 +177,43 @@ downloadBtn.style.display =
 
 
 
+function setRatio(value){
 
-downloadBtn.addEventListener("click",()=>{
+
+if(cropper){
+
+cropper.setAspectRatio(value);
+
+}
+
+
+}
+
+
+
+
+function cropImage(){
+
+
+if(!cropper)return;
+
+
+
+const canvas =
+cropper.getCroppedCanvas({
+
+width:800,
+
+height:800
+
+});
+
+
+
+download.style.display="inline-block";
+
+
+download.onclick=function(){
 
 
 const link =
@@ -266,7 +221,7 @@ document.createElement("a");
 
 
 link.href =
-croppedURL;
+canvas.toDataURL("image/jpeg");
 
 
 link.download =
@@ -277,12 +232,14 @@ link.click();
 
 
 
-});
+};
+
+
+}
 
 
 
 </script>
-
 
 
 </body>
