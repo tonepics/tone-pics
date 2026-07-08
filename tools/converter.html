@@ -2,922 +2,291 @@
 <html lang="en">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Image Converter - Tone.pics</title>
-
-<link rel="stylesheet" href="tool-style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter - Tone.pics</title>
+    <link rel="stylesheet" href="tool-style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-
 
 <body>
 
-
-<div class="tool-container">
-
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-<div class="tool-header">
-
-<h1>🔄 Image Converter</h1>
-
-<p>
-Convert images and PDF files online.
-</p>
-
-</div>
-
-
-
-<div class="tool-box">
-
-
-<div class="drop-zone" id="dropZone">
-
-
-<p>
-📁 Drag & Drop files here
-<br>
-or click to select
-</p>
-
-
-<input
-type="file"
-id="fileInput"
-accept="image/*,.pdf,.heic,.heif,.avif"
-multiple
->
-
-
-</div>
-
-
-
-<br>
-
-
-
-<div id="fileList"></div>
-
-
-
-<br>
-
-
-
-<label>
-Convert To:
-</label>
-
-
-<select id="format">
-
-<option value="jpeg">
-JPG
-</option>
-
-<option value="png">
-PNG
-</option>
-
-<option value="webp">
-WebP
-</option>
-
-</select>
-
-
-
-<br><br>
-
-
-
-<label>
-Quality:
-</label>
-
-
-<input
-type="range"
-id="quality"
-min="10"
-max="100"
-value="90"
->
-
-
-<span id="qualityValue">
-90%
-</span>
-
-
-
-<br><br>
-
-
-
-<img
-id="preview"
-class="preview-image"
->
-
-
-
-<p id="info">
-Choose files to start.
-</p>
-
-
-
-<button
-class="button"
-id="convertBtn">
-
-Convert All
-
-</button>
-
-
-<br><br>
-
-
-<div id="results"></div>
-
-
-
-</div>
-
-
-</div>
-
-
-
-<footer>
-
-© 2026 Tone.pics
-
-</footer>
-
-
-
-<script>
-
-
-const fileInput =
-document.getElementById("fileInput");
-
-
-const dropZone =
-document.getElementById("dropZone");
-
-
-const fileList =
-document.getElementById("fileList");
-
-
-const format =
-document.getElementById("format");
-
-
-const quality =
-document.getElementById("quality");
-
-
-const qualityValue =
-document.getElementById("qualityValue");
-
-
-const preview =
-document.getElementById("preview");
-
-
-const info =
-document.getElementById("info");
-
-
-const convertBtn =
-document.getElementById("convertBtn");
-
-
-const results =
-document.getElementById("results");
-
-
-
-let selectedFiles = [];
-
-
-
-quality.addEventListener("input",()=>{
-
-qualityValue.textContent =
-quality.value + "%";
-
-});
-
-
-
-fileInput.addEventListener("change",()=>{
-
-
-selectedFiles =
-Array.from(fileInput.files);
-
-
-showFiles();
-
-
-});
-
-
-
-dropZone.addEventListener("dragover",(e)=>{
-
-e.preventDefault();
-
-dropZone.classList.add("active");
-
-});
-
-
-
-dropZone.addEventListener("dragleave",()=>{
-
-dropZone.classList.remove("active");
-
-});
-
-
-
-dropZone.addEventListener("drop",(e)=>{
-
-
-e.preventDefault();
-
-
-dropZone.classList.remove("active");
-
-
-selectedFiles =
-Array.from(e.dataTransfer.files);
-
-
-showFiles();
-
-
-});
-
-
-
-function showFiles(){
-
-
-fileList.innerHTML="";
-
-
-selectedFiles.forEach((file,index)=>{
-
-
-const item =
-document.createElement("p");
-
-
-item.textContent =
-(index+1)+". "
-+
-file.name
-+
-" ("
-+
-formatSize(file.size)
-+
-")";
-
-
-fileList.appendChild(item);
-
-
-
-});
-
-
-
-info.textContent =
-selectedFiles.length
-+
-" file(s) ready";
-
- convertBtn.addEventListener("click",async()=>{
-
-
-if(selectedFiles.length === 0){
-
-alert("Choose files first");
-
-return;
-
-}
-
-
-
-results.innerHTML="";
-
-
-for(const file of selectedFiles){
-
-
-try{
-
-
-const name =
-file.name.toLowerCase();
-
-
-
-info.textContent =
-"Converting: "
-+
-file.name;
-
-
-
-if(
-name.endsWith(".heic") ||
-name.endsWith(".heif")
-){
-
-
-await convertHEIC(file);
-
-
-}
-
-
-else if(
-file.type === "application/pdf" ||
-name.endsWith(".pdf")
-){
-
-
-await convertPDF(file);
-
-
-}
-
-
-else if(
-name.endsWith(".avif")
-){
-
-
-await convertAVIF(file);
-
-
-}
-
-
-else{
-
-
-await convertImage(file);
-
-
-}
-
-
-
-}
-
-catch(error){
-
-
-console.error(error);
-
-
-showResult(
-file.name,
-"Failed ❌"
-);
-
-
-}
-
-
-
-}
-
-
-
-info.textContent =
-"All conversions finished ✔";
-
-
-});
-
-
-
-
-
-
-function convertImage(file){
-
-
-return new Promise((resolve,reject)=>{
-
-
-const img =
-new Image();
-
-
-
-img.onload=function(){
-
-
-const canvas =
-document.createElement("canvas");
-
-
-canvas.width =
-img.width;
-
-
-canvas.height =
-img.height;
-
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-
-ctx.drawImage(
-img,
-0,
-0
-);
-
-
-
-let mimeType;
-let extension;
-
-
-
-if(format.value === "webp"){
-
-
-mimeType="image/webp";
-
-extension="webp";
-
-
-}
-else if(format.value === "png"){
-
-
-mimeType="image/png";
-
-extension="png";
-
-
-}
-else{
-
-
-mimeType="image/jpeg";
-
-extension="jpg";
-
-
-}
-
-
-
-canvas.toBlob((blob)=>{
-
-
-if(!blob){
-
-reject();
-
-return;
-
-}
-
-
-
-createDownload(
-blob,
-file.name.split(".")[0]+"."+extension
-);
-
-
-
-resolve();
-
-
-
-},
-mimeType,
-Number(quality.value)/100);
-
-
-
-};
-
-
-
-img.onerror =
-reject;
-
-
-img.src =
-URL.createObjectURL(file);
-
-
-
-});
-
-}
-
-
-
-
-
-async function convertHEIC(file){
-
-
-const result =
-await heic2any({
-
-blob:file,
-
-toType:"image/jpeg",
-
-quality:0.9
-
-});
-
-
-
-const blob =
-Array.isArray(result)
-?
-result[0]
-:
-result;
-
-
-
-createDownload(
-blob,
-file.name.replace(/\.(heic|heif)$/i,"")+".jpg"
-);
-
-
-
-}
-
-
-
-
-async function convertAVIF(file){
-
-
-return new Promise((resolve,reject)=>{
-
-
-const img =
-new Image();
-
-
-
-img.onload=function(){
-
-
-const canvas =
-document.createElement("canvas");
-
-
-canvas.width =
-img.width;
-
-
-canvas.height =
-img.height;
-
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-
-ctx.drawImage(
-img,
-0,
-0
-);
-
-
-
-canvas.toBlob((blob)=>{
-
-
-if(!blob){
-
-reject();
-
-return;
-
-}
-
-
-
-createDownload(
-blob,
-file.name.replace(".avif",".jpg")
-);
-
-
-
-resolve();
-
-
-
-},
-"image/jpeg",
-0.9);
-
-
-
-};
-
-
-
-img.onerror=function(){
-
-
-reject(
-"AVIF not supported"
-);
-
-
-};
-
-
-
-img.src =
-URL.createObjectURL(file);
-
-
-
-});
-
-
-
-}
-
- async function convertPDF(file){
-
-
-const buffer =
-await file.arrayBuffer();
-
-
-
-const pdf =
-await pdfjsLib.getDocument({
-
-data:buffer
-
-}).promise;
-
-
-
-const page =
-await pdf.getPage(1);
-
-
-
-const viewport =
-page.getViewport({
-
-scale:2
-
-});
-
-
-
-const canvas =
-document.createElement("canvas");
-
-
-canvas.width =
-viewport.width;
-
-
-canvas.height =
-viewport.height;
-
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-
-await page.render({
-
-canvasContext:ctx,
-
-viewport:viewport
-
-}).promise;
-
-
-
-return new Promise((resolve)=>{
-
-
-canvas.toBlob((blob)=>{
-
-
-createDownload(
-blob,
-file.name.replace(".pdf",".jpg")
-);
-
-
-
-resolve();
-
-
-
-},
-"image/jpeg",
-0.9);
-
-
-
-});
-
-
-
-}
-
-
-
-
-
-function createDownload(blob,fileName){
-
-
-
-const url =
-URL.createObjectURL(blob);
-
-
-
-const item =
-document.createElement("div");
-
-
-
-item.style.margin =
-"15px 0";
-
-
-
-const text =
-document.createElement("p");
-
-
-text.textContent =
-fileName;
-
-
-
-const button =
-document.createElement("button");
-
-
-button.className =
-"button";
-
-
-button.textContent =
-"Download";
-
-
-
-button.onclick=function(){
-
-
-const link =
-document.createElement("a");
-
-
-link.href =
-url;
-
-
-link.download =
-fileName;
-
-
-link.click();
-
-
-};
-
-
-
-item.appendChild(text);
-
-
-item.appendChild(button);
-
-
-results.appendChild(item);
-
-
-
-}
-
-
-
-
-
-function showResult(name,status){
-
-
-const item =
-document.createElement("p");
-
-
-item.textContent =
-name+" : "+status;
-
-
-results.appendChild(item);
-
-
-
-}
-
-
-
-
-
-function formatSize(bytes){
-
-
-if(bytes < 1024){
-
-return bytes+" Bytes";
-
-}
-
-
-
-if(bytes < 1024*1024){
-
-return (
-bytes/1024
-).toFixed(2)+" KB";
-
-}
-
-
-
-return (
-bytes/(1024*1024)
-).toFixed(2)+" MB";
-
-}
-
-
-
-</script>
-
-
+    <div class="tool-container">
+        <a class="back-home" href="../index.html">← Back Home</a>
+
+        <div class="tool-header">
+            <h1>🔄 Image Converter</h1>
+            <p>Convert images and PDF files online.</p>
+        </div>
+
+        <div class="tool-box">
+            <div class="drop-zone" id="dropZone">
+                <p>📁 Drag & Drop files here<br>or click to select</p>
+                <input type="file" id="fileInput" accept="image/*,.pdf,.heic,.heif,.avif" multiple>
+            </div>
+
+            <br>
+            <div id="fileList"></div>
+            <br>
+
+            <label>Convert To:</label>
+            <select id="format">
+                <option value="jpeg">JPG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WebP</option>
+            </select>
+
+            <br><br>
+
+            <label>Quality:</label>
+            <input type="range" id="quality" min="10" max="100" value="90">
+            <span id="qualityValue">90%</span>
+
+            <br><br>
+
+            <img id="preview" class="preview-image">
+            <p id="info">Choose files to start.</p>
+
+            <button class="button" id="convertBtn">Convert All</button>
+
+            <br><br>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Tone.pics
+    </footer>
+
+    <script>
+        // إعداد مكتبة PDF.js لتعمل بدون مشاكل
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const fileInput = document.getElementById("fileInput");
+        const dropZone = document.getElementById("dropZone");
+        const fileList = document.getElementById("fileList");
+        const format = document.getElementById("format");
+        const quality = document.getElementById("quality");
+        const qualityValue = document.getElementById("qualityValue");
+        const preview = document.getElementById("preview");
+        const info = document.getElementById("info");
+        const convertBtn = document.getElementById("convertBtn");
+        const results = document.getElementById("results");
+
+        let selectedFiles = [];
+
+        // تحديث قيمة الجودة المطروحة أمام المستخدم
+        quality.addEventListener("input", () => {
+            qualityValue.textContent = quality.value + "%";
+        });
+
+        // عند اختيار ملفات من الجهاز
+        fileInput.addEventListener("change", () => {
+            selectedFiles = Array.from(fileInput.files);
+            showFiles();
+        });
+
+        // تأثيرات السحب والإفلات (Drag & Drop)
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("active");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("active");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("active");
+            selectedFiles = Array.from(e.dataTransfer.files);
+            showFiles();
+        });
+
+        // دالة عرض الملفات المختارة (تم إصلاح إغلاقها هنا)
+        function showFiles() {
+            fileList.innerHTML = "";
+            selectedFiles.forEach((file, index) => {
+                const item = document.createElement("p");
+                item.textContent = (index + 1) + ". " + file.name + " (" + formatSize(file.size) + ")";
+                fileList.appendChild(item);
+            });
+            info.textContent = selectedFiles.length + " file(s) ready";
+        }
+
+        // زر التحويل الرئيسي
+        convertBtn.addEventListener("click", async () => {
+            if (selectedFiles.length === 0) {
+                alert("Choose files first");
+                return;
+            }
+
+            results.innerHTML = "";
+
+            for (const file of selectedFiles) {
+                try {
+                    const name = file.name.toLowerCase();
+                    info.textContent = "Converting: " + file.name;
+
+                    if (name.endsWith(".heic") || name.endsWith(".heif")) {
+                        await convertHEIC(file);
+                    } else if (file.type === "application/pdf" || name.endsWith(".pdf")) {
+                        await convertPDF(file);
+                    } else if (name.endsWith(".avif")) {
+                        await convertAVIF(file);
+                    } else {
+                        await convertImage(file);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showResult(file.name, "Failed ❌");
+                }
+            }
+            info.textContent = "All conversions finished ✔";
+        });
+
+        // تحويل الصور العادية (PNG, JPG, WebP)
+        function convertImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+
+                    let mimeType;
+                    let extension;
+
+                    if (format.value === "webp") {
+                        mimeType = "image/webp";
+                        extension = "webp";
+                    } else if (format.value === "png") {
+                        mimeType = "image/png";
+                        extension = "png";
+                    } else {
+                        mimeType = "image/jpeg";
+                        extension = "jpg";
+                    }
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject();
+                            return;
+                        }
+                        createDownload(blob, file.name.split(".")[0] + "." + extension);
+                        resolve();
+                    }, mimeType, Number(quality.value) / 100);
+                };
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // تحويل صور HEIC
+        async function convertHEIC(file) {
+            const result = await heic2any({
+                blob: file,
+                toType: "image/jpeg",
+                quality: Number(quality.value) / 100
+            });
+            const blob = Array.isArray(result) ? result[0] : result;
+            createDownload(blob, file.name.replace(/\.(heic|heif)$/i, "") + ".jpg");
+        }
+
+        // تحويل صور AVIF
+        async function convertAVIF(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject();
+                            return;
+                        }
+                        createDownload(blob, file.name.replace(".avif", ".jpg"));
+                        resolve();
+                    }, "image/jpeg", Number(quality.value) / 100);
+                };
+                img.onerror = function () {
+                    reject("AVIF not supported");
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // تحويل ملفات PDF إلى صور
+        async function convertPDF(file) {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+            const page = await pdf.getPage(1); // تحويل الصفحة الأولى فقط
+            const viewport = page.getViewport({ scale: 2 });
+
+            const canvas = document.createElement("canvas");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext("2d");
+
+            await page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            }).promise;
+
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    createDownload(blob, file.name.replace(".pdf", ".jpg"));
+                    resolve();
+                }, "image/jpeg", Number(quality.value) / 100);
+            });
+        }
+
+        // إنشاء رابط دبلود للملفات الناتجة
+        function createDownload(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const item = document.createElement("div");
+            item.style.margin = "15px 0";
+
+            const text = document.createElement("p");
+            text.textContent = fileName;
+
+            const button = document.createElement("button");
+            button.className = "button";
+            button.textContent = "Download";
+
+            button.onclick = function () {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                link.click();
+            };
+
+            item.appendChild(text);
+            item.appendChild(button);
+            results.appendChild(item);
+        }
+
+        // إظهار النتيجة في حال الفشل
+        function showResult(name, status) {
+            const item = document.createElement("p");
+            item.textContent = name + " : " + status;
+            results.appendChild(item);
+        }
+
+        // حساب حجم الملفات الذكي
+        function formatSize(bytes) {
+            if (bytes < 1024) { return bytes + " Bytes"; }
+            if (bytes < 1024 * 1024) { return (bytes / 1024).toFixed(2) + " KB"; }
+            return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+        }
+    </script>
 </body>
-
 </html>
-
-
-}
