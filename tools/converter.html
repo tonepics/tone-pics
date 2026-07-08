@@ -9,6 +9,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/avif-decoder@1.0.1/dist/avif-decoder.min.js"></script>
 </head>
 
 <body>
@@ -122,6 +123,7 @@
             }
 
             results.innerHTML = "";
+            let failedCount = 0;
 
             for (const file of selectedFiles) {
                 try {
@@ -139,10 +141,18 @@
                     }
                 } catch (error) {
                     console.error(error);
+                    failedCount++;
                     showResult(file.name, "Failed ❌");
                 }
             }
-            info.textContent = "All conversions finished ✔";
+
+            if (failedCount === selectedFiles.length) {
+                info.textContent = "Conversions failed ❌";
+            } else if (failedCount > 0) {
+                info.textContent = `Finished with ${failedCount} error(s) ⚠️`;
+            } else {
+                info.textContent = "All conversions finished ✔";
+            }
         });
 
         function convertImage(file) {
@@ -161,7 +171,7 @@
                     else { mimeType = "image/jpeg"; extension = "jpg"; }
 
                     canvas.toBlob((blob) => {
-                        if (!blob) { reject(); return; }
+                        if (!blob) { reject(new Error("Blob generation failed")); return; }
                         createDownload(blob, file.name.split(".")[0] + "." + extension);
                         resolve();
                     }, mimeType, Number(quality.value) / 100);
@@ -171,7 +181,6 @@
             });
         }
 
-        // 2) دالة HEIC المعدلة مع فحص وجود المكتبة بأمان
         async function convertHEIC(file) {
             if (typeof heic2any === "undefined") {
                 throw new Error("HEIC library not loaded");
@@ -185,6 +194,7 @@
             createDownload(blob, file.name.replace(/\.(heic|heif)$/i, "") + ".jpg");
         }
 
+        // تحسين الـ AVIF: محاولة القراءة محلياً، والتحول للمكتبة الاحتياطية في حال عدم الدعم
         async function convertAVIF(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -196,20 +206,45 @@
                     ctx.drawImage(img, 0, 0);
 
                     canvas.toBlob((blob) => {
-                        if (!blob) { reject(); return; }
+                        if (!blob) { reject(new Error("AVIF Blob failed")); return; }
                         createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 };
                 
-                img.onerror = function () {
-                    alert("Your browser cannot read AVIF files");
-                    reject();
+                img.onerror = async function () {
+                    // إذا فشل المتصفح القديم، نستخدم فك التشفير البرمجي احتياطياً
+                    try {
+                        if (typeof AvifDecoder === "undefined") {
+                            throw new Error("AVIF Decoder library missing");
+                        }
+                        const buffer = await file.arrayBuffer();
+                        const avifImage = await AvifDecoder.decode(buffer);
+                        
+                        const canvas = document.createElement("canvas");
+                        canvas.width = avifImage.width;
+                        canvas.height = avifImage.height;
+                        const ctx = canvas.getContext("2d");
+                        
+                        const imageData = ctx.createImageData(avifImage.width, avifImage.height);
+                        imageData.data.set(avifImage.data);
+                        ctx.putImageData(imageData, 0, 0);
+                        
+                        canvas.toBlob((blob) => {
+                            if (!blob) { reject(new Error("AVIF fallback blob failed")); return; }
+                            createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
+                            resolve();
+                        }, "image/jpeg", Number(quality.value) / 100);
+                    } catch (fallbackError) {
+                        alert("Your browser/system does not support AVIF decoding.");
+                        reject(fallbackError);
+                    }
                 };
                 img.src = URL.createObjectURL(file);
             });
         }
 
+        // نسختك المعدلة والمصححة منطقياً لدالة الـ PDF مع رمي الخطأ للحلقة الرئيسية
         async function convertPDF(file) {
             try {
                 const buffer = await file.arrayBuffer();
@@ -224,15 +259,19 @@
 
                 await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-                return new Promise((resolve) => {
+                return new Promise((resolve, reject) => {
                     canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject(new Error("PDF image creation failed"));
+                            return;
+                        }
                         createDownload(blob, file.name.replace(/\.pdf$/i, ".jpg"));
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 });
             } catch (error) {
                 console.error(error);
-                showResult(file.name, "PDF conversion failed ❌");
+                throw error; // يعيد تمرير الخطأ لكي تلتقطه حلقة for...of وتظهر علامة الـ ❌
             }
         }
 
