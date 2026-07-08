@@ -9,6 +9,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
 <body>
@@ -46,10 +47,12 @@
 
             <br><br>
 
-            <img id="preview" class="preview-image">
+            <img id="preview" class="preview-image" style="max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 8px;">
             <p id="info">Choose files to start.</p>
 
             <button class="button" id="convertBtn">Convert All</button>
+            
+            <button class="button" id="downloadZipBtn" style="display: none; background-color: #28a745; margin-top: 10px;">Download All (ZIP) 📦</button>
 
             <br><br>
             <div id="results"></div>
@@ -72,9 +75,11 @@
         const preview = document.getElementById("preview");
         const info = document.getElementById("info");
         const convertBtn = document.getElementById("convertBtn");
+        const downloadZipBtn = document.getElementById("downloadZipBtn");
         const results = document.getElementById("results");
 
         let selectedFiles = [];
+        let convertedBlobs = []; // مصفوفة لتخزين الملفات المحولة من أجل الـ ZIP
 
         quality.addEventListener("input", () => {
             qualityValue.textContent = quality.value + "%";
@@ -107,12 +112,20 @@
 
         function showFiles() {
             fileList.innerHTML = "";
+            preview.style.display = "none"; // إعادة تصفير المعاينة
+            
             selectedFiles.forEach((file, index) => {
                 const item = document.createElement("p");
                 item.textContent = (index + 1) + ". " + file.name + " (" + formatSize(file.size) + ")";
                 fileList.appendChild(item);
             });
             info.textContent = selectedFiles.length + " file(s) ready";
+
+            // 1) إضافة ميزة الـ Preview الذكية لأول صورة مختارة
+            if (selectedFiles[0] && selectedFiles[0].type.startsWith("image/")) {
+                preview.style.display = "block";
+                preview.src = URL.createObjectURL(selectedFiles[0]);
+            }
         }
 
         convertBtn.addEventListener("click", async () => {
@@ -122,6 +135,8 @@
             }
 
             results.innerHTML = "";
+            convertedBlobs = []; // تصفير المصفوفة قبل كل عملية تحويل جديدة
+            downloadZipBtn.style.display = "none";
             let failedCount = 0;
 
             for (const file of selectedFiles) {
@@ -147,11 +162,37 @@
 
             if (failedCount === selectedFiles.length) {
                 info.textContent = "Conversions failed ❌";
-            } else if (failedCount > 0) {
-                info.textContent = `Finished with ${failedCount} error(s) ⚠️`;
             } else {
-                info.textContent = "All conversions finished ✔";
+                if (failedCount > 0) {
+                    info.textContent = `Finished with ${failedCount} error(s) ⚠️`;
+                } else {
+                    info.textContent = "All conversions finished ✔";
+                }
+                
+                // إظهار زر تحميل الـ ZIP إذا كان هناك أكثر من ملف تم تحويله بنجاح
+                if (convertedBlobs.length > 1) {
+                    downloadZipBtn.style.display = "inline-block";
+                }
             }
+        });
+
+        // تفعيل زر تحميل الكل كملف ZIP
+        downloadZipBtn.addEventListener("click", () => {
+            if (convertedBlobs.length === 0) return;
+            
+            const zip = new JSZip();
+            convertedBlobs.forEach(item => {
+                zip.file(item.name, item.blob);
+            });
+            
+            info.textContent = "Generating ZIP file... ⏳";
+            zip.generateAsync({ type: "blob" }).then((content) => {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(content);
+                link.download = "converted_files_tone_pics.zip";
+                link.click();
+                info.textContent = "ZIP downloaded successfully! ✔";
+            });
         });
 
         function convertImage(file) {
@@ -171,7 +212,9 @@
 
                     canvas.toBlob((blob) => {
                         if (!blob) { reject(new Error("Blob generation failed")); return; }
-                        createDownload(blob, file.name.split(".")[0] + "." + extension);
+                        const outputName = file.name.split(".")[0] + "." + extension;
+                        createDownload(blob, outputName);
+                        convertedBlobs.push({ blob, name: outputName }); // تخزين للـ ZIP
                         resolve();
                     }, mimeType, Number(quality.value) / 100);
                 };
@@ -190,10 +233,11 @@
                 quality: Number(quality.value) / 100
             });
             const blob = Array.isArray(result) ? result[0] : result;
-            createDownload(blob, file.name.replace(/\.(heic|heif)$/i, "") + ".jpg");
+            const outputName = file.name.replace(/\.(heic|heif)$/i, "") + ".jpg";
+            createDownload(blob, outputName);
+            convertedBlobs.push({ blob, name: outputName });
         }
 
-        // النسخة الآمنة والمستقرة والمستندة لمعالجة المتصفح لملفات AVIF بناءً على طلبك
         async function convertAVIF(file) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -205,46 +249,50 @@
                     ctx.drawImage(img, 0, 0);
 
                     canvas.toBlob((blob) => {
-                        if (!blob) {
-                            reject(new Error("AVIF conversion failed"));
-                            return;
-                        }
-                        createDownload(blob, file.name.replace(/\.avif$/i, ".jpg"));
+                        if (!blob) { reject(new Error("AVIF conversion failed")); return; }
+                        const outputName = file.name.replace(/\.avif$/i, ".jpg");
+                        createDownload(blob, outputName);
+                        convertedBlobs.push({ blob, name: outputName });
                         resolve();
                     }, "image/jpeg", Number(quality.value) / 100);
                 };
-
-                img.onerror = function () {
-                    reject(new Error("Browser cannot decode AVIF"));
-                };
+                img.onerror = function () { reject(new Error("Browser cannot decode AVIF")); };
                 img.src = URL.createObjectURL(file);
             });
         }
 
+        // 3) دالة الـ PDF الاحترافية: تحويل كافة صفحات الملف إلى صور منفصلة ودعم تجميعها في الـ ZIP
         async function convertPDF(file) {
             try {
                 const buffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-                const page = await pdf.getPage(1);
-                const viewport = page.getViewport({ scale: 2 });
+                
+                // حلقة تكرارية للمرور على كافة صفحات ملف الـ PDF وتحويلها بالكامل
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 2 });
 
-                const canvas = document.createElement("canvas");
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                const ctx = canvas.getContext("2d");
+                    const canvas = document.createElement("canvas");
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext("2d");
 
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-                return new Promise((resolve, reject) => {
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            reject(new Error("PDF image creation failed"));
-                            return;
-                        }
-                        createDownload(blob, file.name.replace(/\.pdf$/i, ".jpg"));
-                        resolve();
-                    }, "image/jpeg", Number(quality.value) / 100);
-                });
+                    await new Promise((resolve, reject) => {
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                reject(new Error(`PDF page ${i} creation failed`));
+                                return;
+                            }
+                            // تسمية الصفحات بشكل منسق: FileName_page_1.jpg
+                            const outputName = file.name.replace(/\.pdf$/i, "") + `_page_${i}.jpg`;
+                            createDownload(blob, outputName);
+                            convertedBlobs.push({ blob, name: outputName });
+                            resolve();
+                        }, "image/jpeg", Number(quality.value) / 100);
+                    });
+                }
             } catch (error) {
                 console.error(error);
                 throw error;
