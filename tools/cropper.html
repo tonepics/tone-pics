@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Image Cropper - Tone.pics</title>
+
+<link rel="stylesheet" href="tool-style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="tool-container">
+
+
+<a class="back-home" href="../index.html">
+← Back Home
+</a>
+
+
+<div class="tool-header">
+
+<h1>✂️ Image Cropper</h1>
+
+<p>
+Crop your images directly in your browser.
+</p>
+
+</div>
+
+
+
+<div class="tool-box">
+
+
+<input 
+type="file" 
+id="imageInput"
+accept="image/*"
+>
+
+
+<br>
+
+
+<canvas id="canvas"></canvas>
+
+
+<br>
+
+
+<button class="button" id="cropBtn">
+Crop Center
+</button>
+
+
+<button class="button" id="downloadBtn" style="display:none;">
+Download
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+
+<footer>
+
+© 2026 Tone.pics
+
+</footer>
+
+
+
+
+<script>
+
+
+const input = document.getElementById("imageInput");
+
+const canvas = document.getElementById("canvas");
+
+const ctx = canvas.getContext("2d");
+
+const cropBtn = document.getElementById("cropBtn");
+
+const downloadBtn = document.getElementById("downloadBtn");
+
+
+let image = new Image();
+
+let croppedURL = "";
+
+
+
+canvas.style.maxWidth = "100%";
+
+canvas.style.borderRadius = "15px";
+
+
+
+input.addEventListener("change",function(){
+
+
+const file = this.files[0];
+
+
+if(!file) return;
+
+
+
+image.onload=function(){
+
+
+const maxWidth = 800;
+
+
+let scale = 1;
+
+
+if(image.width > maxWidth){
+
+scale = maxWidth / image.width;
+
+}
+
+
+
+canvas.width = image.width * scale;
+
+canvas.height = image.height * scale;
+
+
+
+ctx.drawImage(
+image,
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+
+};
+
+
+
+image.src =
+URL.createObjectURL(file);
+
+
+
+});
+
+
+
+
+cropBtn.addEventListener("click",()=>{
+
+
+if(!image.src) return;
+
+
+
+const cropSize =
+Math.min(
+canvas.width,
+canvas.height
+);
+
+
+
+const startX =
+(canvas.width - cropSize) / 2;
+
+
+const startY =
+(canvas.height - cropSize) / 2;
+
+
+
+const cropCanvas =
+document.createElement("canvas");
+
+
+const cropCtx =
+cropCanvas.getContext("2d");
+
+
+
+cropCanvas.width = cropSize;
+
+cropCanvas.height = cropSize;
+
+
+
+cropCtx.drawImage(
+
+canvas,
+
+startX,
+startY,
+
+cropSize,
+cropSize,
+
+0,
+0,
+
+cropSize,
+cropSize
+
+);
+
+
+
+canvas.width = cropSize;
+
+canvas.height = cropSize;
+
+
+ctx.drawImage(
+cropCanvas,
+0,
+0
+);
+
+
+
+cropCanvas.toBlob(blob=>{
+
+
+croppedURL =
+URL.createObjectURL(blob);
+
+
+downloadBtn.style.display =
+"inline-block";
+
+
+},"image/jpeg",0.95);
+
+
+
+});
+
+
+
+
+
+downloadBtn.addEventListener("click",()=>{
+
+
+const link =
+document.createElement("a");
+
+
+link.href =
+croppedURL;
+
+
+link.download =
+"cropped-image.jpg";
+
+
+link.click();
+
+
+
+});
+
+
+
+</script>
+
+
+
+</body>
+
+</html>
