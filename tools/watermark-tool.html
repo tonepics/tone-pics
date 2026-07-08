@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة العلامة المائية الاحترافية</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .viewer-panel {
+            flex: 2;
+            min-width: 320px;
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .group {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .group:last-child {
+            border-bottom: none;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-download {
+            background-color: #10b981;
+        }
+        .btn-download:hover {
+            background-color: #059669;
+        }
+
+        #canvas-container {
+            max-width: 100%;
+            max-height: 70vh;
+            overflow: auto;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            position: relative;
+            background: #eee;
+        }
+
+        canvas {
+            display: block;
+            cursor: move;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>أداة إضافة العلامة المائية الاحترافية</h1>
+
+    <div class="container">
+        <div class="control-panel">
+            <div class="group">
+                <label>1. اختر الصورة الأساسية</label>
+                <input type="file" id="main-image-input" accept="image/*">
+            </div>
+
+            <div class="group">
+                <label>2. نوع العلامة المائية</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="wm-type" value="text" checked> نص</label>
+                    <label><input type="radio" name="wm-type" value="image"> شعار (صورة)</label>
+                </div>
+
+                <div id="text-options">
+                    <input type="text" id="wm-text" value="علامة مائية كمثال">
+                    
+                    <label>الخط</label>
+                    <select id="wm-font">
+                        <option value="Arial">Arial</option>
+                        <option value="Cairo">Cairo / Segoe UI</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Impact">Impact</option>
+                    </select>
+
+                    <label>اللون</label>
+                    <input type="color" id="wm-color" value="#ffffff">
+                </div>
+
+                <div id="image-options" class="hidden">
+                    <label>اختر صورة الشعار</label>
+                    <input type="file" id="wm-image-input" accept="image/*">
+                </div>
+            </div>
+
+            <div class="group">
+                <label>3. الإعدادات المتقدمة</label>
+                
+                <label>الحجم</label>
+                <div class="range-container">
+                    <input type="range" id="wm-size" min="10" max="200" value="40">
+                </div>
+
+                <label>الشفافية (Opacity)</label>
+                <div class="range-container">
+                    <input type="range" id="wm-opacity" min="0" max="100" value="70">
+                </div>
+
+                <label>التدوير (درجة)</label>
+                <div class="range-container">
+                    <input type="range" id="wm-rotation" min="0" max="360" value="0">
+                </div>
+
+                <label><input type="checkbox" id="wm-tile"> تكرار على كامل الصورة (Tile)</label>
+            </div>
+
+            <div class="group">
+                <label>4. حفظ وتصدير</label>
+                <select id="export-format">
+                    <option value="image/jpeg">JPG</option>
+                    <option value="image/png">PNG</option>
+                    <option value="image/webp">WebP</option>
+                </select>
+                <button class="btn btn-download" id="download-btn">تحميل الصورة المعدلة ✨</button>
+            </div>
+        </div>
+
+        <div class="viewer-panel">
+            <div id="canvas-container">
+                <canvas id="watermark-canvas"></canvas>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">* يمكنك سحب النص أو الشعار بالماوس/اللمس لتغيير مكانه على الصورة.</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('watermark-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // عناصر التحكم في الواجهة
+        const mainImageInput = document.getElementById('main-image-input');
+        const wmTypeRadios = document.querySelectorAll('input[name="wm-type"]');
+        const textOptions = document.getElementById('text-options');
+        const imageOptions = document.getElementById('image-options');
+        const wmTextInput = document.getElementById('wm-text');
+        const wmFontSelect = document.getElementById('wm-font');
+        const wmColorInput = document.getElementById('wm-color');
+        const wmImageInput = document.getElementById('wm-image-input');
+        const wmSizeInput = document.getElementById('wm-size');
+        const wmOpacityInput = document.getElementById('wm-opacity');
+        const wmRotationInput = document.getElementById('wm-rotation');
+        const wmTileCheckbox = document.getElementById('wm-tile');
+        const downloadBtn = document.getElementById('download-btn');
+        const exportFormat = document.getElementById('export-format');
+
+        // متغيرات الحالة الداخية
+        let mainImg = null;
+        let wmImg = null;
+        
+        // إحداثيات العلامة المائية الافتراضية (المنتصف)
+        let wmX = 100;
+        let wmY = 100;
+        let isDragging = false;
+        let startX, startY;
+
+        // التحويل بين خيارات النص والصورة
+        wmTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'text') {
+                    textOptions.classList.remove('hidden');
+                    imageOptions.classList.add('hidden');
+                } else {
+                    textOptions.classList.add('hidden');
+                    imageOptions.classList.remove('hidden');
+                }
+                draw();
+            });
+        });
+
+        // رفع الصورة الأساسية
+        mainImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                mainImg = new Image();
+                mainImg.onload = () => {
+                    canvas.width = mainImg.width;
+                    canvas.height = mainImg.height;
+                    // وضع العلامة المائية في منتصف الصورة عند الرفع لأول مرة
+                    wmX = canvas.width / 2;
+                    wmY = canvas.height / 2;
+                    draw();
+                };
+                mainImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // رفع صورة الشعار
+        wmImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                wmImg = new Image();
+                wmImg.onload = () => {
+                    draw();
+                };
+                wmImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // مستمعي الأحداث لتحديث الرسم فوراً عند تغيير أي إعداد
+        [wmTextInput, wmFontSelect, wmColorInput, wmSizeInput, wmOpacityInput, wmRotationInput, wmTileCheckbox].forEach(element => {
+            element.addEventListener('input', draw);
+            element.addEventListener('change', draw);
+        });
+
+        // دالة الرسم الأساسية
+        function draw() {
+            if (!mainImg) return;
+
+            // 1. رسم الصورة الأساسية تنظيف الكانفاس
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(mainImg, 0, 0);
+
+            // حفظ حالة الكانفاس قبل تطبيق تأثيرات الشفافية والتدوير للعلامة المائية
+            ctx.save();
+
+            const type = document.querySelector('input[name="wm-type"]:checked').value;
+            const opacity = wmOpacityInput.value / 100;
+            const size = parseInt(wmSizeInput.value, 10);
+            const angle = (parseInt(wmRotationInput.value, 10) * Math.PI) / 180;
+            const isTile = wmTileCheckbox.checked;
+
+            ctx.globalAlpha = opacity;
+
+            if (isTile) {
+                // تكرار العلامة المائية (Tile)
+                const stepX = size * 3;
+                const stepY = size * 2;
+                for (let x = 0; x < canvas.width + stepX; x += stepX) {
+                    for (let y = 0; y < canvas.height + stepY; y += stepY) {
+                        ctx.save();
+                        ctx.translate(x, y);
+                        ctx.rotate(angle);
+                        renderWatermarkContent(type, size, 0, 0);
+                        ctx.restore();
+                    }
+                }
+            } else {
+                // علامة مائية واحدة قابلة للتحريك والسحب
+                ctx.translate(wmX, wmY);
+                ctx.rotate(angle);
+                renderWatermarkContent(type, size, 0, 0);
+            }
+
+            ctx.restore();
+        }
+
+        // دالة مسؤولة عن إخراج محتوى العلامة (نص أو صورة)
+        function renderWatermarkContent(type, size, x, y) {
+            if (type === 'text') {
+                const text = wmTextInput.value;
+                const font = wmFontSelect.value;
+                ctx.font = `${size}px ${font}`;
+                ctx.fillStyle = wmColorInput.value;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+            } else if (type === 'image' && wmImg) {
+                // الحفاظ على أبعاد الشعار بناءً على الحجم المختار
+                const aspectRatio = wmImg.width / wmImg.height;
+                const width = size * aspectRatio * 2;
+                const height = size * 2;
+                // الرسم من المنتصف لتسهيل التدوير والسحب الدقيق
+                ctx.drawImage(wmImg, x - width / 2, y - height / 2, width, height);
+            }
+        }
+
+        // --- منطق السحب والإفلات (Drag and Drop) بالماوس واللمس ---
+        
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // تحويل الإحداثيات من شاشة العرض إلى الأبعاد الحقيقية داخل الكانفاس
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function handleStart(e) {
+            if (wmTileCheckbox.checked) return; // تعطيل السحب عند تفعيل التكرار الكامل
+            const pos = getMousePos(e);
+            startX = pos.x;
+            startY = pos.y;
+            
+            // تحديد منطقة تقريبية حول العلامة لاعتبارها "تم الإمساك بها"
+            const hitRadius = parseInt(wmSizeInput.value) * 2; 
+            if (Math.abs(pos.x - wmX) < hitRadius && Math.abs(pos.y - wmY) < hitRadius) {
+                isDragging = true;
+                e.preventDefault();
+            }
+        }
+
+        function handleMove(e) {
+            if (!isDragging) return;
+            const pos = getMousePos(e);
+            const dx = pos.x - startX;
+            const dy = pos.y - startY;
+
+            wmX += dx;
+            wmY += dy;
+
+            startX = pos.x;
+            startY = pos.y;
+
+            draw();
+            e.preventDefault();
+        }
+
+        function handleEnd() {
+            isDragging = false;
+        }
+
+        // مستمعات الماوس
+        canvas.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+
+        // مستمعات اللمس للهواتف الذكية
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+
+
+        // --- تحميل وحفظ الصورة بالصيغ المختلفة ---
+        downloadBtn.addEventListener('click', () => {
+            if (!mainImg) {
+                alert('الرجاء رفع صورة أولاً!');
+                return;
+            }
+            const format = exportFormat.value; // image/jpeg, image/png, image/webp
+            const imageURL = canvas.toDataURL(format, 0.9); // الجودة 90% لصيغ الجي بي جي والويب بي
+            
+            const link = document.createElement('a');
+            const ext = format.split('/')[1];
+            link.download = `watermarked_image.${ext}`;
+            link.href = imageURL;
+            link.click();
+        });
+    </script>
+</body>
+</html>
