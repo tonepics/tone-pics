@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Photo Editor Online | Tone.pics Style</title>
-    <!-- Google Fonts for professional typography rendering -->
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Dancing+Script&family=Inter:wght@400;600;700&family=Montserrat:wght@700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -169,6 +168,11 @@
             background-color: #2d2d34;
             border-color: #4b5563;
         }
+        
+        button.active-mode {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
 
         /* Inputs & Select Elements */
         .text-input-field {
@@ -235,10 +239,7 @@
         /* Drag & Drop Upload Zone */
         .dropzone {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -279,6 +280,11 @@
             transform-origin: center center;
             transition: transform 0.1s ease-out;
             max-width: 100%;
+            cursor: default;
+        }
+        
+        canvas.drawing-active {
+            cursor: crosshair;
         }
 
         /* Floating Toolbar */
@@ -312,7 +318,6 @@
 </head>
 <body>
 
-    <!-- Header Navigation -->
     <header>
         <a href="/" class="btn-home">
             <span>←</span> Back Home
@@ -320,19 +325,15 @@
         <div class="logo" style="font-weight: bold; font-size: 1.2rem; color: #fff;">📸 PhotoEditor Pro</div>
     </header>
 
-    <!-- App Identity Hero (Tone.pics style) -->
     <section class="hero-section">
         <h1>Edit Images Online Professionally</h1>
         <p>A fast, browser-based image editor to easily apply filters, manipulate alignment, add text overlays, and export instantly without watermarks.</p>
     </section>
 
-    <!-- Main Editor Interface -->
     <main class="editor-container">
         
-        <!-- Sidebar Controls Grid -->
-        <aside class="controls-sidebar">
+        <aside class="controls-sidebar" id="sidebar">
             
-            <!-- Transform and Zoom -->
             <div class="control-group">
                 <h3>Transform & Zoom</h3>
                 <div class="range-wrapper">
@@ -350,48 +351,40 @@
                 </div>
             </div>
 
-            <!-- Essential Adjustment Filters -->
             <div class="control-group">
                 <h3>Adjustments & Filters</h3>
                 
-                <!-- Brightness -->
                 <div class="range-wrapper">
                     <label><span>Brightness</span><span id="brightness-val">100%</span></label>
                     <input type="range" id="brightness" min="0" max="200" value="100">
                 </div>
 
-                <!-- Contrast -->
                 <div class="range-wrapper">
                     <label><span>Contrast</span><span id="contrast-val">100%</span></label>
                     <input type="range" id="contrast" min="0" max="200" value="100">
                 </div>
 
-                <!-- Saturation -->
                 <div class="range-wrapper">
                     <label><span>Saturation</span><span id="saturation-val">100%</span></label>
                     <input type="range" id="saturation" min="0" max="200" value="100">
                 </div>
 
-                <!-- Grayscale -->
                 <div class="range-wrapper">
                     <label><span>Grayscale</span><span id="grayscale-val">0%</span></label>
                     <input type="range" id="grayscale" min="0" max="100" value="0">
                 </div>
 
-                <!-- Sepia -->
                 <div class="range-wrapper">
                     <label><span>Sepia</span><span id="sepia-val">0%</span></label>
                     <input type="range" id="sepia" min="0" max="100" value="0">
                 </div>
 
-                <!-- Blur -->
                 <div class="range-wrapper">
                     <label><span>Blur</span><span id="blur-val">0px</span></label>
                     <input type="range" id="blur" min="0" max="20" value="0">
                 </div>
             </div>
 
-            <!-- Typography & Text Overlay -->
             <div class="control-group">
                 <h3>Text Overlay</h3>
                 <input type="text" id="text-string" class="text-input-field" placeholder="Type text here...">
@@ -421,7 +414,6 @@
                 </div>
             </div>
 
-            <!-- Export Configurations -->
             <div class="control-group">
                 <h3>Export Image</h3>
                 <div style="display: flex; gap: 10px;">
@@ -436,22 +428,18 @@
 
         </aside>
 
-        <!-- Canvas Workspace Area -->
         <section class="workspace" id="workspace-area">
             
-            <!-- Native Drag & Drop Zone -->
             <div class="dropzone" id="drop-zone">
                 <span style="font-size: 3.5rem;">🖼️</span>
                 <p>Drag & drop your image here or click to browse</p>
                 <input type="file" id="file-input" accept="image/*" style="display: none;">
             </div>
 
-            <!-- Dynamic Canvas Wrapper -->
             <div class="canvas-container" id="canvas-holder">
                 <canvas id="main-canvas"></canvas>
             </div>
 
-            <!-- Contextual Active Toolbars -->
             <div class="workspace-toolbar hidden" id="w-toolbar">
                 <button id="btn-change-img" style="font-size: 0.8rem;">Change Image 🔁</button>
             </div>
@@ -469,6 +457,7 @@
         const ctx = canvas.getContext('2d');
         const wToolbar = document.getElementById('w-toolbar');
         const btnChangeImg = document.getElementById('btn-change-img');
+        const sidebar = document.getElementById('sidebar');
 
         // Manipulation Elements
         const zoomRange = document.getElementById('zoom-range');
@@ -502,68 +491,104 @@
         let flipV = 1;    
         let currentZoom = 100;
 
+        // Extra canvas states
+        let brushMode = false;
+        let eraserMode = false;
+        let drawing = false;
+        let history = [];
+        let historyStep = -1;
+        let draggingText = false;
+
+        // Dynamic Extra Controls UI Generation
+        const textControls = document.createElement("div");
+        textControls.className = "control-group";
+        textControls.innerHTML = `
+            <h3>Text Position</h3>
+            <div class="range-wrapper">
+                <label>Text X</label>
+                <input type="range" id="text-x" min="0" max="100" value="50">
+            </div>
+            <div class="range-wrapper">
+                <label>Text Y</label>
+                <input type="range" id="text-y" min="0" max="100" value="50">
+            </div>
+            <div class="range-wrapper">
+                <label>Opacity</label>
+                <input type="range" id="text-opacity" min="0" max="100" value="100">
+            </div>
+        `;
+        sidebar.insertBefore(textControls, btnDownload.closest('.control-group'));
+
+        const extraButtons = document.createElement("div");
+        extraButtons.className = "control-group";
+        extraButtons.innerHTML = `
+            <h3>Drawing & Tools</h3>
+            <div class="btn-grid">
+                <button id="btn-brush">🖌 Brush</button>
+                <button id="btn-eraser">🧽 Eraser</button>
+                <button id="btn-undo">↩ Undo</button>
+                <button id="btn-redo">↪ Redo</button>
+                <button id="btn-crop-center">✂ Crop Center</button>
+            </div>
+        `;
+        sidebar.insertBefore(extraButtons, btnDownload.closest('.control-group'));
+
+        const textXInput = document.getElementById("text-x");
+        const textYInput = document.getElementById("text-y");
+        const textOpacity = document.getElementById("text-opacity");
+        const btnBrush = document.getElementById("btn-brush");
+        const btnEraser = document.getElementById("btn-eraser");
+        const btnUndo = document.getElementById("btn-undo");
+        const btnRedo = document.getElementById("btn-redo");
+        const btnCropCenter = document.getElementById("btn-crop-center");
+
         // Upload Mechanics
         dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
         dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                loadImage(e.dataTransfer.files[0]);
-            }
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) loadImage(e.dataTransfer.files[0]);
         });
-
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                loadImage(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) loadImage(e.target.files[0]);
         });
-
         btnChangeImg.addEventListener('click', () => fileInput.click());
 
-        // Stream File Processing
         function loadImage(file) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                originalImage.src = event.target.result;
+                originalImage = new Image();
                 originalImage.onload = function() {
                     resetSettings();
                     dropZone.classList.add('hidden');
                     canvasHolder.style.display = 'flex';
                     wToolbar.classList.remove('hidden');
+                    
+                    // Match dimensions safely
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
+                    
                     renderCanvas();
+                    
+                    // Clear and save first clean history state
+                    history = [];
+                    historyStep = -1;
+                    saveHistory();
                 }
+                originalImage.src = event.target.result;
             }
             reader.readAsDataURL(file);
         }
 
-        // Factory Reset Metrics
         function resetSettings() {
-            rotation = 0;
-            flipH = 1;
-            flipV = 1;
-            currentZoom = 100;
-            zoomRange.value = 100;
-            zoomVal.innerText = '100%';
-            
-            brightnessInput.value = 100;
-            contrastInput.value = 100;
-            saturationInput.value = 100;
-            grayscaleInput.value = 0;
-            sepiaInput.value = 0;
-            blurInput.value = 0;
-
-            textString.value = '';
-            
+            rotation = 0; flipH = 1; flipV = 1; currentZoom = 100;
+            zoomRange.value = 100; zoomVal.innerText = '100%';
+            brightnessInput.value = 100; contrastInput.value = 100; saturationInput.value = 100;
+            grayscaleInput.value = 0; sepiaInput.value = 0; blurInput.value = 0;
+            textString.value = ''; textXInput.value = 50; textYInput.value = 50; textOpacity.value = 100;
+            canvas.style.transform = `scale(1)`;
+            disableDrawingModes();
             updateLabels();
         }
 
@@ -577,7 +602,7 @@
             document.getElementById('font-size-val').innerText = textSize.value + 'px';
         }
 
-        // Core Rendering Loop
+        // Core Unified Rendering Engine
         function renderCanvas() {
             if (!originalImage.src) return;
 
@@ -591,12 +616,12 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
 
-            // 1. Structural Orientations
+            // 1. Transform Layers
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate((rotation * Math.PI) / 180);
             ctx.scale(flipH, flipV);
 
-            // 2. CSS-Equivalent Filter Layers
+            // 2. Filters
             ctx.filter = `
                 brightness(${brightnessInput.value}%)
                 contrast(${contrastInput.value}%)
@@ -609,687 +634,223 @@
             ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
             ctx.restore(); 
 
-            // 3. Independent Vector Text Overlays
+            // 3. Render Text Overlays
             if (textString.value.trim() !== "") {
                 ctx.save();
-                ctx.textBaseline = "middle";
-                ctx.textAlign = "center";
-                
+                ctx.globalAlpha = textOpacity.value / 100;
                 ctx.font = `${textSize.value}px ${textFont.value}`;
                 ctx.fillStyle = textColor.value;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                let x = canvas.width * (textXInput.value / 100);
+                let y = canvas.height * (textYInput.value / 100);
 
                 if (textShadow.checked) {
                     ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
                     ctx.shadowBlur = 8;
                     ctx.shadowOffsetX = 4;
                     ctx.shadowOffsetY = 4;
-                } else {
-                    ctx.shadowColor = "transparent";
                 }
 
-                ctx.fillText(textString.value, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(textString.value, x, y);
                 ctx.restore();
             }
         }
 
         // Event Listeners for Live Previews
-        const inputs = [brightnessInput, contrastInput, saturationInput, grayscaleInput, sepiaInput, blurInput, textString, textFont, textSize, textColor, textShadow];
-        inputs.forEach(input => {
+        const liveInputs = [brightnessInput, contrastInput, saturationInput, grayscaleInput, sepiaInput, blurInput, textString, textFont, textSize, textColor, textShadow, textXInput, textYInput, textOpacity];
+        liveInputs.forEach(input => {
             input.addEventListener('input', () => {
                 updateLabels();
                 renderCanvas();
             });
         });
 
-        // Viewport Scaling Interface (Doesn't lose export resolution)
         zoomRange.addEventListener('input', (e) => {
             currentZoom = e.target.value;
             zoomVal.innerText = currentZoom + '%';
             canvas.style.transform = `scale(${currentZoom / 100})`;
         });
 
-        // Event Interceptors
-        btnRotate.addEventListener('click', () => {
-            rotation = (rotation + 90) % 360;
-            renderCanvas();
+        btnRotate.addEventListener('click', () => { rotation = (rotation + 90) % 360; renderCanvas(); });
+        btnFlipH.addEventListener('click', () => { flipH = flipH === 1 ? -1 : 1; renderCanvas(); });
+        btnFlipV.addEventListener('click', () => { flipV = flipV === 1 ? -1 : 1; renderCanvas(); });
+        btnReset.addEventListener('click', () => { resetSettings(); renderCanvas(); });
+
+        // History Management
+        function saveHistory() {
+            if (!canvas.width || !canvas.height) return;
+            if (historyStep < history.length - 1) {
+                history = history.slice(0, historyStep + 1);
+            }
+            history.push(canvas.toDataURL());
+            historyStep++;
+            if (history.length > 20) {
+                history.shift();
+                historyStep--;
+            }
+        }
+
+        function loadHistoryState() {
+            let imgHistory = new Image();
+            imgHistory.onload = function() {
+                // Adjust sizes natively
+                canvas.width = imgHistory.width;
+                canvas.height = imgHistory.height;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(imgHistory, 0, 0);
+                
+                // Update underlying asset state to maintain destructive draw pipeline sync
+                originalImage = imgHistory;
+            };
+            imgHistory.src = history[historyStep];
+        }
+
+        btnUndo.addEventListener('click', () => { if (historyStep > 0) { historyStep--; loadHistoryState(); } });
+        btnRedo.addEventListener('click', () => { if (historyStep < history.length - 1) { historyStep++; loadHistoryState(); } });
+
+        // Drawing Utilities
+        function disableDrawingModes() {
+            brushMode = false;
+            eraserMode = false;
+            btnBrush.classList.remove('active-mode');
+            btnEraser.classList.remove('active-mode');
+            canvas.classList.remove('drawing-active');
+        }
+
+        btnBrush.addEventListener('click', () => {
+            const turningOn = !brushMode;
+            disableDrawingModes();
+            if (turningOn) {
+                brushMode = true;
+                btnBrush.classList.add('active-mode');
+                canvas.classList.add('drawing-active');
+            }
         });
 
-        btnFlipH.addEventListener('click', () => {
-            flipH = flipH === 1 ? -1 : 1;
-            renderCanvas();
+        btnEraser.addEventListener('click', () => {
+            const turningOn = !eraserMode;
+            disableDrawingModes();
+            if (turningOn) {
+                eraserMode = true;
+                btnEraser.classList.add('active-mode');
+                canvas.classList.add('drawing-active');
+            }
         });
 
-        btnFlipV.addEventListener('click', () => {
-            flipV = flipV === 1 ? -1 : 1;
-            renderCanvas();
+        // Precise Normalized Mouse Event Captures
+        function getCanvasMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Factoring scale zoom structural metrics accurately
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        canvas.addEventListener("mousedown", function(e) {
+            if (brushMode || eraserMode) {
+                drawing = true;
+                draw(e);
+            } else if (textString.value.trim() !== "") {
+                // Text drag inspector
+                const pos = getCanvasMousePos(e);
+                const currentX = canvas.width * (textXInput.value / 100);
+                const currentY = canvas.height * (textYInput.value / 100);
+                const distance = Math.sqrt(Math.pow(pos.x - currentX, 2) + Math.pow(pos.y - currentY, 2));
+                
+                if (distance < 100) { // Click detection radius
+                    draggingText = true;
+                }
+            }
         });
 
-        btnReset.addEventListener('click', () => {
-            resetSettings();
-            canvas.style.transform = `scale(1)`;
-            renderCanvas();
+        canvas.addEventListener("mousemove", function(e) {
+            if (drawing) {
+                draw(e);
+            } else if (draggingText) {
+                const pos = getCanvasMousePos(e);
+                textXInput.value = Math.max(0, Math.min(100, (pos.x / canvas.width) * 100));
+                textYInput.value = Math.max(0, Math.min(100, (pos.y / canvas.height) * 100));
+                renderCanvas();
+            }
         });
 
-        // Packaging and Downstream Execution
-        btnDownload.addEventListener('click', () => {
+        window.addEventListener("mouseup", function() {
+            if (drawing) {
+                drawing = false;
+                saveHistory(); // Save layer changes securely on release
+            }
+            draggingText = false;
+        });
+
+        function draw(e) {
+            const pos = getCanvasMousePos(e);
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+
+            if (eraserMode) {
+                ctx.globalCompositeOperation = "destination-out";
+                ctx.fill();
+            } else {
+                ctx.globalCompositeOperation = "source-over";
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // Absolute Center Omission Crop Tool
+        btnCropCenter.addEventListener('click', () => {
             if (!originalImage.src) return;
 
+            const cropWidth = canvas.width * 0.7;
+            const cropHeight = canvas.height * 0.7;
+            const startX = (canvas.width - cropWidth) / 2;
+            const startY = (canvas.height - cropHeight) / 2;
+
+            // Generate an isolated buffer canvas to bypass data corruption
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cropWidth;
+            tempCanvas.height = cropHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            tempCtx.drawImage(canvas, startX, startY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+            originalImage = new Image();
+            originalImage.onload = function() {
+                canvas.width = cropWidth;
+                canvas.height = cropHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(originalImage, 0, 0);
+                saveHistory();
+            }
+            originalImage.src = tempCanvas.toDataURL();
+        });
+
+        // Download Execution
+        btnDownload.addEventListener('click', () => {
+            if (!originalImage.src) return;
             const format = exportFormat.value; 
-            let ext = 'jpg';
-            if (format === 'image/png') ext = 'png';
-            if (format === 'image/webp') ext = 'webp';
+            let ext = format === 'image/png' ? 'png' : format === 'image/webp' ? 'webp' : 'jpg';
 
             const link = document.createElement('a');
             link.download = `photo-editor-${Date.now()}.${ext}`;
             link.href = canvas.toDataURL(format, 0.95);
             link.click();
         });
+
+        // Append Footer
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px";
+        footer.style.color = "#9ca3af";
+        footer.innerHTML = "© 2026 Tone.pics";
+        document.body.appendChild(footer);
     </script>
-<script>
-/* ===============================
-   PHOTO EDITOR PRO - EXTRA FEATURES
-   Part 2
-================================ */
-
-// Extra canvas states
-let textX = null;
-let textY = null;
-let brushMode = false;
-let eraserMode = false;
-let drawing = false;
-let history = [];
-let historyStep = -1;
-
-
-// Save canvas history
-function saveHistory() {
-    if (!canvas.width || !canvas.height) return;
-
-    if (historyStep < history.length - 1) {
-        history = history.slice(0, historyStep + 1);
-    }
-
-    history.push(canvas.toDataURL());
-    historyStep++;
-
-    if (history.length > 20) {
-        history.shift();
-        historyStep--;
-    }
-}
-
-
-// Undo
-function undoEditor() {
-
-    if (historyStep <= 0) return;
-
-    historyStep--;
-
-    let imgHistory = new Image();
-
-    imgHistory.onload = function(){
-
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(
-            imgHistory,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-    };
-
-    imgHistory.src = history[historyStep];
-}
-
-
-// Redo
-function redoEditor(){
-
-    if(historyStep >= history.length-1) return;
-
-    historyStep++;
-
-    let imgHistory = new Image();
-
-    imgHistory.onload=function(){
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        ctx.drawImage(
-            imgHistory,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-    };
-
-    imgHistory.src = history[historyStep];
-
-}
-
-
-
-// Add text position controls dynamically
-const textControls = document.createElement("div");
-
-textControls.className="control-group";
-
-textControls.innerHTML=`
-
-<h3>Text Position</h3>
-
-<div class="range-wrapper">
-
-<label>
-Text X
-</label>
-
-<input 
-type="range"
-id="text-x"
-min="0"
-max="100"
-value="50">
-
-</div>
-
-
-<div class="range-wrapper">
-
-<label>
-Text Y
-</label>
-
-<input 
-type="range"
-id="text-y"
-min="0"
-max="100"
-value="50">
-
-</div>
-
-
-<div class="range-wrapper">
-
-<label>
-Opacity
-</label>
-
-<input
-type="range"
-id="text-opacity"
-min="0"
-max="100"
-value="100">
-
-</div>
-
-
-`;
-
-document.querySelector(".controls-sidebar")
-.insertBefore(
-textControls,
-document.querySelector(".control-group:last-child")
-);
-
-
-
-const textXInput=document.getElementById("text-x");
-const textYInput=document.getElementById("text-y");
-const textOpacity=document.getElementById("text-opacity");
-
-
-
-[textXInput,textYInput,textOpacity]
-.forEach(el=>{
-
-el.addEventListener(
-"input",
-renderCanvas
-);
-
-});
-
-
-
-// Modify render text position
-
-const oldRenderCanvas = renderCanvas;
-
-
-renderCanvas=function(){
-
-oldRenderCanvas();
-
-
-if(
-textString.value.trim()!==""
-){
-
-ctx.save();
-
-
-ctx.globalAlpha =
-textOpacity.value/100;
-
-
-ctx.font =
-`${textSize.value}px ${textFont.value}`;
-
-
-ctx.fillStyle =
-textColor.value;
-
-
-ctx.textAlign="center";
-ctx.textBaseline="middle";
-
-
-let x =
-canvas.width *
-(textXInput.value/100);
-
-
-let y =
-canvas.height *
-(textYInput.value/100);
-
-
-
-if(textShadow.checked){
-
-ctx.shadowColor=
-"rgba(0,0,0,.7)";
-
-ctx.shadowBlur=8;
-
-ctx.shadowOffsetX=4;
-
-ctx.shadowOffsetY=4;
-
-}
-
-
-ctx.fillText(
-textString.value,
-x,
-y
-);
-
-
-ctx.restore();
-
-}
-
-};
-
-
-
-
-// Brush Tool
-
-function enableBrush(){
-
-brushMode=true;
-eraserMode=false;
-
-alert(
-"Brush enabled"
-);
-
-}
-
-
-
-function enableEraser(){
-
-eraserMode=true;
-brushMode=false;
-
-alert(
-"Eraser enabled"
-);
-
-}
-
-
-
-
-canvas.addEventListener(
-"mousedown",
-function(e){
-
-if(!brushMode && !eraserMode)
-return;
-
-
-drawing=true;
-
-saveHistory();
-
-draw(e);
-
-});
-
-
-
-canvas.addEventListener(
-"mousemove",
-function(e){
-
-if(!drawing)
-return;
-
-draw(e);
-
-});
-
-
-
-canvas.addEventListener(
-"mouseup",
-function(){
-
-drawing=false;
-
-});
-
-
-
-
-function draw(e){
-
-let rect=
-canvas.getBoundingClientRect();
-
-
-let x =
-e.clientX-rect.left;
-
-
-let y =
-e.clientY-rect.top;
-
-
-
-ctx.beginPath();
-
-ctx.arc(
-x,
-y,
-10,
-0,
-Math.PI*2
-);
-
-
-if(eraserMode){
-
-ctx.globalCompositeOperation=
-"destination-out";
-
-}
-else{
-
-ctx.globalCompositeOperation=
-"source-over";
-
-ctx.fillStyle=
-"#ffffff";
-
-}
-
-
-ctx.fill();
-
-ctx.globalCompositeOperation=
-"source-over";
-
-}
-
-
-
-// Add buttons
-
-let extraButtons=document.createElement(
-"div"
-);
-
-
-extraButtons.className="control-group";
-
-
-extraButtons.innerHTML=`
-
-<h3>Drawing Tools</h3>
-
-
-<div class="btn-grid">
-
-<button onclick="enableBrush()">
-🖌 Brush
-</button>
-
-
-<button onclick="enableEraser()">
-🧽 Eraser
-</button>
-
-
-<button onclick="undoEditor()">
-↩ Undo
-</button>
-
-
-<button onclick="redoEditor()">
-↪ Redo
-</button>
-
-
-</div>
-
-`;
-
-
-
-document
-.querySelector(".controls-sidebar")
-.insertBefore(
-extraButtons,
-document.querySelector(".control-group:last-child")
-);
-
-
-
-// Crop Tool
-
-function cropCenter(){
-
-if(!originalImage.src)
-return;
-
-
-let cropWidth=
-canvas.width*0.7;
-
-
-let cropHeight=
-canvas.height*0.7;
-
-
-
-let imageData=
-ctx.getImageData(
-(canvas.width-cropWidth)/2,
-(canvas.height-cropHeight)/2,
-cropWidth,
-cropHeight
-);
-
-
-
-canvas.width=cropWidth;
-canvas.height=cropHeight;
-
-
-
-ctx.putImageData(
-imageData,
-0,
-0
-);
-
-
-saveHistory();
-
-}
-
-
-
-let cropButton=
-document.createElement("button");
-
-
-cropButton.innerHTML=
-"✂ Crop Center";
-
-
-cropButton.onclick=
-cropCenter;
-
-
-extraButtons
-.querySelector(".btn-grid")
-.appendChild(cropButton);
-
-
-
-
-// Save first state after loading
-
-const oldLoadImage=loadImage;
-
-
-loadImage=function(file){
-
-oldLoadImage(file);
-
-setTimeout(
-saveHistory,
-1000
-);
-
-};
-
-
-
-// Footer
-
-let footer=document.createElement("footer");
-
-footer.style.textAlign="center";
-footer.style.padding="20px";
-footer.style.color="#9ca3af";
-
-
-footer.innerHTML=
-"© 2026 Tone.pics";
-
-
-document.body.appendChild(
-footer
-);
-
-// ===============================
-// Drag Text With Mouse
-// ===============================
-
-let draggingText = false;
-
-
-canvas.addEventListener("mousedown", function(e){
-
-    if(!textString.value.trim()) return;
-
-    let rect = canvas.getBoundingClientRect();
-
-    let mouseX = e.clientX - rect.left;
-    let mouseY = e.clientY - rect.top;
-
-
-    let currentX = canvas.width * (textXInput.value / 100);
-    let currentY = canvas.height * (textYInput.value / 100);
-
-
-    let distance = Math.sqrt(
-        Math.pow(mouseX-currentX,2) +
-        Math.pow(mouseY-currentY,2)
-    );
-
-
-    if(distance < 80){
-        draggingText = true;
-    }
-
-});
-
-
-
-canvas.addEventListener("mousemove", function(e){
-
-    if(!draggingText) return;
-
-
-    let rect = canvas.getBoundingClientRect();
-
-
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-
-
-    textXInput.value =
-    Math.max(
-        0,
-        Math.min(
-            100,
-            (x / canvas.width) * 100
-        )
-    );
-
-
-    textYInput.value =
-    Math.max(
-        0,
-        Math.min(
-            100,
-            (y / canvas.height) * 100
-        )
-    );
-
-
-    renderCanvas();
-
-});
-
-
-
-canvas.addEventListener("mouseup",function(){
-
-    draggingText=false;
-
-});
-</script>
-    
 </body>
 </html>
