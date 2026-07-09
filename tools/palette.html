@@ -1,268 +1,301 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" dir="ltr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Generator | Tone.pics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<title>Color Palette Generator - Tone.pics</title>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<link rel="stylesheet" href="tool-style.css">
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .btn-home:hover {
+            color: var(--text-main);
+        }
+
+        /* Hero Header */
+        .hero-section {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Workspace Main Grid */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 10px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tool-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        /* Custom File Input Style */
+        input[type="file"] {
+            width: 100%;
+            max-width: 350px;
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: none;
+            object-fit: contain;
+        }
+
+        /* Palette Grid Layout */
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+
+        .color-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 150px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .color-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Color Code Info Area inside Card */
+        .color-card div {
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Copy Button Style */
+        .btn-copy {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 80%;
+            transition: all 0.2s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .btn-copy:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
 </head>
-
-
 <body>
 
-
-<div class="tool-container">
-
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-<div class="tool-header">
-
-<h1>🎨 Color Palette Generator</h1>
-
-<p>
-Extract beautiful colors from your images.
-</p>
-
-</div>
-
-
-
-<div class="tool-box">
-
-
-<input 
-type="file" 
-id="imageInput" 
-accept="image/*"
->
-
-
-<img 
-id="preview" 
-class="preview-image"
->
-
-
-</div>
-
-
-
-<div class="palette" id="palette"></div>
-
-
-
-</div>
-
-
-
-<footer>
-
-© 2026 Tone.pics
-
-</footer>
-
-
-
-<script>
-
-
-const input = document.getElementById("imageInput");
-
-const preview = document.getElementById("preview");
-
-const palette = document.getElementById("palette");
-
-
-
-input.addEventListener("change", function(){
-
-
-const file = this.files[0];
-
-
-if(!file){
-
-return;
-
-}
-
-
-
-const imgURL = URL.createObjectURL(file);
-
-
-preview.src = imgURL;
-
-
-
-preview.onload = function(){
-
-
-const canvas = document.createElement("canvas");
-
-const ctx = canvas.getContext("2d");
-
-
-
-canvas.width = 100;
-
-canvas.height = 100;
-
-
-
-ctx.drawImage(
-preview,
-0,
-0,
-100,
-100
-);
-
-
-
-const data = ctx.getImageData(
-0,
-0,
-100,
-100
-).data;
-
-
-
-let colors = {};
-
-
-
-for(let i = 0; i < data.length; i += 4){
-
-
-let r = data[i];
-
-let g = data[i+1];
-
-let b = data[i+2];
-
-
-
-let key =
-`${Math.round(r/20)*20},${Math.round(g/20)*20},${Math.round(b/20)*20}`;
-
-
-
-colors[key] = (colors[key] || 0) + 1;
-
-
-}
-
-
-
-
-let result = Object.entries(colors)
-
-.sort((a,b)=>b[1]-a[1])
-
-.slice(0,5);
-
-
-
-palette.innerHTML = "";
-
-
-
-result.forEach(item=>{
-
-
-let rgb = item[0].split(",");
-
-
-
-let hex =
-"#" +
-rgb.map(x=>{
-
-
-let value = Number(x).toString(16);
-
-
-return value.length === 1 
-? "0"+value 
-: value;
-
-
-}).join("");
-
-
-
-
-let card = document.createElement("div");
-
-
-card.className = "color-card";
-
-
-card.style.background = hex;
-
-
-
-card.innerHTML = `
-
-<div>${hex.toUpperCase()}</div>
-
-<button class="button" onclick="copyColor('${hex}')">
-
-Copy
-
-</button>
-
-`;
-
-
-
-palette.appendChild(card);
-
-
-
-});
-
-
-
-};
-
-
-
-});
-
-
-
-
-function copyColor(color){
-
-
-navigator.clipboard.writeText(color);
-
-
-alert(
-"Copied " + color.toUpperCase()
-);
-
-
-
-}
-
-
-
-</script>
-
-
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">🎨 Palette Gen</div>
+    </header>
+
+    <section class="hero-section">
+        <h1>🎨 Color Palette Generator</h1>
+        <p>Extract cohesive and beautiful color harmonies instantly from your uploaded graphics.</p>
+    </section>
+
+    <main class="container">
+        
+        <div class="tool-box">
+            <input type="file" id="imageInput" accept="image/*">
+            <img id="preview" class="preview-image" alt="Palette Source Preview">
+        </div>
+
+        <div class="palette" id="palette"></div>
+
+    </main>
+
+    <script>
+        const input = document.getElementById("imageInput");
+        const preview = document.getElementById("preview");
+        const palette = document.getElementById("palette");
+
+        input.addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const imgURL = URL.createObjectURL(file);
+            preview.src = imgURL;
+            preview.style.display = "block";
+
+            preview.onload = function() {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                canvas.width = 100;
+                canvas.height = 100;
+
+                ctx.drawImage(preview, 0, 0, 100, 100);
+
+                const data = ctx.getImageData(0, 0, 100, 100).data;
+                let colors = {};
+
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i];
+                    let g = data[i+1];
+                    let b = data[i+2];
+
+                    // Quantization clustering step
+                    let key = `${Math.round(r/20)*20},${Math.round(g/20)*20},${Math.round(b/20)*20}`;
+                    colors[key] = (colors[key] || 0) + 1;
+                }
+
+                let result = Object.entries(colors)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                palette.innerHTML = "";
+
+                result.forEach(item => {
+                    let rgb = item[0].split(",");
+                    let hex = "#" + rgb.map(x => {
+                        let value = Number(x).toString(16);
+                        return value.length === 1 ? "0" + value : value;
+                    }).join("");
+
+                    let card = document.createElement("div");
+                    card.className = "color-card";
+                    card.style.background = hex;
+
+                    card.innerHTML = `
+                        <div>${hex.toUpperCase()}</div>
+                        <button class="btn-copy" onclick="copyColor('${hex}', this)">Copy</button>
+                    `;
+
+                    palette.appendChild(card);
+                });
+            };
+        });
+
+        // Refactored silent clipboard function with dynamic text validation feedback loops
+        function copyColor(color, buttonElement) {
+            navigator.clipboard.writeText(color).then(() => {
+                const originalText = buttonElement.innerText;
+                buttonElement.innerText = "Copied!";
+                buttonElement.style.backgroundColor = "rgba(16, 185, 129, 0.6)"; // Emerald feedback
+                
+                setTimeout(() => {
+                    buttonElement.innerText = originalText;
+                    buttonElement.style.backgroundColor = "";
+                }, 1000);
+            }).catch(err => {
+                console.error('Could not copy color text: ', err);
+            });
+        }
+
+        // Standardized Theme Dark Footer Element Injection Pipeline
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px 10px";
+        footer.style.color = "var(--text-muted)";
+        footer.style.fontSize = "0.75rem";
+        footer.style.borderTop = "1px solid var(--border)";
+        footer.style.marginTop = "auto";
+        footer.innerHTML = "© 2026 Tone.pics | Creative Asset Utilities";
+        document.body.appendChild(footer);
+    </script>
 </body>
-
 </html>
