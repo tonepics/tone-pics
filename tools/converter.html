@@ -1,69 +1,347 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Converter - Tone.pics</title>
-    <link rel="stylesheet" href="tool-style.css">
-
+    <title>Image Converter | Tone.pics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-</head>
 
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .btn-home:hover {
+            color: var(--text-main);
+        }
+
+        /* Hero Header */
+        .hero-section {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Workspace Main Grid */
+        .container {
+            max-width: 650px;
+            width: 100%;
+            margin: 10px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tool-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Drop Zone Area Style */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 30px 20px;
+            text-align: center;
+            background-color: #0f0f11;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover, .drop-zone.active {
+            border-color: var(--accent);
+            background-color: rgba(59, 130, 246, 0.03);
+        }
+
+        .drop-zone p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        #fileList {
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+            background: #0f0f11;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        #fileList p {
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        /* Form Row Inputs Style */
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        select {
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 65%;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            background: #2d2d34;
+            height: 5px;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #qualityValue {
+            font-size: 0.8rem;
+            font-family: monospace;
+            min-width: 35px;
+            text-align: right;
+        }
+
+        #info {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            background: #0f0f11;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Action Buttons */
+        .btn {
+            background-color: var(--accent);
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background-color: var(--success-hover);
+            border-color: var(--success-hover);
+        }
+
+        /* Individual Outputs Layout Container */
+        #results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f0f11;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 4px;
+            gap: 10px;
+        }
+
+        .result-item p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            word-break: break-all;
+            text-align: left;
+            flex: 1;
+        }
+
+        .btn-download-single {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-download-single:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-download-single:disabled {
+            background: #2d2d34;
+            border-color: #2d2d34;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
 <body>
 
-    <div class="tool-container">
-        <a class="back-home" href="../index.html">← Back Home</a>
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">🔄 Converter</div>
+    </header>
 
-        <div class="tool-header">
-            <h1>🔄 Image Converter</h1>
-            <p>Convert images and PDF files online securely.</p>
-        </div>
+    <section class="hero-section">
+        <h1>🔄 Image Converter</h1>
+        <p>Convert images and PDF files online securely right inside your browser architecture.</p>
+    </section>
 
+    <main class="container">
+        
         <div class="tool-box">
-            <div class="drop-zone" id="dropZone" style="cursor: pointer;">
+            <div class="drop-zone" id="dropZone">
                 <p>📁 Drag & Drop files here<br>or click to select</p>
                 <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.pdf" style="display: none;">
             </div>
 
-            <br>
-            <div id="fileList"></div>
-            <br>
+            <div id="fileList">No files selected yet.</div>
 
-            <label>Convert To:</label>
-            <select id="format">
-                <option value="jpeg">JPG</option>
-                <option value="png">PNG</option>
-                <option value="webp">WebP</option>
-            </select>
+            <div class="control-row">
+                <label for="format">Convert To:</label>
+                <select id="format">
+                    <option value="jpeg">JPG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WebP</option>
+                </select>
+            </div>
 
-            <br><br>
+            <div class="control-row">
+                <label for="quality">Quality:</label>
+                <div class="slider-wrapper">
+                    <input type="range" id="quality" min="10" max="100" value="90">
+                    <span id="qualityValue">90%</span>
+                </div>
+            </div>
 
-            <label>Quality:</label>
-            <input type="range" id="quality" min="10" max="100" value="90">
-            <span id="qualityValue">90%</span>
+            <img id="preview" alt="Converter Structural Layout Preview Asset">
+            
+            <div id="info">Choose files to start.</div>
 
-            <br><br>
+            <button class="btn" id="convertBtn">Convert All</button>
+            <button class="btn btn-success" id="downloadZipBtn" style="display: none;">Download All (ZIP) 📦</button>
 
-            <img id="preview" class="preview-image" style="max-width: 100%; max-height: 200px; display: none; margin: 10px auto; border-radius: 8px;">
-            <p id="info">Choose files to start.</p>
-
-            <button class="button" id="convertBtn">Convert All</button>
-            <button class="button" id="downloadZipBtn" style="display: none; background-color: #28a745; margin-top: 10px;">Download All (ZIP) 📦</button>
-
-            <br><br>
             <div id="results"></div>
         </div>
-    </div>
 
-    <footer>
-        © 2026 Tone.pics
-    </footer>
+    </main>
 
     <script>
-        // فحص آمن لتهيئة الـ Worker الخاص بمكتبة PDF منعاً لانهيار الاسكربت إذا تأخر الـ CDN
         function initPdfWorker() {
             if (window['pdfjsLib']) {
                 window['pdfjsLib'].GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -90,10 +368,7 @@
         let currentPreviewUrl = null;
         let isConverting = false;
 
-        // كل عنصر هنا: { url, timerId } -- تخزين معرّف المؤقت مع الرابط يسمح بإلغائه فوراً
         let activeDownloads = [];
-
-        // تتبع رابط الـ ZIP الحالي ومؤقت تنظيفه
         let currentZipUrl = null;
         let zipCleanupTimerId = null;
 
@@ -155,6 +430,7 @@
             preview.removeAttribute("src");
 
             if (selectedFiles.length === 0) {
+                fileList.textContent = "No files selected yet.";
                 info.textContent = "Choose files to start.";
                 return;
             }
@@ -181,7 +457,6 @@
             }
         }
 
-        // تنظيف شامل للمؤقتات والروابط لتفادي الـ Race Conditions وتسريب الذاكرة
         function clearPreviousResults() {
             activeDownloads.forEach(entry => {
                 if (entry.timerId !== null) clearTimeout(entry.timerId);
@@ -225,7 +500,6 @@
                         const lastDot = file.name.lastIndexOf('.');
                         const ext = lastDot !== -1 ? file.name.substring(lastDot).toLowerCase() : '';
                         
-                        // تم تعديل هذه السلسلة لتتحدث ديناميكياً داخل دالة الـ PDF أيضاً
                         info.textContent = "Converting: " + file.name;
 
                         if (ext === ".heic" || ext === ".heif") {
@@ -261,7 +535,6 @@
 
         downloadZipBtn.addEventListener("click", () => {
             if (convertedBlobs.length === 0) return;
-
             downloadZipBtn.disabled = true;
 
             try {
@@ -476,7 +749,6 @@
                 const { mimeType, extension } = getTargetFormat();
 
                 for (let i = 1; i <= pdf.numPages; i++) {
-                    // تحسين تجربة المستخدم: إظهار رقم الصفحة الحالية أثناء المعالجة
                     info.textContent = `Converting ${file.name} (Page ${i}/${pdf.numPages}) ⏳`;
 
                     const page = await pdf.getPage(i);
@@ -514,23 +786,21 @@
             }
         }
 
-        // تم تعديل الدالة بالكامل لحل مشكلة توقيت الحذف العشوائي وتجنب تسريب الـ RAM
         function createDownload(blob, fileName) {
             const url = URL.createObjectURL(blob);
             const entry = { url, timerId: null };
             activeDownloads.push(entry);
 
             const item = document.createElement("div");
-            item.style.margin = "15px 0";
+            item.className = "result-item";
 
             const text = document.createElement("p");
             text.textContent = fileName;
 
             const button = document.createElement("button");
-            button.className = "button";
+            button.className = "btn-download-single";
             button.textContent = "Download";
 
-            // الزر يقوم بالتحميل النظيف فقط بدون التلاعب بالمؤقتات
             button.onclick = function () {
                 const link = document.createElement("a");
                 link.href = url;
@@ -544,25 +814,24 @@
             item.appendChild(button);
             results.appendChild(item);
 
-            // جدولة الحذف فوراً عند التوليد لحماية الذاكرة العشوائية (تتحرر تلقائياً بعد 5 دقائق)
             entry.timerId = setTimeout(() => {
                 const index = activeDownloads.indexOf(entry);
                 if (index > -1) {
                     URL.revokeObjectURL(entry.url);
                     activeDownloads.splice(index, 1);
                     
-                    // تغيير حالة الزر لتنبيه المستخدم بانتهاء صلاحية الرابط من الذاكرة
                     button.disabled = true;
                     button.textContent = "Expired";
-                    button.style.backgroundColor = "#6c757d"; 
+                    button.style.backgroundColor = "#2d2d34"; 
                     button.style.cursor = "not-allowed";
                 }
-            }, 300000); // 5 دقائق (300000 مللي ثانية)
+            }, 300000); // Expirations check set at 5 Minutes pipeline loop
         }
 
         function showResult(name, status) {
-            const item = document.createElement("p");
-            item.textContent = name + " : " + status;
+            const item = document.createElement("div");
+            item.className = "result-item";
+            item.innerHTML = `<p style="color:#ef4444;">${name} : ${status}</p>`;
             results.appendChild(item);
         }
 
@@ -571,6 +840,17 @@
             if (bytes < 1024 * 1024) { return (bytes / 1024).toFixed(2) + " KB"; }
             return (bytes / (1024 * 1024)).toFixed(2) + " MB";
         }
+
+        // Standardized Theme Dark Footer Element Injection Pipeline
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px 10px";
+        footer.style.color = "var(--text-muted)";
+        footer.style.fontSize = "0.75rem";
+        footer.style.borderTop = "1px solid var(--border)";
+        footer.style.marginTop = "auto";
+        footer.innerHTML = "© 2026 Tone.pics | Creative Asset Utilities";
+        document.body.appendChild(footer);
     </script>
 </body>
 </html>
