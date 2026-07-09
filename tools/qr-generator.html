@@ -147,6 +147,7 @@
 
         .style-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 18px; }
         .style-opt { background: var(--ink-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 4px; cursor: pointer; text-align: center; transition: .15s; color: var(--text-dim); }
+        .style-opt svg { width: 28px; height: 28px; fill: currentColor; margin: 0 auto; display: block; }
         .style-opt .lbl { display: block; font-size: .66rem; margin-top: 4px; font-weight: 600; }
         .style-opt:hover { border-color: var(--text-faint); }
         .style-opt.active { border-color: var(--accent); background: #43e5c514; color: var(--accent); }
@@ -194,7 +195,6 @@
             font-size: .82rem; transition: .15s;
         }
         .fmt-btn:hover { border-color: var(--accent); }
-        .fmt-btn svg { width: 20px; height: 20px; color: var(--accent); }
         .copy-btn {
             width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
             background: transparent; border: 1px solid var(--line); color: var(--text);
@@ -219,13 +219,13 @@
         .reg-mark.tr { top: 12px; right: 12px; }
         .reg-mark.bl { bottom: 12px; left: 12px; }
         .reg-mark.br { bottom: 12px; right: 12px; }
-        #qrHolder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #qrHolder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
         #qrHolder svg { width: 100%; height: 100%; display: block; }
         .badge-live {
             position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
             background: var(--ink); color: var(--accent); font-family: 'JetBrains Mono', monospace;
             font-size: .62rem; padding: 4px 10px; border-radius: 999px; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 4px 12px #0006;
+            box-shadow: 0 4px 12px #0006; z-index: 5;
         }
         .badge-live .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 #43e5c5aa; animation: pulse 1.6s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 #43e5c566; } 70% { box-shadow: 0 0 0 7px #43e5c500; } 100% { box-shadow: 0 0 0 0 #43e5c500; } }
@@ -291,12 +291,14 @@
                 <button class="tab-btn" data-tab="export">Export</button>
             </div>
 
+            <!-- Content Panel -->
             <div class="tabpane active" id="tab-content">
                 <p class="subhead">Data Type</p>
                 <div class="type-grid" id="typeGrid"></div>
                 <div id="dynamicFields"></div>
             </div>
 
+            <!-- Design Style Panel -->
             <div class="tabpane" id="tab-style">
                 <p class="subhead">Colors</p>
                 <div class="field">
@@ -313,7 +315,7 @@
                 </div>
                 <div id="gradControls" style="display:none;">
                     <div class="grad-row">
-                        <input type="color" id="gradColor2" value="#43E5C5" style="width:42px;height:42px;border:none;border-radius:10px;">
+                        <input type="color" id="gradColor2" value="#43E5C5">
                         <select id="gradType" class="grad-select">
                             <option value="linear">Linear Gradient</option>
                             <option value="radial">Radial Gradient</option>
@@ -341,12 +343,14 @@
                 <div class="style-grid" id="dotStyleGrid"></div>
             </div>
 
+            <!-- Corners / Eyes Panel -->
             <div class="tabpane" id="tab-eyes">
                 <p class="subhead">Customize Three Corner Eyes</p>
                 <button class="apply-all-btn" id="applyAllEyes">Apply Eye 1 Options to All</button>
                 <div id="eyesContainer"></div>
             </div>
 
+            <!-- Center Logo Panel -->
             <div class="tabpane" id="tab-logo">
                 <p class="subhead">Center Logo</p>
                 <div id="logoEmpty">
@@ -377,6 +381,7 @@
                 </div>
             </div>
 
+            <!-- Export Options Panel -->
             <div class="tabpane" id="tab-export">
                 <p class="subhead">Resolution (Pixels)</p>
                 <div class="size-grid" id="sizeGrid"></div>
@@ -392,9 +397,14 @@
             </div>
         </div>
 
+        <!-- Preview Area Side Panel -->
         <div class="preview-area">
             <div class="proof-card">
                 <span class="badge-live"><span class="pulse"></span>LIVE PREVIEW</span>
+                <div class="reg-mark tl"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <div class="reg-mark tr"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <div class="reg-mark bl"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <div class="reg-mark br"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
                 <div id="qrHolder"></div>
             </div>
             <div class="quick-row">
@@ -407,20 +417,38 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- المكتبات البرمجية المدعومة -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
 const TYPES = [
   {id:'website', ic:'🌐', label:'Website', fields:[{id:'url', label:'Website URL', type:'url', ph:'example.com', def:'https://tone.pics'}]},
-  {id:'text', ic:'📝', label:'Plain Text', fields:[{id:'text', label:'Text Content', type:'textarea', ph:'Type message here...', def:'Hello!'}]},
-  {id:'email', ic:'✉️', label:'Email', fields:[{id:'to', label:'Send To', type:'email', ph:'name@example.com', def:''},{id:'subject', label:'Subject', type:'text', def:''},{id:'body', label:'Body Message', type:'textarea', def:''}]},
-  {id:'phone', ic:'📞', label:'Call', fields:[{id:'phone', label:'Phone Number', type:'tel', ph:'+12345', def:''}]},
-  {id:'whatsapp', ic:'💬', label:'WhatsApp', fields:[{id:'phone', label:'WhatsApp Number', type:'tel', ph:'1555123', def:''},{id:'message', label:'Text Message', type:'textarea', def:''}]}
+  {id:'text', ic:'📝', label:'Plain Text', fields:[{id:'text', label:'Text Content', type:'textarea', ph:'Type your message here...', def:'Hello there!'}]},
+  {id:'email', ic:'✉️', label:'Email', fields:[{id:'to', label:'Send To', type:'email', ph:'name@example.com', def:''},{id:'subject', label:'Subject Line', type:'text', def:''},{id:'body', label:'Email Body Message', type:'textarea', def:''}]},
+  {id:'phone', ic:'📞', label:'Call', fields:[{id:'phone', label:'Phone Number', type:'tel', ph:'+123456789', def:''}]},
+  {id:'sms', ic:'💬', label:'SMS Text', fields:[{id:'phone', label:'Phone Number', type:'tel', ph:'+123456789', def:''},{id:'message', label:'Text Message', type:'textarea', def:''}]},
+  {id:'wifi', ic:'📶', label:'WiFi Network', fields:[{id:'ssid', label:'Network SSID (Name)', type:'text', def:''},{id:'password', label:'Network Password', type:'text', def:''},{id:'encryption', label:'Security Mode', type:'select', options:[['WPA','WPA / WPA2'],['WEP','WEP'],['nopass','Unsecured / Open']]}]},
+  {id:'whatsapp', ic:'💬', label:'WhatsApp', fields:[{id:'phone', label:'WhatsApp Number', type:'tel', ph:'1555123456', def:''},{id:'message', label:'Pre-filled Text Message', type:'textarea', def:''}]},
+  {id:'maps', ic:'📍', label:'Location', fields:[{id:'address', label:'Search Address', type:'text', def:''},{id:'lat', label:'Latitude', type:'text', ph:'29.3759', def:''},{id:'lng', label:'Longitude', type:'text', ph:'47.9774', def:''}]},
+  {id:'vcard', ic:'👤', label:'vCard Contact', fields:[{id:'firstName', label:'First Name', type:'text', def:''},{id:'lastName', label:'Last Name', type:'text', def:''},{id:'org', label:'Company', type:'text', def:''},{id:'phone', label:'Mobile Number', type:'tel', def:''},{id:'email', label:'Email', type:'email', def:''}]},
+  {id:'event', ic:'📅', label:'Calendar Event', fields:[{id:'title', label:'Event Title', type:'text', def:''},{id:'location', label:'Event Venue', type:'text', def:''},{id:'start', label:'Start Date & Time', type:'datetime-local', def:''},{id:'end', label:'End Date & Time', type:'datetime-local', def:''}]}
 ];
 
 const DOT_STYLES = [
-  {id:'square', label:'Square'},
-  {id:'dots', label:'Circular'},
-  {id:'rounded', label:'Rounded'}
+  {id:'square', label:'Square', svg:'<rect x="4" y="4" width="16" height="16"/>'},
+  {id:'dots', label:'Circular', svg:'<circle cx="12" cy="12" r="8"/>'},
+  {id:'rounded', label:'Rounded', svg:'<rect x="4" y="4" width="16" height="16" rx="4"/>'},
+  {id:'extra-rounded', label:'Extra-Rounded', svg:'<rect x="4" y="4" width="16" height="16" rx="8"/>'},
+  {id:'classy', label:'Classy', svg:'<path d="M4,4 Q20,4 20,20 Q4,20 4,4"/>'},
+  {id:'classy-rounded', label:'Classy Rounded', svg:'<path d="M4,12 Q12,4 20,12 Q12,20 4,12"/>'}
+];
+
+const EYE_FRAMES = [
+  {id:'square', label:'Square'}, {id:'rounded', label:'Rounded'}, {id:'circle', label:'Circle'}
+];
+const EYE_DOTS = [
+  {id:'square', label:'Square'}, {id:'rounded', label:'Rounded'}, {id:'circle', label:'Circle'}
 ];
 
 const EXPORT_SIZES = [256, 512, 1024, 2048];
@@ -438,6 +466,11 @@ const state = {
     bgColor: '#FFFFFF',
     bgTransparent: false
   },
+  eyes: [
+    {frame:'rounded', frameColor:'#0B0D0F', dot:'rounded', dotColor:'#0B0D0F'},
+    {frame:'rounded', frameColor:'#0B0D0F', dot:'rounded', dotColor:'#0B0D0F'},
+    {frame:'rounded', frameColor:'#0B0D0F', dot:'rounded', dotColor:'#0B0D0F'}
+  ],
   logo: {src:null, size:22, radius:30, shadow:true},
   exportSize: 1024
 };
@@ -495,10 +528,13 @@ function renderDynamicFields(){
     if(f.type==='textarea'){
       return `<div class="field"><label>${f.label}</label><textarea data-field="${f.id}" placeholder="${f.ph||''}">${currentVal}</textarea></div>`;
     }
+    if(f.type==='select'){
+      return `<div class="field"><label>${f.label}</label><select data-field="${f.id}">${f.options.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select></div>`;
+    }
     return `<div class="field"><label>${f.label}</label><input type="${f.type}" data-field="${f.id}" value="${currentVal}" placeholder="${f.ph||''}"></div>`;
   }).join('');
 
-  $all('#dynamicFields input, #dynamicFields textarea').forEach(el => {
+  $all('#dynamicFields input, #dynamicFields textarea, #dynamicFields select').forEach(el => {
      el.addEventListener('input', (e) => {
         state.fields[e.target.dataset.field] = e.target.value;
         render();
@@ -511,6 +547,7 @@ function renderDotStyles(){
   if(!grid) return;
   grid.innerHTML = DOT_STYLES.map(s => `
     <div class="style-opt ${state.style.dotStyle === s.id ? 'active' : ''}" data-style="${s.id}">
+       <svg viewBox="0 0 24 24">${s.svg}</svg>
        <div class="lbl">${s.label}</div>
     </div>
   `).join('');
@@ -522,6 +559,44 @@ function renderDotStyles(){
         render();
      });
   });
+}
+
+function renderEyesControls() {
+  const container = $('#eyesContainer');
+  if(!container) return;
+  
+  container.innerHTML = state.eyes.map((eye, idx) => `
+    <div class="eye-card" data-idx="${idx}">
+       <h4><span class="dot"></span> Corner Eye ${idx + 1}</h4>
+       <div class="eye-grid">
+          <div class="field">
+             <span class="mini-label">Outer Frame</span>
+             <select class="eye-frame-sel">
+                ${EYE_FRAMES.map(f => `<option value="${f.id}" ${eye.frame===f.id?'selected':''}>${f.label}</option>`).join('')}
+             </select>
+          </div>
+          <div class="field">
+             <span class="mini-label">Frame Color</span>
+             <input type="color" class="eye-frame-color" value="${eye.frameColor}">
+          </div>
+          <div class="field">
+             <span class="mini-label">Inner Ball</span>
+             <select class="eye-dot-sel">
+                ${EYE_DOTS.map(d => `<option value="${d.id}" ${eye.dot===d.id?'selected':''}>${d.label}</option>`).join('')}
+             </select>
+          </div>
+          <div class="field">
+             <span class="mini-label">Ball Color</span>
+             <input type="color" class="eye-dot-color" value="${eye.dotColor}">
+          </div>
+       </div>
+    </div>
+  `).join('');
+
+  $all('.eye-frame-sel').forEach((sel, i) => sel.addEventListener('change', (e) => { state.eyes[i].frame = e.target.value; render(); }));
+  $all('.eye-frame-color').forEach((input, i) => input.addEventListener('input', (e) => { state.eyes[i].frameColor = e.target.value; render(); }));
+  $all('.eye-dot-sel').forEach((sel, i) => sel.addEventListener('change', (e) => { state.eyes[i].dot = e.target.value; render(); }));
+  $all('.eye-dot-color').forEach((input, i) => input.addEventListener('input', (e) => { state.eyes[i].dotColor = e.target.value; render(); }));
 }
 
 function renderSizeGrid(){
@@ -543,9 +618,20 @@ function buildQrData() {
   if(state.type === 'website') return state.fields.url || 'https://tone.pics';
   if(state.type === 'text') return state.fields.text || 'Hello';
   if(state.type === 'phone') return `tel:${state.fields.phone || ''}`;
+  if(state.type === 'sms') return `SMSTO:${state.fields.phone || ''}:${state.fields.message || ''}`;
   if(state.type === 'whatsapp') return `https://wa.me/${state.fields.phone || ''}?text=${encodeURIComponent(state.fields.message || '')}`;
   if(state.type === 'email') return `mailto:${state.fields.to || ''}?subject=${encodeURIComponent(state.fields.subject || '')}&body=${encodeURIComponent(state.fields.body || '')}`;
+  if(state.type === 'wifi') return `WIFI:T:${state.fields.encryption || 'WPA'};S:${state.fields.ssid || ''};P:${state.fields.password || ''};;`;
+  if(state.type === 'maps') return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(state.fields.address || '')}`;
+  if(state.type === 'vcard') return `BEGIN:VCARD\nVERSION:3.0\nN:${state.fields.lastName || ''};${state.fields.firstName || ''}\nFN:${state.fields.firstName || ''} ${state.fields.lastName || ''}\nORG:${state.fields.org || ''}\nTEL:${state.fields.phone || ''}\nEMAIL:${state.fields.email || ''}\nEND:VCARD`;
   return 'Tone.pics';
+}
+
+function isEyeElement(r, c, count) {
+  if (r < 7 && c < 7) return { isEye: true, idx: 0, type: 'frame', localR: r, localC: c };
+  if (r < 7 && c >= count - 7) return { isEye: true, idx: 1, type: 'frame', localR: r, localC: c - (count - 7) };
+  if (r >= count - 7 && c < 7) return { isEye: true, idx: 2, type: 'frame', localR: r - (count - 7), localC: c };
+  return { isEye: false };
 }
 
 function render() {
@@ -567,29 +653,95 @@ function render() {
 
     let fillAttr = state.style.dotColor;
     if(state.style.gradEnabled) {
-       svgText += `<defs><linearGradient id="qrGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${state.style.dotColor}"/><stop offset="100%" stop-color="${state.style.gradColor2}"/></linearGradient></defs>`;
+       const angleRad = (state.style.gradAngle * Math.PI) / 180;
+       const x1 = Math.round(50 - Math.cos(angleRad) * 50);
+       const y1 = Math.round(50 + Math.sin(angleRad) * 50);
+       const x2 = Math.round(50 + Math.cos(angleRad) * 50);
+       const y2 = Math.round(50 - Math.sin(angleRad) * 50);
+       
+       svgText += `<defs><linearGradient id="qrGrad" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%"><stop offset="0%" stop-color="${state.style.dotColor}"/><stop offset="100%" stop-color="${state.style.gradColor2}"/></linearGradient></defs>`;
        fillAttr = "url(#qrGrad)";
     }
 
+    // رسم عناصر الجسم الأساسي للـ QR البكسلات
     svgText += `<g fill="${fillAttr}">`;
-
     for (let r = 0; r < count; r++) {
       for (let c = 0; c < count; c++) {
         if (qr.isDark(r, c)) {
+          const eyeCheck = isEyeElement(r, c, count);
+          if (eyeCheck.isEye) continue; // الأعين سيتم رسمها منفصلة وبألوان مخصصة
+
           const x = c * cellSize;
           const y = r * cellSize;
           
           if(state.style.dotStyle === 'dots') {
-             svgText += `<circle cx="${x + cellSize/2}" cy="${y + cellSize/2}" r="${cellSize/2 - 0.5}"/>`;
+             svgText += `<circle cx="${x + cellSize/2}" cy="${y + cellSize/2}" r="${cellSize/2 - 0.4}"/>`;
           } else if(state.style.dotStyle === 'rounded') {
-             svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="3" ry="3"/>`;
+             svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="2.5" ry="2.5"/>`;
+          } else if(state.style.dotStyle === 'extra-rounded') {
+             svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="4.5" ry="4.5"/>`;
+          } else if(state.style.dotStyle === 'classy') {
+             svgText += `<path d="M${x},${y} Q${x+cellSize},${y} ${x+cellSize},${y+cellSize} Q${x},${y+cellSize} ${x},${y}"/>`;
+          } else if(state.style.dotStyle === 'classy-rounded') {
+             svgText += `<path d="M${x},${y+cellSize/2} Q${x+cellSize/2},${y} ${x+cellSize},${y+cellSize/2} Q${x+cellSize/2},${y+cellSize} ${x},${y+cellSize/2}"/>`;
           } else {
              svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}"/>`;
           }
         }
       }
     }
-    svgText += `</g></svg>`;
+    svgText += `</g>`;
+
+    // رسم الأعين الثلاثة المخصصة بدقة عالية وبشكل منفصل
+    const eyePositions = [
+      { x: 0, y: 0 },
+      { x: (count - 7) * cellSize, y: 0 },
+      { x: 0, y: (count - 7) * cellSize }
+    ];
+
+    eyePositions.forEach((pos, idx) => {
+       const eye = state.eyes[idx];
+       const ox = pos.x;
+       const oy = pos.y;
+
+       // إطار العين الخارجي (7x7 بكسل)
+       svgText += `<g fill="${eye.frameColor}">`;
+       if(eye.frame === 'circle') {
+          svgText += `<path d="M${ox+35},${oy} A35,35 0 1,1 ${ox+34.9},${oy} M${ox+35},${oy+10} A25,25 0 1,0 ${ox+35.1},${oy+10}" fill-rule="evenodd"/>`;
+       } else if(eye.frame === 'rounded') {
+          svgText += `<path d="M${ox+20},${oy} L${ox+50},${oy} A20,20 0 0,1 ${ox+70},${oy+20} L${ox+70},${pos.y+50} A20,20 0 0,1 ${ox+50},${pos.y+70} L${ox+20},${pos.y+70} A20,20 0 0,1 ${ox},${pos.y+50} L${ox},${oy+20} A20,20 0 0,1 ${ox+20},${oy} Z M${ox+20},${oy+10} A10,10 0 0,0 ${ox+10},${oy+20} L${ox+10},${oy+50} A10,10 0 0,0 ${ox+20},${oy+60} L${ox+50},${oy+60} A10,10 0 0,0 ${ox+60},${oy+50} L${ox+60},${oy+20} A10,10 0 0,0 ${ox+50},${oy+10} Z" fill-rule="evenodd"/>`;
+       } else {
+          svgText += `<path d="M${ox},${oy} L${ox+70},${oy} L${ox+70},${oy+70} L${ox},${oy+70} Z M${ox+10},${oy+10} L${ox+10},${oy+60} L${ox+60},${oy+60} L${ox+60},${oy+10} Z" fill-rule="evenodd"/>`;
+       }
+       svgText += `</g>`;
+
+       // كرة العين الداخلية (3x3 بكسل في المركز)
+       svgText += `<g fill="${eye.dotColor}">`;
+       if(eye.dot === 'circle') {
+          svgText += `<circle cx="${ox+35}" cy="${oy+35}" r="15"/>`;
+       } else if(eye.dot === 'rounded') {
+          svgText += `<rect x="${ox+20}" y="${oy+20}" width="30" height="30" rx="8" ry="8"/>`;
+       } else {
+          svgText += `<rect x="${ox+20}" y="${oy+20}" width="30" height="30"/>`;
+       }
+       svgText += `</g>`;
+    });
+
+    // رسم اللوجو المرفوع في المركز إن وجد
+    if (state.logo.src) {
+       const logow = (size * state.logo.size) / 100;
+       const logoh = logow;
+       const logox = (size - logow) / 2;
+       const logoy = (size - logoh) / 2;
+
+       if(state.logo.shadow) {
+          svgText += `<rect x="${logox - 4}" y="${logoy - 4}" width="${logow + 8}" height="${logoh + 8}" fill="${state.style.bgColor}" rx="${state.logo.radius + 2}"/>`;
+       }
+       svgText += `<clipPath id="logoClip"><rect x="${logox}" y="${logoy}" width="${logow}" height="${logoh}" rx="${state.logo.radius}"/></clipPath>`;
+       svgText += `<image href="${state.logo.src}" x="${logox}" y="${logoy}" width="${logow}" height="${logoh}" clip-path="url(#logoClip)"/>`;
+    }
+
+    svgText += `</svg>`;
     
     $('#qrHolder').innerHTML = svgText;
     window.currentSVGString = svgText;
@@ -598,7 +750,59 @@ function render() {
   }
 }
 
-// أزرار التحميل المباشر والتصدير بالكامل
+function initLogoDropzone() {
+   const zone = $('#dropzone');
+   const input = $('#logoInput');
+   if(!zone || !input) return;
+
+   zone.addEventListener('click', () => input.click());
+   zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag'); });
+   zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+   zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('drag');
+      if(e.dataTransfer.files.length) handleLogoFile(e.dataTransfer.files[0]);
+   });
+
+   input.addEventListener('change', (e) => {
+      if(e.target.files.length) handleLogoFile(e.target.files[0]);
+   });
+
+   $('#logoRemoveBtn').addEventListener('click', () => {
+      state.logo.src = null;
+      $('#logoFilled').style.display = 'none';
+      $('#logoEmpty').style.display = 'block';
+      render();
+   });
+
+   $('#logoSize').addEventListener('input', (e) => {
+      state.logo.size = parseInt(e.target.value);
+      $('#logoSizeVal').textContent = e.target.value + '%';
+      render();
+   });
+   $('#logoRadius').addEventListener('input', (e) => {
+      state.logo.radius = parseInt(e.target.value);
+      $('#logoRadiusVal').textContent = e.target.value + '%';
+      render();
+   });
+   $('#logoShadow').addEventListener('change', (e) => {
+      state.logo.shadow = e.target.checked;
+      render();
+   });
+}
+
+function handleLogoFile(file) {
+   const r = new FileReader();
+   r.onload = (e) => {
+      state.logo.src = e.target.result;
+      $('#logoImgPreview').src = e.target.result;
+      $('#logoEmpty').style.display = 'none';
+      $('#logoFilled').style.display = 'block';
+      render();
+   };
+   r.readAsDataURL(file);
+}
+
 function initExportFeatures() {
     $('#btnQuickDownload').addEventListener('click', () => {
         if(!window.currentSVGString) return;
@@ -610,30 +814,33 @@ function initExportFeatures() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        toast("Downloaded SVG successfully!");
+        toast("Downloaded SVG presentation layer!");
     });
 
     $('#btnQuickCopy').addEventListener('click', () => {
         if(!window.currentSVGString) return;
         navigator.clipboard.writeText(window.currentSVGString).then(() => {
-            toast("Copied SVG Code to Clipboard!");
+            toast("Copied SVG Vector code to clipboard!");
         });
     });
 
     $('#copyBtn').addEventListener('click', () => {
         if(!window.currentSVGString) return;
         navigator.clipboard.writeText(window.currentSVGString).then(() => {
-            toast("Copied SVG Code!");
+            toast("Copied SVG Markup!");
         });
     });
 
-    $all('.fmt-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            toast(`Exporting as ${btn.dataset.fmt.toUpperCase()} (${state.exportSize}px)...`);
-        });
+    $('#applyAllEyes').addEventListener('click', () => {
+        const first = state.eyes[0];
+        state.eyes[1] = { ...first };
+        state.eyes[2] = { ...first };
+        renderEyesControls();
+        render();
+        toast("Applied Eye 1 settings to all corners!");
     });
 
-    // التحديث المباشر للمتحكمات والألوان
+    // أحداث تحديث الألوان المتقدمة والتدرج
     $('#dotColor').addEventListener('input', (e) => {
         state.style.dotColor = e.target.value;
         $('#dotColorHex').textContent = e.target.value.toUpperCase();
@@ -652,8 +859,11 @@ function initExportFeatures() {
         render();
     });
 
-    $('#gradColor2').addEventListener('input', (e) => {
-        state.style.gradColor2 = e.target.value;
+    $('#gradColor2').addEventListener('input', (e) => { state.style.gradColor2 = e.target.value; render(); });
+    $('#gradType').addEventListener('change', (e) => { state.style.gradType = e.target.value; render(); });
+    $('#gradAngle').addEventListener('input', (e) => {
+        state.style.gradAngle = parseInt(e.target.value);
+        $('#gradAngleVal').textContent = e.target.value + '°';
         render();
     });
 
@@ -665,17 +875,26 @@ function initExportFeatures() {
     $('#btnResetTop').addEventListener('click', () => {
         state.style.dotColor = '#0B0D0F';
         state.style.bgColor = '#FFFFFF';
-        state.style.dotStyle = 'square';
+        state.style.dotStyle = 'rounded';
         state.style.gradEnabled = false;
         state.style.bgTransparent = false;
+        state.eyes.forEach(e => { e.frame = 'rounded'; e.frameColor = '#0B0D0F'; e.dot = 'rounded'; e.dotColor = '#0B0D0F'; });
+        state.logo.src = null;
+        
         $('#dotColor').value = '#0B0D0F';
         $('#bgColor').value = '#FFFFFF';
         $('#gradToggle').checked = false;
         $('#bgTransparent').checked = false;
         $('#gradControls').style.display = 'none';
+        $('#logoFilled').style.display = 'none';
+        $('#logoEmpty').style.display = 'block';
+
+        renderTypeGrid();
+        renderDynamicFields();
         renderDotStyles();
+        renderEyesControls();
         render();
-        toast("Reset completed!");
+        toast("UI states reset completely.");
     });
 }
 
@@ -684,6 +903,8 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTypeGrid();
     renderDynamicFields();
     renderDotStyles();
+    renderEyesControls();
+    initLogoDropzone();
     renderSizeGrid();
     initExportFeatures();
     render();
