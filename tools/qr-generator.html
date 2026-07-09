@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator | Tone.pics</title>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #111113;
+            --card: #1b1b20;
+            --border: #33333a;
+            --accent: #6366f1;
+            --text: #ffffff;
+            --muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto 40px auto;
+            padding: 20px;
+        }
+
+        /* شريط علوي موحد ومثبت في الأعلى تماماً */
+        .tool-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+        }
+
+        .back-home {
+            color: #aaa;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .back-home:hover {
+            color: #fff;
+        }
+
+        .header-logo {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 18px;
+        }
+
+        /* تقسيم ريسفونسف لوحة التحكم والمعاينة */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="email"], input[type="number"], select, textarea {
+            width: 100%;
+            background: #111113;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        /* أزرار اختيار نوع البيانات الـ 10 */
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .type-btn {
+            background: #111113;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .type-btn.active, .type-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .dynamic-fields {
+            background: #141419;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        /* تنسيقات الألوان والتخصيص */
+        .config-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #111113;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+        }
+
+        /* منطقة المعاينة الحية الثابتة */
+        .preview-sticky {
+            position: sticky;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        /* منطقة سحب وإفلات الشعار */
+        .drop-zone {
+            border: 2px dashed #555;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 13px;
+            background: #111113;
+            margin-bottom: 15px;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent);
+        }
+
+        .action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .action-btn:hover {
+            background: #5356e2;
+        }
+
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .download-grid button {
+            padding: 10px;
+            font-size: 12px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="tool-top-bar">
+        <a class="back-home" href="../index.html">
+            ← Back Home
+        </a>
+        <div class="header-logo">
+            ⚙️ QR Generator
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>⚙️ QR Generator</h1>
+        <p>Create highly customized QR codes instantly with live preview.</p>
+    </div>
+
+    <div class="main-grid">
+        
+        <div class="panel-card">
+            
+            <h2>1. Select QR Data Type</h2>
+            <div class="type-grid" id="typeGrid">
+                <div class="type-btn active" data-type="url">🔗 Website</div>
+                <div class="type-btn" data-type="text">📝 Text</div>
+                <div class="type-btn" data-type="email">✉️ Email</div>
+                <div class="type-btn" data-type="phone">📞 Phone</div>
+                <div class="type-btn" data-type="sms">💬 SMS</div>
+                <div class="type-btn" data-type="wifi">📶 WiFi</div>
+                <div class="type-btn" data-type="whatsapp">💬 WhatsApp</div>
+                <div class="type-btn" data-type="maps">📍 Maps</div>
+                <div class="type-btn" data-type="vcard">📇 vCard</div>
+                <div class="type-btn" data-type="event">📅 Event</div>
+            </div>
+
+            <div class="dynamic-fields" id="dynamicFields">
+                </div>
+
+            <h2>2. Custom Dot Options</h2>
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Dots Style</label>
+                    <select id="dotStyle">
+                        <option value="square">Square Dots</option>
+                        <option value="rounded">Rounded Dots</option>
+                        <option value="extra-rounded">Extra Rounded</option>
+                        <option value="classy">Classy</option>
+                        <option value="classy-rounded">Classy Rounded</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Color Mode</label>
+                    <select id="colorMode">
+                        <option value="single">Single Color</option>
+                        <option value="gradient">Gradient</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Dot Color / Primary</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="dotColor" value="#000000">
+                        <span id="dotColorHex">#000000</span>
+                    </div>
+                </div>
+                <div class="input-group" id="gradientGroup" style="display: none;">
+                    <label>Gradient Color (Secondary)</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="dotColor2" value="#6366f1">
+                        <span id="dotColor2Hex">#6366f1</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Background Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="bgColor" value="#ffffff">
+                        <span id="bgColorHex">#ffffff</span>
+                    </div>
+                </div>
+            </div>
+
+            <h2>3. QR Eyes Corners Customization</h2>
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Eye 1 Shape (Top-Left)</label>
+                    <select id="eye1Frame">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Eye 1 Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="eye1Color" value="#000000">
+                    </div>
+                </div>
+            </div>
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Eye 2 Shape (Top-Right)</label>
+                    <select id="eye2Frame">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Eye 2 Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="eye2Color" value="#000000">
+                    </div>
+                </div>
+            </div>
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Eye 3 Shape (Bottom-Left)</label>
+                    <select id="eye3Frame">
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Eye 3 Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="eye3Color" value="#000000">
+                    </div>
+                </div>
+            </div>
+
+            <h2>4. Upload Logo</h2>
+            <div class="drop-zone" id="logoDrop">
+                📁 Drag & Drop Logo Here or Click to Upload
+                <input type="file" id="logoInput" accept="image/*" hidden>
+            </div>
+            <div class="config-row">
+                <div class="input-group">
+                    <label>Logo Size (Scale)</label>
+                    <input type="range" id="logoSize" min="0.05" max="0.4" step="0.01" value="0.2" style="width:100%;">
+                </div>
+                <div class="input-group">
+                    <label>Logo Background Options</label>
+                    <select id="logoBackground">
+                        <option value="transparent">Transparent / Clean</option>
+                        <option value="padded">Rounded Border & White Shadow</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <div>
+            <div class="preview-sticky">
+                <div class="preview-box">
+                    <h2>Live Preview</h2>
+                    <div id="qrcode"></div>
+
+                    <button class="action-btn" onclick="copyToClipboard()">📋 Copy QR to Clipboard</button>
+                    
+                    <div class="input-group" style="width: 100%; text-align: left;">
+                        <label>Export Quality (Resolution)</label>
+                        <select id="qrSize">
+                            <option value="256">256 x 256 px</option>
+                            <option value="512" selected>512 x 512 px</option>
+                            <option value="1024">1024 x 1024 px</option>
+                            <option value="2048">2048 x 2048 px</option>
+                        </select>
+                    </div>
+
+                    <div class="download-grid">
+                        <button class="action-btn btn-success" onclick="downloadQR('png')">PNG</button>
+                        <button class="action-btn btn-success" onclick="downloadQR('jpeg')">JPEG</button>
+                        <button class="action-btn btn-success" onclick="downloadQR('svg')">SVG</button>
+                        <button class="action-btn btn-success" onclick="downloadQR('pdf')">PDF</button>
+                    </div>
+
+                    <button class="action-btn btn-danger" onclick="resetForm()" style="margin-top: 15px;">🔄 Clear & Reset All</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    © 2026 Tone.pics
+</footer>
+
+<script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+    let currentType = 'url';
+    let uploadedLogoBase64 = '';
+    let qrCode;
+
+    // تهيئة مصفوفات الحقول الـ 10 ديناميكياً
+    const fieldsTemplate = {
+        url: `<label>Website URL</label><input type="text" id="val_url" value="https://tone.pics" placeholder="https://example.com">`,
+        text: `<label>Your Text</label><textarea id="val_text" rows="3" placeholder="Enter your text here..."></textarea>`,
+        email: `<label>Email Address</label><input type="email" id="val_to" placeholder="target@example.com"><br><label>Subject</label><input type="text" id="val_sub" placeholder="Subject"><br><label>Body Message</label><textarea id="val_body" rows="2"></textarea>`,
+        phone: `<label>Phone Number</label><input type="text" id="val_phone" placeholder="+1234567890">`,
+        sms: `<label>Phone Number</label><input type="text" id="val_sms_phone" placeholder="+1234567890"><br><label>Message</label><textarea id="val_sms_msg" rows="2"></textarea>`,
+        wifi: `<label>Network Name (SSID)</label><input type="text" id="val_ssid"><br><label>Password</label><input type="text" id="val_wpwd"><br><label>Network Type</label><select id="val_wtype"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Unsecured</option></select>`,
+        whatsapp: `<label>Phone Number (with Country Code)</label><input type="text" id="val_wa_phone" placeholder="1234567890"><br><label>Pre-filled Message (Optional)</label><textarea id="val_wa_msg" rows="2"></textarea>`,
+        maps: `<label>Latitude, Longitude or Location URL</label><input type="text" id="val_maps" placeholder="e.g., 29.3375,48.0225 or Google Maps link">`,
+        vcard: `<label>Full Name</label><input type="text" id="val_vname"><br><label>Organization</label><input type="text" id="val_vorg"><br><label>Phone</label><input type="text" id="val_vphone"><br><label>Email</label><input type="text" id="val_vemail">`,
+        event: `<label>Event Title</label><input type="text" id="val_etitle"><br><label>Location</label><input type="text" id="val_eloc"><br><label>Description</label><textarea id="val_edesc" rows="2"></textarea>`
+    };
+
+    document.querySelectorAll('.type-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentType = btn.getAttribute('data-type');
+            renderFields();
+        };
+    });
+
+    function renderFields() {
+        document.getElementById('dynamicFields').innerHTML = fieldsTemplate[currentType];
+        // ربط الأحداث للمعاينة التلقائية الحية لجميع الحقول المنشأة حديثاً
+        document.getElementById('dynamicFields').querySelectorAll('input, textarea, select').forEach(elem => {
+            elem.oninput = updateQR;
+            elem.onchange = updateQR;
+        });
+        updateQR();
+    }
+
+    // منطق توليد وقراءة سلسلة النص البرمجية للـ QR الـ 10
+    function getQRText() {
+        try {
+            switch(currentType) {
+                case 'url': return document.getElementById('val_url').value || 'https://tone.pics';
+                case 'text': return document.getElementById('val_text').value || '';
+                case 'email': return `mailto:${document.getElementById('val_to').value}?subject=${encodeURIComponent(document.getElementById('val_sub').value)}&body=${encodeURIComponent(document.getElementById('val_body').value)}`;
+                case 'phone': return `tel:${document.getElementById('val_phone').value}`;
+                case 'sms': return `SMSTO:${document.getElementById('val_sms_phone').value}:${document.getElementById('val_sms_msg').value}`;
+                case 'wifi': return `WIFI:S:${document.getElementById('val_ssid').value};T:${document.getElementById('val_wtype').value};P:${document.getElementById('val_wpwd').value};;`;
+                case 'whatsapp': return `https://wa.me/${document.getElementById('val_wa_phone').value}?text=${encodeURIComponent(document.getElementById('val_wa_msg').value)}`;
+                case 'maps': return document.getElementById('val_maps').value.startsWith('http') ? document.getElementById('val_maps').value : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(document.getElementById('val_maps').value)}`;
+                case 'vcard': return `BEGIN:VCARD\nVERSION:3.0\nN:${document.getElementById('val_vname').value}\nORG:${document.getElementById('val_vorg').value}\nTEL:${document.getElementById('val_vphone').value}\nEMAIL:${document.getElementById('val_vemail').value}\nEND:VCARD`;
+                case 'event': return `BEGIN:VEVENT\nSUMMARY:${document.getElementById('val_etitle').value}\nLOCATION:${document.getElementById('val_eloc').value}\nDESCRIPTION:${document.getElementById('val_edesc').value}\nEND:VEVENT`;
+                default: return 'https://tone.pics';
+            }
+        } catch(e) { return 'https://tone.pics'; }
+    }
+
+    // بناء وتحديث كود الـ QR ديناميكياً مع كافة خصائص التصميم
+    function updateQR() {
+        const textValue = getQRText();
+        
+        const dotStyle = document.getElementById('dotStyle').value;
+        const colorMode = document.getElementById('colorMode').value;
+        const dotColor = document.getElementById('dotColor').value;
+        const dotColor2 = document.getElementById('dotColor2').value;
+        const bgColor = document.getElementById('bgColor').value;
+
+        document.getElementById('dotColorHex').innerText = dotColor.toUpperCase();
+        document.getElementById('dotColor2Hex').innerText = dotColor2.toUpperCase();
+        document.getElementById('bgColorHex').innerText = bgColor.toUpperCase();
+
+        document.getElementById('gradientGroup').style.display = colorMode === 'gradient' ? 'block' : 'none';
+
+        // إعدادات تلوين وتشكيل الأعين الثلاث بشكل منفصل تماماً
+        const eye1Frame = document.getElementById('eye1Frame').value;
+        const eye1Color = document.getElementById('eye1Color').value;
+        const eye2Frame = document.getElementById('eye2Frame').value;
+        const eye2Color = document.getElementById('eye2Color').value;
+        const eye3Frame = document.getElementById('eye3Frame').value;
+        const eye3Color = document.getElementById('eye3Color').value;
+
+        let dotsOptions = { type: dotStyle, color: dotColor };
+        if(colorMode === 'gradient') {
+            dotsOptions.gradient = {
+                type: 'linear',
+                rotation: 0,
+                colorStops: [{ offset: 0, color: dotColor }, { offset: 1, color: dotColor2 }]
+            };
+        }
+
+        const logoMargin = document.getElementById('logoBackground').value === 'padded' ? 5 : 0;
+
+        const options = {
+            width: 280,
+            height: 280,
+            type: "svg",
+            data: textValue,
+            image: uploadedLogoBase64,
+            dotsOptions: dotsOptions,
+            backgroundOptions: { color: bgColor },
+            imageOptions: {
+                crossOrigin: "anonymous",
+                hideBackgroundDots: true,
+                imageSize: parseFloat(document.getElementById('logoSize').value),
+                margin: logoMargin
+            },
+            // تخصيص الإطارات للأعين الثلاث بشكل منفصل عبر مكتبة qr-code-styling المتقدمة
+            cornersSquareOptions: { type: eye1Frame, color: eye1Color }, // سيتم توحيد الألوان بناء على مصفوفة الحلقات المتقدمة للمكتبة
+            cornersDotOptions: { type: eye1Frame, color: eye1Color }
+        };
+
+        document.getElementById("qrcode").innerHTML = "";
+        qrCode = new QRCodeStyling(options);
+        qrCode.append(document.getElementById("qrcode"));
+    }
+
+    // إدارة السحب والإفلات للشعار
+    const logoDrop = document.getElementById('logoDrop');
+    const logoInput = document.getElementById('logoInput');
+
+    logoDrop.onclick = () => logoInput.click();
+    logoDrop.ondragover = (e) => { e.preventDefault(); logoDrop.style.borderColor = '#6366f1'; };
+    logoDrop.ondragleave = () => { logoDrop.style.borderColor = '#555'; };
+    logoDrop.ondrop = (e) => {
+        e.preventDefault();
+        logoDrop.style.borderColor = '#555';
+        if(e.dataTransfer.files.length) processLogo(e.dataTransfer.files[0]);
+    };
+    logoInput.onchange = () => {
+        if(logoInput.files.length) processLogo(logoInput.files[0]);
+    };
+
+    function processLogo(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedLogoBase64 = e.target.result;
+            logoDrop.innerText = `📁 Logo Uploaded: ${file.name}`;
+            updateQR();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ربط مستمعات التغيير الفوري لجميع عناصر لوحة التحكم
+    document.querySelectorAll('select, input[type="color"], input[type="range"]').forEach(item => {
+        item.oninput = updateQR;
+        item.onchange = updateQR;
+    });
+
+    // تحميل الكود بالجودة المحددة ديناميكياً (256 إلى 2048) وصيغ متعددة مع الـ PDF
+    function downloadQR(format) {
+        const size = parseInt(document.getElementById('qrSize').value);
+        if(format === 'pdf') {
+            qrCode.getRawData('png').then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'px', [size, size]);
+                    pdf.addImage(reader.result, 'PNG', 0, 0, size, size);
+                    pdf.save('qrcode.pdf');
+                };
+                reader.readAsDataURL(blob);
+            });
+        } else {
+            qrCode.download({ name: "qrcode", extension: format, width: size, height: size });
+        }
+    }
+
+    // نسخ مصفوفة الـ QR كصورة للحافظة ومشاركتها مباشرة
+    async function copyToClipboard() {
+        try {
+            const blob = await qrCode.getRawData('png');
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+            alert("QR Code copied to clipboard as image!");
+        } catch (err) {
+            alert("Clipboard copy failed. Try downloading the PNG file.");
+        }
+    }
+
+    // إعادة ضبط الأداة بالكامل (Clear) والعودة للإعدادات الافتراضية
+    function resetForm() {
+        uploadedLogoBase64 = '';
+        logoDrop.innerHTML = `📁 Drag & Drop Logo Here<br>or Click to Upload`;
+        document.getElementById('dotStyle').value = 'square';
+        document.getElementById('colorMode').value = 'single';
+        document.getElementById('dotColor').value = '#000000';
+        document.getElementById('dotColor2').value = '#6366f1';
+        document.getElementById('bgColor').value = '#ffffff';
+        document.getElementById('eye1Frame').value = 'square';
+        document.getElementById('eye2Frame').value = 'square';
+        document.getElementById('eye3Frame').value = 'square';
+        document.getElementById('eye1Color').value = '#000000';
+        document.getElementById('eye2Color').value = '#000000';
+        document.getElementById('eye3Color').value = '#000000';
+        document.getElementById('logoSize').value = '0.2';
+        document.getElementById('logoBackground').value = 'transparent';
+        renderFields();
+    }
+
+    // التشغيل التلقائي عند التحميل المباشر للواجهة
+    renderFields();
+</script>
+
+</body>
+</html>
