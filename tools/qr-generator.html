@@ -35,7 +35,7 @@
             padding: 20px;
         }
 
-        /* شريط علوي موحد ومثبت في الأعلى تماماً */
+        /* شريط علوي موحد ومثبت في الأعلى تماماً متوافق مع باقي الأدوات */
         .tool-top-bar {
             display: flex;
             justify-content: space-between;
@@ -77,7 +77,7 @@
             font-size: 18px;
         }
 
-        /* تقسيم ريسفونسف لوحة التحكم والمعاينة */
+        /* تقسيم لوحة التحكم والمعاينة بطريقة ريسفونسف متطورة */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 380px;
@@ -103,6 +103,7 @@
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
+            color: #fff;
         }
 
         label {
@@ -132,7 +133,7 @@
             border-color: var(--accent);
         }
 
-        /* أزرار اختيار نوع البيانات الـ 10 */
+        /* أزرار اختيار نوع البيانات الـ 10 باللغة الإنجليزية */
         .type-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -167,7 +168,6 @@
             margin-bottom: 25px;
         }
 
-        /* تنسيقات الألوان والتخصيص */
         .config-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -194,7 +194,7 @@
             background: none;
         }
 
-        /* منطقة المعاينة الحية الثابتة */
+        /* المعاينة الحية الثابتة */
         .preview-sticky {
             position: sticky;
             top: 20px;
@@ -222,7 +222,7 @@
             margin-bottom: 20px;
         }
 
-        /* منطقة سحب وإفلات الشعار */
+        /* سحب وإفلات اللوجو */
         .drop-zone {
             border: 2px dashed #555;
             padding: 20px;
@@ -233,6 +233,7 @@
             font-size: 13px;
             background: #111113;
             margin-bottom: 15px;
+            transition: border-color 0.2s;
         }
 
         .drop-zone:hover {
@@ -473,18 +474,18 @@
     let uploadedLogoBase64 = '';
     let qrCode;
 
-    // تهيئة مصفوفات الحقول الـ 10 ديناميكياً
+    // قوالب إدخال البيانات بالكامل باللغة الإنجليزية
     const fieldsTemplate = {
         url: `<label>Website URL</label><input type="text" id="val_url" value="https://tone.pics" placeholder="https://example.com">`,
-        text: `<label>Your Text</label><textarea id="val_text" rows="3" placeholder="Enter your text here..."></textarea>`,
-        email: `<label>Email Address</label><input type="email" id="val_to" placeholder="target@example.com"><br><label>Subject</label><input type="text" id="val_sub" placeholder="Subject"><br><label>Body Message</label><textarea id="val_body" rows="2"></textarea>`,
-        phone: `<label>Phone Number</label><input type="text" id="val_phone" placeholder="+1234567890">`,
-        sms: `<label>Phone Number</label><input type="text" id="val_sms_phone" placeholder="+1234567890"><br><label>Message</label><textarea id="val_sms_msg" rows="2"></textarea>`,
-        wifi: `<label>Network Name (SSID)</label><input type="text" id="val_ssid"><br><label>Password</label><input type="text" id="val_wpwd"><br><label>Network Type</label><select id="val_wtype"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Unsecured</option></select>`,
-        whatsapp: `<label>Phone Number (with Country Code)</label><input type="text" id="val_wa_phone" placeholder="1234567890"><br><label>Pre-filled Message (Optional)</label><textarea id="val_wa_msg" rows="2"></textarea>`,
-        maps: `<label>Latitude, Longitude or Location URL</label><input type="text" id="val_maps" placeholder="e.g., 29.3375,48.0225 or Google Maps link">`,
-        vcard: `<label>Full Name</label><input type="text" id="val_vname"><br><label>Organization</label><input type="text" id="val_vorg"><br><label>Phone</label><input type="text" id="val_vphone"><br><label>Email</label><input type="text" id="val_vemail">`,
-        event: `<label>Event Title</label><input type="text" id="val_etitle"><br><label>Location</label><input type="text" id="val_eloc"><br><label>Description</label><textarea id="val_edesc" rows="2"></textarea>`
+        text: `<label>Your Text</label><textarea id="val_text" rows="3" placeholder="Enter your custom text here..."></textarea>`,
+        email: `<label>Email Address</label><input type="email" id="val_to" placeholder="target@example.com"><br><label>Subject</label><input type="text" id="val_sub" placeholder="Subject Line"><br><label>Body Message</label><textarea id="val_body" rows="2" placeholder="Message content..."></textarea>`,
+        phone: `<label>Phone Number</label><input type="text" id="val_phone" placeholder="e.g., +1234567890">`,
+        sms: `<label>Phone Number</label><input type="text" id="val_sms_phone" placeholder="+1234567890"><br><label>Message</label><textarea id="val_sms_msg" rows="2" placeholder="Type text message..."></textarea>`,
+        wifi: `<label>Network Name (SSID)</label><input type="text" id="val_ssid" placeholder="WiFi Name"><br><label>Password</label><input type="text" id="val_wpwd" placeholder="Network Password"><br><label>Network Encryption</label><select id="val_wtype"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Unsecured (No Password)</option></select>`,
+        whatsapp: `<label>WhatsApp Number (With Country Code)</label><input type="text" id="val_wa_phone" placeholder="e.g., 1234567890"><br><label>Pre-filled Text Message (Optional)</label><textarea id="val_wa_msg" rows="2" placeholder="Hello..."></textarea>`,
+        maps: `<label>Coordinates or Location URL</label><input type="text" id="val_maps" placeholder="e.g., 29.3375,48.0225 or Google Maps Share link">`,
+        vcard: `<label>Full Name</label><input type="text" id="val_vname" placeholder="John Doe"><br><label>Organization / Company</label><input type="text" id="val_vorg" placeholder="Company Name"><br><label>Phone Number</label><input type="text" id="val_vphone" placeholder="+12345678"><br><label>Email Address</label><input type="email" id="val_vemail" placeholder="john@example.com">`,
+        event: `<label>Event Title</label><input type="text" id="val_etitle" placeholder="Meeting / Party Name"><br><label>Location</label><input type="text" id="val_eloc" placeholder="Venue Address"><br><label>Description</label><textarea id="val_edesc" rows="2" placeholder="Event notes..."></textarea>`
     };
 
     document.querySelectorAll('.type-btn').forEach(btn => {
@@ -498,7 +499,6 @@
 
     function renderFields() {
         document.getElementById('dynamicFields').innerHTML = fieldsTemplate[currentType];
-        // ربط الأحداث للمعاينة التلقائية الحية لجميع الحقول المنشأة حديثاً
         document.getElementById('dynamicFields').querySelectorAll('input, textarea, select').forEach(elem => {
             elem.oninput = updateQR;
             elem.onchange = updateQR;
@@ -506,7 +506,7 @@
         updateQR();
     }
 
-    // منطق توليد وقراءة سلسلة النص البرمجية للـ QR الـ 10
+    // تجهيز النصوص الخاصة بحزم البيانات الـ 10 المقروءة قياسياً
     function getQRText() {
         try {
             switch(currentType) {
@@ -525,7 +525,7 @@
         } catch(e) { return 'https://tone.pics'; }
     }
 
-    // بناء وتحديث كود الـ QR ديناميكياً مع كافة خصائص التصميم
+    // بناء وتعديل كود الـ QR بشكل فوري وحي
     function updateQR() {
         const textValue = getQRText();
         
@@ -541,7 +541,7 @@
 
         document.getElementById('gradientGroup').style.display = colorMode === 'gradient' ? 'block' : 'none';
 
-        // إعدادات تلوين وتشكيل الأعين الثلاث بشكل منفصل تماماً
+        // إعدادات وشكل كل عين (Corner) بشكل مستقل تماماً
         const eye1Frame = document.getElementById('eye1Frame').value;
         const eye1Color = document.getElementById('eye1Color').value;
         const eye2Frame = document.getElementById('eye2Frame').value;
@@ -574,8 +574,8 @@
                 imageSize: parseFloat(document.getElementById('logoSize').value),
                 margin: logoMargin
             },
-            // تخصيص الإطارات للأعين الثلاث بشكل منفصل عبر مكتبة qr-code-styling المتقدمة
-            cornersSquareOptions: { type: eye1Frame, color: eye1Color }, // سيتم توحيد الألوان بناء على مصفوفة الحلقات المتقدمة للمكتبة
+            // تخصيص متقدم لمظهر الأعين وحوافها داخل مكتبة المظهر
+            cornersSquareOptions: { type: eye1Frame, color: eye1Color },
             cornersDotOptions: { type: eye1Frame, color: eye1Color }
         };
 
@@ -584,18 +584,18 @@
         qrCode.append(document.getElementById("qrcode"));
     }
 
-    // إدارة السحب والإفلات للشعار
+    // إدارة منطقة السحب والإفلات للشعار المرفوع
     const logoDrop = document.getElementById('logoDrop');
     const logoInput = document.getElementById('logoInput');
 
     logoDrop.onclick = () => logoInput.click();
-    logoDrop.ondragover = (e) => { e.preventDefault(); logoDrop.style.borderColor = '#6366f1'; };
-    logoDrop.ondragleave = () => { logoDrop.style.borderColor = '#555'; };
-    logoDrop.ondrop = (e) => {
+    logoDrop.addEventListener('dragover', (e) => { e.preventDefault(); logoDrop.style.borderColor = '#6366f1'; });
+    logoDrop.addEventListener('dragleave', () => { logoDrop.style.borderColor = '#555'; });
+    logoDrop.addEventListener('drop', (e) => {
         e.preventDefault();
         logoDrop.style.borderColor = '#555';
         if(e.dataTransfer.files.length) processLogo(e.dataTransfer.files[0]);
-    };
+    });
     logoInput.onchange = () => {
         if(logoInput.files.length) processLogo(logoInput.files[0]);
     };
@@ -610,13 +610,13 @@
         reader.readAsDataURL(file);
     }
 
-    // ربط مستمعات التغيير الفوري لجميع عناصر لوحة التحكم
+    // ربط مغيرات الخيارات للتحديث الفوري بدون الحاجة للضغط على زر توليد
     document.querySelectorAll('select, input[type="color"], input[type="range"]').forEach(item => {
         item.oninput = updateQR;
         item.onchange = updateQR;
     });
 
-    // تحميل الكود بالجودة المحددة ديناميكياً (256 إلى 2048) وصيغ متعددة مع الـ PDF
+    // تحميل الملفات بالصيغ الأربعة المحددة وبالدقة المطلوبة
     function downloadQR(format) {
         const size = parseInt(document.getElementById('qrSize').value);
         if(format === 'pdf') {
@@ -635,7 +635,7 @@
         }
     }
 
-    // نسخ مصفوفة الـ QR كصورة للحافظة ومشاركتها مباشرة
+    // ميزة نسخ الباركود كصورة مباشرة داخل ذاكرة الحافظة (Clipboard)
     async function copyToClipboard() {
         try {
             const blob = await qrCode.getRawData('png');
@@ -644,14 +644,14 @@
             ]);
             alert("QR Code copied to clipboard as image!");
         } catch (err) {
-            alert("Clipboard copy failed. Try downloading the PNG file.");
+            alert("Clipboard copy failed. Please download the PNG directly.");
         }
     }
 
-    // إعادة ضبط الأداة بالكامل (Clear) والعودة للإعدادات الافتراضية
+    // تفريغ وإعادة ضبط المصنع (Clear & Reset) بالإنجليزية
     function resetForm() {
         uploadedLogoBase64 = '';
-        logoDrop.innerHTML = `📁 Drag & Drop Logo Here<br>or Click to Upload`;
+        logoDrop.innerHTML = `📁 Drag & Drop Logo Here or Click to Upload`;
         document.getElementById('dotStyle').value = 'square';
         document.getElementById('colorMode').value = 'single';
         document.getElementById('dotColor').value = '#000000';
@@ -668,7 +668,7 @@
         renderFields();
     }
 
-    // التشغيل التلقائي عند التحميل المباشر للواجهة
+    // التشغيل التلقائي عند تشغيل الملف أول مرة
     renderFields();
 </script>
 
