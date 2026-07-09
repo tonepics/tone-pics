@@ -1211,7 +1211,84 @@ document.body.appendChild(
 footer
 );
 
+// ===============================
+// Drag Text With Mouse
+// ===============================
 
+let draggingText = false;
+
+
+canvas.addEventListener("mousedown", function(e){
+
+    if(!textString.value.trim()) return;
+
+    let rect = canvas.getBoundingClientRect();
+
+    let mouseX = e.clientX - rect.left;
+    let mouseY = e.clientY - rect.top;
+
+
+    let currentX = canvas.width * (textXInput.value / 100);
+    let currentY = canvas.height * (textYInput.value / 100);
+
+
+    let distance = Math.sqrt(
+        Math.pow(mouseX-currentX,2) +
+        Math.pow(mouseY-currentY,2)
+    );
+
+
+    if(distance < 80){
+        draggingText = true;
+    }
+
+});
+
+
+
+canvas.addEventListener("mousemove", function(e){
+
+    if(!draggingText) return;
+
+
+    let rect = canvas.getBoundingClientRect();
+
+
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+
+    textXInput.value =
+    Math.max(
+        0,
+        Math.min(
+            100,
+            (x / canvas.width) * 100
+        )
+    );
+
+
+    textYInput.value =
+    Math.max(
+        0,
+        Math.min(
+            100,
+            (y / canvas.height) * 100
+        )
+    );
+
+
+    renderCanvas();
+
+});
+
+
+
+canvas.addEventListener("mouseup",function(){
+
+    draggingText=false;
+
+});
 </script>
     
 </body>
