@@ -685,5 +685,534 @@
             link.click();
         });
     </script>
+<script>
+/* ===============================
+   PHOTO EDITOR PRO - EXTRA FEATURES
+   Part 2
+================================ */
+
+// Extra canvas states
+let textX = null;
+let textY = null;
+let brushMode = false;
+let eraserMode = false;
+let drawing = false;
+let history = [];
+let historyStep = -1;
+
+
+// Save canvas history
+function saveHistory() {
+    if (!canvas.width || !canvas.height) return;
+
+    if (historyStep < history.length - 1) {
+        history = history.slice(0, historyStep + 1);
+    }
+
+    history.push(canvas.toDataURL());
+    historyStep++;
+
+    if (history.length > 20) {
+        history.shift();
+        historyStep--;
+    }
+}
+
+
+// Undo
+function undoEditor() {
+
+    if (historyStep <= 0) return;
+
+    historyStep--;
+
+    let imgHistory = new Image();
+
+    imgHistory.onload = function(){
+
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(
+            imgHistory,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+    };
+
+    imgHistory.src = history[historyStep];
+}
+
+
+// Redo
+function redoEditor(){
+
+    if(historyStep >= history.length-1) return;
+
+    historyStep++;
+
+    let imgHistory = new Image();
+
+    imgHistory.onload=function(){
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        ctx.drawImage(
+            imgHistory,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+    };
+
+    imgHistory.src = history[historyStep];
+
+}
+
+
+
+// Add text position controls dynamically
+const textControls = document.createElement("div");
+
+textControls.className="control-group";
+
+textControls.innerHTML=`
+
+<h3>Text Position</h3>
+
+<div class="range-wrapper">
+
+<label>
+Text X
+</label>
+
+<input 
+type="range"
+id="text-x"
+min="0"
+max="100"
+value="50">
+
+</div>
+
+
+<div class="range-wrapper">
+
+<label>
+Text Y
+</label>
+
+<input 
+type="range"
+id="text-y"
+min="0"
+max="100"
+value="50">
+
+</div>
+
+
+<div class="range-wrapper">
+
+<label>
+Opacity
+</label>
+
+<input
+type="range"
+id="text-opacity"
+min="0"
+max="100"
+value="100">
+
+</div>
+
+
+`;
+
+document.querySelector(".controls-sidebar")
+.insertBefore(
+textControls,
+document.querySelector(".control-group:last-child")
+);
+
+
+
+const textXInput=document.getElementById("text-x");
+const textYInput=document.getElementById("text-y");
+const textOpacity=document.getElementById("text-opacity");
+
+
+
+[textXInput,textYInput,textOpacity]
+.forEach(el=>{
+
+el.addEventListener(
+"input",
+renderCanvas
+);
+
+});
+
+
+
+// Modify render text position
+
+const oldRenderCanvas = renderCanvas;
+
+
+renderCanvas=function(){
+
+oldRenderCanvas();
+
+
+if(
+textString.value.trim()!==""
+){
+
+ctx.save();
+
+
+ctx.globalAlpha =
+textOpacity.value/100;
+
+
+ctx.font =
+`${textSize.value}px ${textFont.value}`;
+
+
+ctx.fillStyle =
+textColor.value;
+
+
+ctx.textAlign="center";
+ctx.textBaseline="middle";
+
+
+let x =
+canvas.width *
+(textXInput.value/100);
+
+
+let y =
+canvas.height *
+(textYInput.value/100);
+
+
+
+if(textShadow.checked){
+
+ctx.shadowColor=
+"rgba(0,0,0,.7)";
+
+ctx.shadowBlur=8;
+
+ctx.shadowOffsetX=4;
+
+ctx.shadowOffsetY=4;
+
+}
+
+
+ctx.fillText(
+textString.value,
+x,
+y
+);
+
+
+ctx.restore();
+
+}
+
+};
+
+
+
+
+// Brush Tool
+
+function enableBrush(){
+
+brushMode=true;
+eraserMode=false;
+
+alert(
+"Brush enabled"
+);
+
+}
+
+
+
+function enableEraser(){
+
+eraserMode=true;
+brushMode=false;
+
+alert(
+"Eraser enabled"
+);
+
+}
+
+
+
+
+canvas.addEventListener(
+"mousedown",
+function(e){
+
+if(!brushMode && !eraserMode)
+return;
+
+
+drawing=true;
+
+saveHistory();
+
+draw(e);
+
+});
+
+
+
+canvas.addEventListener(
+"mousemove",
+function(e){
+
+if(!drawing)
+return;
+
+draw(e);
+
+});
+
+
+
+canvas.addEventListener(
+"mouseup",
+function(){
+
+drawing=false;
+
+});
+
+
+
+
+function draw(e){
+
+let rect=
+canvas.getBoundingClientRect();
+
+
+let x =
+e.clientX-rect.left;
+
+
+let y =
+e.clientY-rect.top;
+
+
+
+ctx.beginPath();
+
+ctx.arc(
+x,
+y,
+10,
+0,
+Math.PI*2
+);
+
+
+if(eraserMode){
+
+ctx.globalCompositeOperation=
+"destination-out";
+
+}
+else{
+
+ctx.globalCompositeOperation=
+"source-over";
+
+ctx.fillStyle=
+"#ffffff";
+
+}
+
+
+ctx.fill();
+
+ctx.globalCompositeOperation=
+"source-over";
+
+}
+
+
+
+// Add buttons
+
+let extraButtons=document.createElement(
+"div"
+);
+
+
+extraButtons.className="control-group";
+
+
+extraButtons.innerHTML=`
+
+<h3>Drawing Tools</h3>
+
+
+<div class="btn-grid">
+
+<button onclick="enableBrush()">
+🖌 Brush
+</button>
+
+
+<button onclick="enableEraser()">
+🧽 Eraser
+</button>
+
+
+<button onclick="undoEditor()">
+↩ Undo
+</button>
+
+
+<button onclick="redoEditor()">
+↪ Redo
+</button>
+
+
+</div>
+
+`;
+
+
+
+document
+.querySelector(".controls-sidebar")
+.insertBefore(
+extraButtons,
+document.querySelector(".control-group:last-child")
+);
+
+
+
+// Crop Tool
+
+function cropCenter(){
+
+if(!originalImage.src)
+return;
+
+
+let cropWidth=
+canvas.width*0.7;
+
+
+let cropHeight=
+canvas.height*0.7;
+
+
+
+let imageData=
+ctx.getImageData(
+(canvas.width-cropWidth)/2,
+(canvas.height-cropHeight)/2,
+cropWidth,
+cropHeight
+);
+
+
+
+canvas.width=cropWidth;
+canvas.height=cropHeight;
+
+
+
+ctx.putImageData(
+imageData,
+0,
+0
+);
+
+
+saveHistory();
+
+}
+
+
+
+let cropButton=
+document.createElement("button");
+
+
+cropButton.innerHTML=
+"✂ Crop Center";
+
+
+cropButton.onclick=
+cropCenter;
+
+
+extraButtons
+.querySelector(".btn-grid")
+.appendChild(cropButton);
+
+
+
+
+// Save first state after loading
+
+const oldLoadImage=loadImage;
+
+
+loadImage=function(file){
+
+oldLoadImage(file);
+
+setTimeout(
+saveHistory,
+1000
+);
+
+};
+
+
+
+// Footer
+
+let footer=document.createElement("footer");
+
+footer.style.textAlign="center";
+footer.style.padding="20px";
+footer.style.color="#9ca3af";
+
+
+footer.innerHTML=
+"© 2026 Tone.pics";
+
+
+document.body.appendChild(
+footer
+);
+
+
+</script>
+    
 </body>
 </html>
