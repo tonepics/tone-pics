@@ -1,367 +1,364 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" dir="ltr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer | Tone.pics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<title>Image Resizer - Tone.pics</title>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<link rel="stylesheet" href="tool-style.css">
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .btn-home:hover {
+            color: var(--text-main);
+        }
+
+        /* Hero Header */
+        .hero-section {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Workspace Main Grid */
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 10px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tool-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        /* Custom File Input Style */
+        input[type="file"] {
+            width: 100%;
+            max-width: 350px;
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: none;
+            object-fit: contain;
+            margin: 5px 0;
+        }
+
+        #dimensions {
+            font-size: 0.8rem;
+            font-family: monospace;
+            color: var(--text-muted);
+            background-color: #0f0f11;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        /* Form Row Inputs Style */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 350px;
+            text-align: left;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            width: 120px;
+            text-align: center;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .checkbox-wrapper input {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        /* Action Buttons */
+        .btn {
+            background-color: var(--accent);
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 9px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid var(--border);
+            margin-top: -5px;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+        }
+    </style>
 </head>
-
-
 <body>
 
-
-<div class="tool-container">
-
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-
-<div class="tool-header">
-
-<h1>📏 Image Resizer</h1>
-
-<p>
-Resize your images quickly in your browser.
-</p>
-
-</div>
-
-
-
-<div class="tool-box">
-
-
-<input 
-type="file" 
-id="imageInput"
-accept="image/*"
->
-
-
-
-<img 
-id="preview"
-class="preview-image"
->
-
-
-
-<div id="dimensions"></div>
-
-
-
-<div>
-
-
-<label>
-Width:
-</label>
-
-<input 
-type="number" 
-id="width"
->
-
-
-<br><br>
-
-
-<label>
-Height:
-</label>
-
-<input 
-type="number" 
-id="height"
->
-
-
-<br><br>
-
-
-<label>
-
-<input 
-type="checkbox" 
-id="ratio"
-checked
->
-
-Keep aspect ratio
-
-</label>
-
-
-</div>
-
-
-
-<br>
-
-
-<button 
-class="button"
-id="resizeBtn"
->
-Resize Image
-</button>
-
-
-<br><br>
-
-
-<button 
-class="button"
-id="downloadBtn"
-style="display:none;"
->
-Download
-</button>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-<footer>
-
-© 2026 Tone.pics
-
-</footer>
-
-
-
-
-<script>
-
-
-const input =
-document.getElementById("imageInput");
-
-
-const preview =
-document.getElementById("preview");
-
-
-const widthInput =
-document.getElementById("width");
-
-
-const heightInput =
-document.getElementById("height");
-
-
-const ratio =
-document.getElementById("ratio");
-
-
-const resizeBtn =
-document.getElementById("resizeBtn");
-
-
-const downloadBtn =
-document.getElementById("downloadBtn");
-
-
-const dimensions =
-document.getElementById("dimensions");
-
-
-
-let image = new Image();
-
-let originalRatio = 1;
-
-let resizedURL = "";
-
-
-
-input.addEventListener("change",function(){
-
-
-const file=this.files[0];
-
-
-if(!file)return;
-
-
-
-image.onload=function(){
-
-
-preview.src=image.src;
-
-
-widthInput.value=image.width;
-
-heightInput.value=image.height;
-
-
-originalRatio =
-image.width / image.height;
-
-
-
-dimensions.innerHTML =
-`
-<p>
-Original:
-${image.width} × ${image.height}
-</p>
-`;
-
-
-
-};
-
-
-
-image.src =
-URL.createObjectURL(file);
-
-
-
-});
-
-
-
-widthInput.addEventListener("input",()=>{
-
-
-if(ratio.checked){
-
-
-heightInput.value =
-Math.round(
-widthInput.value / originalRatio
-);
-
-
-}
-
-
-});
-
-
-
-heightInput.addEventListener("input",()=>{
-
-
-if(ratio.checked){
-
-
-widthInput.value =
-Math.round(
-heightInput.value * originalRatio
-);
-
-
-}
-
-
-});
-
-
-
-resizeBtn.addEventListener("click",()=>{
-
-
-if(!image.src)return;
-
-
-
-const canvas =
-document.createElement("canvas");
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-
-canvas.width =
-Number(widthInput.value);
-
-
-canvas.height =
-Number(heightInput.value);
-
-
-
-ctx.drawImage(
-image,
-0,
-0,
-canvas.width,
-canvas.height
-);
-
-
-
-canvas.toBlob(blob=>{
-
-
-resizedURL =
-URL.createObjectURL(blob);
-
-
-preview.src =
-resizedURL;
-
-
-downloadBtn.style.display =
-"inline-block";
-
-
-},"image/jpeg",0.95);
-
-
-
-});
-
-
-
-downloadBtn.addEventListener("click",()=>{
-
-
-const link =
-document.createElement("a");
-
-
-link.href =
-resizedURL;
-
-
-link.download =
-"resized-image.jpg";
-
-
-link.click();
-
-
-
-});
-
-
-
-</script>
-
-
-
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">📏 Image Resizer</div>
+    </header>
+
+    <section class="hero-section">
+        <h1>
+            <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M41 4H7C5.34315 4 4 5.34315 4 7V41C4 42.6569 5.34315 44 7 44H41C42.6569 44 44 42.6569 44 41V7C44 5.34315 42.6569 4H41Z" fill="#226699"/>
+                <path d="M4 16H10M4 24H14M4 32H10" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+                <path d="M16 44V38M24 44V34M32 44V38" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+                <path d="M38 10L10 38" stroke="#FFCC4D" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+            Image Resizer
+        </h1>
+        <p>Resize your images quickly in your browser with precise resolution scaling options.</p>
+    </section>
+
+    <main class="container">
+        
+        <div class="tool-box">
+            <input type="file" id="imageInput" accept="image/*">
+            
+            <img id="preview" class="preview-image" alt="Resizer Image Preview Source Layout">
+
+            <div id="dimensions" style="display: none;"></div>
+
+            <div class="input-group">
+                <div class="input-row">
+                    <label for="width">Width (px):</label>
+                    <input type="number" id="width" placeholder="0">
+                </div>
+                <div class="input-row">
+                    <label for="height">Height (px):</label>
+                    <input type="number" id="height" placeholder="0">
+                </div>
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="ratio" checked>
+                    <span>Keep aspect ratio</span>
+                </label>
+            </div>
+
+            <button class="btn" id="resizeBtn">Resize Image ⚡</button>
+            <button class="btn btn-secondary" id="downloadBtn" style="display:none;">Download Resized Asset</button>
+        </div>
+
+    </main>
+
+    <script>
+        const input = document.getElementById("imageInput");
+        const preview = document.getElementById("preview");
+        const widthInput = document.getElementById("width");
+        const heightInput = document.getElementById("height");
+        const ratio = document.getElementById("ratio");
+        const resizeBtn = document.getElementById("resizeBtn");
+        const downloadBtn = document.getElementById("downloadBtn");
+        const dimensions = document.getElementById("dimensions");
+
+        let image = new Image();
+        let originalRatio = 1;
+        let resizedURL = "";
+
+        input.addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            image.onload = function() {
+                preview.src = image.src;
+                preview.style.display = "block";
+                widthInput.value = image.width;
+                heightInput.value = image.height;
+                originalRatio = image.width / image.height;
+
+                dimensions.innerHTML = `Original Size: <strong>${image.width} × ${image.height} px</strong>`;
+                dimensions.style.display = "block";
+            };
+            image.src = URL.createObjectURL(file);
+        });
+
+        // Aspect ratio calculations hooks
+        widthInput.addEventListener("input", () => {
+            if (ratio.checked && originalRatio) {
+                heightInput.value = Math.round(widthInput.value / originalRatio);
+            }
+        });
+
+        heightInput.addEventListener("input", () => {
+            if (ratio.checked && originalRatio) {
+                widthInput.value = Math.round(heightInput.value * originalRatio);
+            }
+        });
+
+        // Scaling loop executor
+        resizeBtn.addEventListener("click", () => {
+            if (!image.src) {
+                alert('Please upload an image first!');
+                return;
+            }
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = Number(widthInput.value) || image.width;
+            canvas.height = Number(heightInput.value) || image.height;
+
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                if (resizedURL) URL.revokeObjectURL(resizedURL); // Clean memory buffer
+
+                resizedURL = URL.createObjectURL(blob);
+                preview.src = resizedURL;
+                downloadBtn.style.display = "inline-block";
+            }, "image/jpeg", 0.95);
+        });
+
+        // Save pipeline link triggers
+        downloadBtn.addEventListener("click", () => {
+            if (!resizedURL) return;
+            const link = document.createElement("a");
+            link.href = resizedURL;
+            link.download = `resized_${Date.now()}.jpg`;
+            link.click();
+        });
+
+        // Standardized Theme Dark Footer Element Injection Pipeline
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px 10px";
+        footer.style.color = "var(--text-muted)";
+        footer.style.fontSize = "0.75rem";
+        footer.style.borderTop = "1px solid var(--border)";
+        footer.style.marginTop = "auto";
+        footer.innerHTML = "© 2026 Tone.pics | Creative Asset Utilities";
+        document.body.appendChild(footer);
+    </script>
 </body>
-
 </html>
