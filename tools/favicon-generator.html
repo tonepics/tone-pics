@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Favicon Generator - Tone.pics</title>
+
+<link rel="stylesheet" href="../style.css">
+
+<style>
+
+body{
+    background:#111;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.tool-container{
+    max-width:900px;
+    margin:40px auto;
+    padding:20px;
+}
+
+.back-home{
+    color:#aaa;
+    text-decoration:none;
+}
+
+.tool-header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.tool-header h1{
+    font-size:40px;
+}
+
+.tool-header p{
+    color:#aaa;
+}
+
+
+.tool-box{
+
+    background:#1b1b1f;
+    border:1px solid #333;
+    border-radius:15px;
+    padding:30px;
+    text-align:center;
+
+}
+
+
+.drop-zone{
+
+    border:2px dashed #555;
+    padding:40px;
+    border-radius:12px;
+    cursor:pointer;
+    margin-bottom:20px;
+
+}
+
+
+.drop-zone:hover{
+
+    border-color:#6366f1;
+
+}
+
+
+.preview-box{
+
+    margin:20px auto;
+
+}
+
+
+#preview{
+
+    max-width:250px;
+    max-height:250px;
+    border-radius:20px;
+    display:none;
+
+}
+
+
+button{
+
+    background:#4f46e5;
+    color:white;
+    border:0;
+    padding:12px 25px;
+    border-radius:8px;
+    cursor:pointer;
+    margin:8px;
+
+}
+
+
+button:hover{
+
+    background:#6366f1;
+
+}
+
+
+.sizes{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:15px;
+    margin-top:25px;
+
+}
+
+
+.size-card{
+
+    background:#252529;
+    padding:15px;
+    border-radius:10px;
+
+}
+
+
+canvas{
+
+    display:none;
+
+}
+
+
+footer{
+
+    text-align:center;
+    color:#777;
+    margin-top:40px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="tool-container">
+
+
+<a class="back-home" href="../index.html">
+← Back Home
+</a>
+
+
+
+<div class="tool-header">
+
+<h1>📱 Favicon Generator</h1>
+
+<p>Create favicons easily.</p>
+
+</div>
+
+
+
+<div class="tool-box">
+
+
+
+<div class="drop-zone" id="dropZone">
+
+📁 Drag & Drop Logo Here
+<br>
+or Click To Upload
+
+<input 
+type="file"
+id="fileInput"
+accept="image/*"
+hidden>
+
+</div>
+
+
+
+<div class="preview-box">
+
+<img id="preview">
+
+</div>
+
+
+
+<button onclick="generateFavicons()">
+Generate Favicons
+</button>
+
+
+<button onclick="downloadZip()">
+Download All ZIP 📦
+</button>
+
+
+
+<div class="sizes" id="results"></div>
+
+
+
+</div>
+
+
+</div>
+
+
+<canvas id="canvas"></canvas>
+
+
+<footer>
+© 2026 Tone.pics
+</footer>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+
+<script>
+
+
+const fileInput =
+document.getElementById("fileInput");
+
+
+const dropZone =
+document.getElementById("dropZone");
+
+
+const preview =
+document.getElementById("preview");
+
+
+const canvas =
+document.getElementById("canvas");
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+const results =
+document.getElementById("results");
+
+
+
+let image =
+new Image();
+
+
+let faviconFiles=[];
+
+
+
+dropZone.onclick=()=>fileInput.click();
+
+
+
+fileInput.onchange=e=>{
+
+loadImage(e.target.files[0]);
+
+};
+
+
+
+dropZone.ondragover=e=>{
+
+e.preventDefault();
+
+};
+
+
+
+dropZone.ondrop=e=>{
+
+e.preventDefault();
+
+loadImage(
+e.dataTransfer.files[0]
+);
+
+};
+
+
+
+
+
+function loadImage(file){
+
+
+if(!file || !file.type.startsWith("image/"))
+return;
+
+
+let reader=new FileReader();
+
+
+reader.onload=e=>{
+
+image.onload=()=>{
+
+preview.src=image.src;
+
+preview.style.display="block";
+
+};
+
+
+image.src=e.target.result;
+
+
+};
+
+
+reader.readAsDataURL(file);
+
+
+}
+
+
+
+
+
+const sizes=[16,32,48,64,128,256];
+
+
+
+
+
+function generateFavicons(){
+
+
+if(!image.src){
+
+alert("Upload image first");
+
+return;
+
+}
+
+
+
+results.innerHTML="";
+faviconFiles=[];
+
+
+
+sizes.forEach(size=>{
+
+
+canvas.width=size;
+canvas.height=size;
+
+
+
+ctx.clearRect(
+0,
+0,
+size,
+size
+);
+
+
+
+ctx.drawImage(
+image,
+0,
+0,
+size,
+size
+);
+
+
+
+canvas.toBlob(blob=>{
+
+
+let name=
+"favicon-"+size+"x"+size+".png";
+
+
+faviconFiles.push({
+
+name:name,
+blob:blob
+
+});
+
+
+
+let card=
+document.createElement("div");
+
+
+card.className="size-card";
+
+
+card.innerHTML=
+`
+<strong>${size}x${size}</strong>
+<br>
+<button>
+Download
+</button>
+`;
+
+
+
+card.querySelector("button")
+.onclick=()=>{
+
+
+let url=
+URL.createObjectURL(blob);
+
+
+let a=
+document.createElement("a");
+
+
+a.href=url;
+
+a.download=name;
+
+a.click();
+
+
+URL.revokeObjectURL(url);
+
+
+};
+
+
+
+results.appendChild(card);
+
+
+
+},"image/png");
+
+
+
+});
+
+
+
+}
+
+
+
+
+
+async function downloadZip(){
+
+
+if(faviconFiles.length===0){
+
+alert("Generate favicons first");
+
+return;
+
+}
+
+
+
+let zip=new JSZip();
+
+
+
+faviconFiles.forEach(file=>{
+
+zip.file(
+file.name,
+file.blob
+);
+
+});
+
+
+
+let content=
+await zip.generateAsync({
+
+type:"blob"
+
+});
+
+
+
+let url=
+URL.createObjectURL(content);
+
+
+
+let a=
+document.createElement("a");
+
+
+a.href=url;
+
+a.download=
+"tone-pics-favicons.zip";
+
+
+a.click();
+
+
+
+URL.revokeObjectURL(url);
+
+
+
+}
+
+
+
+</script>
+
+
+
+</body>
+
+</html>
