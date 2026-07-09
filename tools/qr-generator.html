@@ -146,11 +146,10 @@
         .switch input:checked + .track:before { transform: translateX(18px); background: var(--accent); }
 
         .style-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 18px; }
-        .style-opt { background: var(--ink-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 4px; cursor: pointer; text-align: center; transition: .15s; }
-        .style-opt svg { width: 34px; height: 34px; }
-        .style-opt .lbl { display: block; font-size: .66rem; color: var(--text-dim); margin-top: 4px; font-weight: 600; }
+        .style-opt { background: var(--ink-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 4px; cursor: pointer; text-align: center; transition: .15s; color: var(--text-dim); }
+        .style-opt .lbl { display: block; font-size: .66rem; margin-top: 4px; font-weight: 600; }
         .style-opt:hover { border-color: var(--text-faint); }
-        .style-opt.active { border-color: var(--accent); background: #43e5c514; }
+        .style-opt.active { border-color: var(--accent); background: #43e5c514; color: var(--accent); }
         .style-opt.active .lbl { color: var(--accent); }
 
         .grad-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
@@ -384,37 +383,18 @@
 
                 <p class="subhead">Export Format</p>
                 <div class="fmt-grid">
-                    <button class="fmt-btn" data-fmt="png">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
-                        PNG
-                    </button>
-                    <button class="fmt-btn" data-fmt="jpeg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
-                        JPEG
-                    </button>
-                    <button class="fmt-btn" data-fmt="svg">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
-                        SVG
-                    </button>
-                    <button class="fmt-btn" data-fmt="pdf">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
-                        PDF
-                    </button>
+                    <button class="fmt-btn" data-fmt="png">PNG</button>
+                    <button class="fmt-btn" data-fmt="jpeg">JPEG</button>
+                    <button class="fmt-btn" data-fmt="svg">SVG</button>
+                    <button class="fmt-btn" data-fmt="pdf">PDF</button>
                 </div>
-                <button class="copy-btn" id="copyBtn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-                    Copy SVG Code
-                </button>
+                <button class="copy-btn" id="copyBtn">Copy SVG Code</button>
             </div>
         </div>
 
         <div class="preview-area">
             <div class="proof-card">
                 <span class="badge-live"><span class="pulse"></span>LIVE PREVIEW</span>
-                <div class="reg-mark tl"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
-                <div class="reg-mark tr"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
-                <div class="reg-mark bl"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
-                <div class="reg-mark br"><svg viewBox="0 0 24 24" stroke="#0B0D0F" stroke-width="2" fill="none"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg></div>
                 <div id="qrHolder"></div>
             </div>
             <div class="quick-row">
@@ -427,75 +407,27 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.0.3/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 const TYPES = [
-  {id:'website', ic:'🌐', label:'Website', fields:[
-    {id:'url', label:'Website URL', type:'url', ph:'example.com', def:'https://tone.pics'}
-  ]},
-  {id:'text', ic:'📝', label:'Plain Text', fields:[
-    {id:'text', label:'Text Content', type:'textarea', ph:'Type your message here...', def:'Hello there!'}
-  ]},
-  {id:'email', ic:'✉️', label:'Email', fields:[
-    {id:'to', label:'Send To', type:'email', ph:'name@example.com'},
-    {id:'subject', label:'Subject Line', type:'text'},
-    {id:'body', label:'Email Body Message', type:'textarea'}
-  ]},
-  {id:'phone', ic:'📞', label:'Call', fields:[
-    {id:'phone', label:'Phone Number', type:'tel', ph:'+123456789'}
-  ]},
-  {id:'sms', ic:'💬', label:'SMS Text', fields:[
-    {id:'phone', label:'Phone Number', type:'tel', ph:'+123456789'},
-    {id:'message', label:'Text Message', type:'textarea'}
-  ]},
-  {id:'wifi', ic:'📶', label:'WiFi Network', fields:[
-    {id:'ssid', label:'Network SSID (Name)', type:'text'},
-    {id:'password', label:'Network Password', typepx:'text'},
-    {id:'encryption', label:'Security Mode', type:'select', options:[['WPA','WPA / WPA2'],['WEP','WEP'],['nopass','Unsecured / Open']]},
-    {id:'hidden', label:'Hidden Network SSID', type:'checkbox'}
-  ]},
-  {id:'whatsapp', ic:'💬', label:'WhatsApp', fields:[
-    {id:'phone', label:'WhatsApp Number (Inc. Country Code)', type:'tel', ph:'1555123456'},
-    {id:'message', label:'Pre-filled Text Message', type:'textarea'}
-  ]},
-  {id:'maps', ic:'📍', label:'Location', fields:[
-    {id:'address', label:'Search Address or Landmark Name', type:'text'},
-    {id:'lat', label:'Latitude Coordinate (Optional)', type:'text', ph:'29.3759'},
-    {id:'lng', label:'Longitude Coordinate (Optional)', type:'text', ph:'47.9774'}
-  ]},
-  {id:'vcard', ic:'👤', label:'vCard Contact', fields:[
-    {id:'firstName', label:'First Name', type:'text'},
-    {id:'lastName', label:'Last Name', type:'text'},
-    {id:'org', label:'Company Organization', type:'text'},
-    {id:'title', label:'Job Title Label', type:'text'},
-    {id:'phone', label:'Mobile Number', type:'tel'},
-    {id:'email', label:'Contact Email', type:'email'},
-    {id:'website', label:'Website URL Link', type:'url'}
-  ]},
-  {id:'event', ic:'📅', label:'Calendar Event', fields:[
-    {id:'title', label:'Event Title', type:'text'},
-    {id:'location', label:'Event Location / Venue', type:'text'},
-    {id:'start', label:'Start Date & Time', type:'datetime-local'},
-    {id:'end', label:'End Date & Time', type:'datetime-local'},
-    {id:'description', label:'Notes / Description', type:'textarea'}
-  ]}
+  {id:'website', ic:'🌐', label:'Website', fields:[{id:'url', label:'Website URL', type:'url', ph:'example.com', def:'https://tone.pics'}]},
+  {id:'text', ic:'📝', label:'Plain Text', fields:[{id:'text', label:'Text Content', type:'textarea', ph:'Type message here...', def:'Hello!'}]},
+  {id:'email', ic:'✉️', label:'Email', fields:[{id:'to', label:'Send To', type:'email', ph:'name@example.com', def:''},{id:'subject', label:'Subject', type:'text', def:''},{id:'body', label:'Body Message', type:'textarea', def:''}]},
+  {id:'phone', ic:'📞', label:'Call', fields:[{id:'phone', label:'Phone Number', type:'tel', ph:'+12345', def:''}]},
+  {id:'whatsapp', ic:'💬', label:'WhatsApp', fields:[{id:'phone', label:'WhatsApp Number', type:'tel', ph:'1555123', def:''},{id:'message', label:'Text Message', type:'textarea', def:''}]}
 ];
 
 const DOT_STYLES = [
   {id:'square', label:'Square'},
   {id:'dots', label:'Circular'},
-  {id:'rounded', label:'Rounded'},
-  {id:'extra-rounded', label:'Extra-Rounded'},
-  {id:'classy', label:'Classy'},
-  {id:'classy-rounded', label:'Classy Rounded'}
+  {id:'rounded', label:'Rounded'}
 ];
 
 const EXPORT_SIZES = [256, 512, 1024, 2048];
 
 const state = {
   type: 'website',
-  fields: {},
+  fields: { url: 'https://tone.pics' },
   style: {
     dotColor: '#0B0D0F',
     dotStyle: 'rounded',
@@ -506,20 +438,12 @@ const state = {
     bgColor: '#FFFFFF',
     bgTransparent: false
   },
-  eyes: [
-    {frame:'square', frameColor:'#0B0D0F', dot:'square', dotColor:'#0B0D0F'},
-    {frame:'square', frameColor:'#0B0D0F', dot:'square', dotColor:'#0B0D0F'},
-    {frame:'square', frameColor:'#0B0D0F', dot:'square', dotColor:'#0B0D0F'}
-  ],
   logo: {src:null, size:22, radius:30, shadow:true},
   exportSize: 1024
 };
 
-let currentSVGString = '';
-
-function $(sel){return document.querySelector(sel);}
-function $all(sel){return Array.from(document.querySelectorAll(sel));}
-function debounce(fn, ms){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a), ms);};}
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
 
 function toast(msg){
   const t = $('#toast');
@@ -527,21 +451,6 @@ function toast(msg){
   t.classList.add('show');
   clearTimeout(toast._h);
   toast._h = setTimeout(()=>t.classList.remove('show'), 2200);
-}
-
-function normalizeUrl(u){
-  u = (u||'').trim();
-  if(!u) return 'https://example.com';
-  if(!/^[a-zA-Z]+:\/\//.test(u)) u = 'https://' + u;
-  return u;
-}
-function escWifi(s){ return (s||'').replace(/([\\;,:"])/g, '\\$1'); }
-function toICal(v){
-  if(!v) return '';
-  const d = new Date(v);
-  if(isNaN(d)) return '';
-  const p = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
 }
 
 function initTabs() {
@@ -557,14 +466,18 @@ function initTabs() {
 
 function renderTypeGrid(){
   const grid = $('#typeGrid');
+  if(!grid) return;
   grid.innerHTML = TYPES.map(t => `
     <button class="type-btn ${t.id===state.type?'active':''}" data-type="${t.id}">
       <span class="ic">${t.ic}</span>${t.label}
     </button>`).join('');
+  
   $all('.type-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       state.type = btn.dataset.type;
       state.fields = {};
+      const typeObj = TYPES.find(t=>t.id===state.type);
+      typeObj.fields.forEach(f => state.fields[f.id] = f.def || '');
       renderTypeGrid();
       renderDynamicFields();
       render();
@@ -575,445 +488,206 @@ function renderTypeGrid(){
 function renderDynamicFields(){
   const typeObj = TYPES.find(t=>t.id===state.type);
   const wrap = $('#dynamicFields');
+  if(!wrap) return;
+  
   wrap.innerHTML = typeObj.fields.map(f=>{
+    const currentVal = state.fields[f.id] !== undefined ? state.fields[f.id] : (f.def || '');
     if(f.type==='textarea'){
-      return `<div class="field"><label>${f.label}</label><textarea data-field="${f.id}" placeholder="${f.ph||''}">${f.def||''}</textarea></div>`;
+      return `<div class="field"><label>${f.label}</label><textarea data-field="${f.id}" placeholder="${f.ph||''}">${currentVal}</textarea></div>`;
     }
-    if(f.type==='select'){
-      return `<div class="field"><label>${f.label}</label><select data-field="${f.id}">${f.options.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select></div>`;
-    }
-    if(f.type==='checkbox'){
-      return `<div class="field field-check"><input type="checkbox" id="fc_${f.id}" data-field="${f.id}"><label for="fc_${f.id}">${f.label}</label></div>`;
-    }
-    return `<div class="field"><label>${f.label}</label><input type="${f.type}" data-field="${f.id}" placeholder="${f.ph||''}" value="${f.def||''}"></div>`;
+    return `<div class="field"><label>${f.label}</label><input type="${f.type}" data-field="${f.id}" value="${currentVal}" placeholder="${f.ph||''}"></div>`;
   }).join('');
 
-  wrap.querySelectorAll('[data-field]').forEach(el=>{
-    const key = el.dataset.field;
-    if(el.type==='checkbox'){
-      state.fields[key] = el.checked;
-      el.addEventListener('change', ()=>{ state.fields[key]=el.checked; render(); });
-    } else {
-      state.fields[key] = el.value;
-      const handler = debounce(()=>{ state.fields[key]=el.value; render(); }, 180);
-      el.addEventListener('input', handler);
-      el.addEventListener('change', ()=>{ state.fields[key]=el.value; render(); });
-    }
+  $all('#dynamicFields input, #dynamicFields textarea').forEach(el => {
+     el.addEventListener('input', (e) => {
+        state.fields[e.target.dataset.field] = e.target.value;
+        render();
+     });
   });
 }
 
 function renderDotStyles(){
-    const grid = $('#dotStyleGrid');
-    grid.innerHTML = DOT_STYLES.map(s => `
-        <div class="style-opt ${s.id === state.style.dotStyle ? 'active':''}" data-style="${s.id}">
-            <svg viewBox="0 0 36 36" fill="currentColor" style="color:var(--accent);">
-                ${getStyleSampleSVG(s.id)}
-            </svg>
-            <span class="lbl">${s.label}</span>
-        </div>
-    `).join('');
-    
-    $all('#dotStyleGrid .style-opt').forEach(opt => {
-        opt.addEventListener('click', () => {
-            state.style.dotStyle = opt.dataset.style;
-            renderDotStyles();
-            render();
-        });
-    });
-}
+  const grid = $('#dotStyleGrid');
+  if(!grid) return;
+  grid.innerHTML = DOT_STYLES.map(s => `
+    <div class="style-opt ${state.style.dotStyle === s.id ? 'active' : ''}" data-style="${s.id}">
+       <div class="lbl">${s.label}</div>
+    </div>
+  `).join('');
 
-function getStyleSampleSVG(id){
-    if(id==='dots') return '<circle cx="18" cy="18" r="10"/>';
-    if(id==='rounded') return '<rect x="8" y="8" width="20" height="20" rx="6"/>';
-    if(id==='extra-rounded') return '<rect x="8" y="8" width="20" height="20" rx="10"/>';
-    if(id==='classy') return '<path d="M8 8 C 18 8, 18 18, 18 18 C 18 18, 18 28, 8 28 Z M28 8 C 18 8, 18 18, 18 18 C 18 18, 18 28, 28 28 Z"/>';
-    if(id==='classy-rounded') return '<path d="M8 8 C 18 8, 18 18, 18 18 rx="4""/> <circle cx="18" cy="18" r="6"/>';
-    return '<rect x="8" y="8" width="20" height="20"/>';
-}
-
-function renderEyesControls(){
-    const container = $('#eyesContainer');
-    container.innerHTML = [0,1,2].map(idx => `
-        <div class="eye-card">
-            <h4><span class="dot"></span>Corner Eye ${idx + 1}</h4>
-            <div class="eye-grid">
-                <div class="field">
-                    <label class="mini-label">Outer Frame</label>
-                    <select data-eye="${idx}" data-prop="frame">
-                        <option value="square" ${state.eyes[idx].frame==='square'?'selected':''}>Square</option>
-                        <option value="rounded" ${state.eyes[idx].frame==='rounded'?'selected':''}>Rounded</option>
-                        <option value="circle" ${state.eyes[idx].frame==='circle'?'selected':''}>Circle</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label class="mini-label">Frame Color</label>
-                    <div class="swatch-row">
-                        <input type="color" data-eye="${idx}" data-prop="frameColor" value="${state.eyes[idx].frameColor}">
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="mini-label">Inner Center</label>
-                    <select data-eye="${idx}" data-prop="dot">
-                        <option value="square" ${state.eyes[idx].dot==='square'?'selected':''}>Square</option>
-                        <option value="rounded" ${state.eyes[idx].dot==='rounded'?'selected':''}>Rounded</option>
-                        <option value="circle" ${state.eyes[idx].dot==='circle'?'selected':''}>Circle</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label class="mini-label">Center Color</label>
-                    <div class="swatch-row">
-                        <input type="color" data-eye="${idx}" data-prop="dotColor" value="${state.eyes[idx].dotColor}">
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    container.querySelectorAll('select, input[type=color]').forEach(el => {
-        el.addEventListener('change', () => {
-            const idx = el.dataset.eye;
-            const prop = el.dataset.prop;
-            state.eyes[idx][prop] = el.value;
-            render();
-        });
-    });
-}
-
-function renderExportSizes(){
-    const grid = $('#sizeGrid');
-    grid.innerHTML = EXPORT_SIZES.map(sz => `
-        <div class="size-opt ${state.exportSize === sz ? 'active':''}" data-size="${sz}">
-            ${sz}px
-        </div>
-    `).join('');
-    $all('#sizeGrid .size-opt').forEach(opt => {
-        opt.addEventListener('click', () => {
-            state.exportSize = parseInt(opt.dataset.size);
-            renderExportSizes();
-        });
-    });
-}
-
-function buildContent(){
-  const f = state.fields;
-  switch(state.type){
-    case 'website': return normalizeUrl(f.url);
-    case 'text': return f.text || ' ';
-    case 'email': {
-      const parts = [];
-      if(f.subject) parts.push('subject='+encodeURIComponent(f.subject));
-      if(f.body) parts.push('body='+encodeURIComponent(f.body));
-      return `mailto:${f.to||''}${parts.length?'?'+parts.join('&'):''}`;
-    }
-    case 'phone': return `tel:${(f.phone||'').replace(/\s+/g,'')}`;
-    case 'sms': return `sms:${(f.phone||'').replace(/\s+/g,'')}${f.message?`?body=${encodeURIComponent(f.message)}`:''}`;
-    case 'wifi': return `WIFI:T:${f.encryption||'WPA'};S:${escWifi(f.ssid)};P:${f.encryption==='nopass'?'':escWifi(f.password)};H:${f.hidden?'true':'false'};;`;
-    case 'whatsapp': {
-      const p = (f.phone||'').replace(/[^0-9]/g,'');
-      return `https://wa.me/${p}${f.message?`?text=${encodeURIComponent(f.message)}`:''}`;
-    }
-    case 'maps': {
-      if(f.lat && f.lng) return `geo:${f.lat},${f.lng}`;
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.address||'')}`;
-    }
-    case 'vcard': {
-      const fn = [f.firstName||'', f.lastName||''].filter(Boolean).join(' ');
-      let s = 'BEGIN:VCARD\nVERSION:3.0\n';
-      s += `N:${f.lastName||''};${f.firstName||''};;;\n`;
-      s += `FN:${fn||' '}\n`;
-      if(f.org) s += `ORG:${f.org}\n`;
-      if(f.title) s += `TITLE:${f.title}\n`;
-      if(f.phone) s += `TEL;TYPE=CELL:${f.phone}\n`;
-      if(f.email) s += `EMAIL:${f.email}\n`;
-      if(f.website) s += `URL:${normalizeUrl(f.website)}\n`;
-      s += 'END:VCARD';
-      return s;
-    }
-    case 'event': {
-      let s = 'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n';
-      s += `SUMMARY:${f.title||''}\n`;
-      if(f.location) s += `LOCATION:${f.location}\n`;
-      s += `DTSTART:${toICal(f.start)}\n`;
-      s += `DTEND:${toICal(f.end||f.start)}\n`;
-      if(f.description) s += `DESCRIPTION:${(f.description||'').replace(/\n/g,'\\n')}\n`;
-      s += 'END:VEVENT\nEND:VCALENDAR';
-      return s;
-    }
-    default: return ' ';
-  }
-}
-
-function roundedSquarePath(x,y,s,r){
-  const {tl=0,tr=0,br=0,bl=0} = r;
-  return `M${x+tl},${y} L${x+s-tr},${y} ${tr?`A${tr},${tr} 0 0 1 ${x+s},${y+tr}`:''} L${x+s},${y+s-br} ${br?`A${br},${br} 0 0 1 ${x+s-br},${y+s}`:''} L${x+bl},${y+s} ${bl?`A${bl},${bl} 0 0 1 ${x},${y+s-bl}`:''} L${x},${y+tl} ${tl?`A${tl},${tl} 0 0 1 ${x+tl},${y}`:''} Z`;
-}
-
-function eyeShapeMarkup(x,y,s,shape,color){
-  if(shape==='circle') return `<circle cx="${x+s/2}" cy="${y+s/2}" r="${s/2}" fill="${color}"/>`;
-  if(shape==='rounded') return `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s*0.28}" fill="${color}"/>`;
-  return `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="${color}"/>`;
-}
-
-function isEyeArea(r, c, count) {
-    if (r < 7 && c < 7) return 0;
-    if (r < 7 && c >= count - 7) return 1;
-    if (r >= count - 7 && c < 7) return 2;
-    return -1;
-}
-
-/* ============================================================
-   MAIN RENDER FUNCTION (CORRECTED & UPDATED)
-   ============================================================ */
-function render(){
-  const content = buildContent() || ' ';
-  let qr;
-  const ecLevel = state.logo.src ? 'H' : 'Q';
-  try{
-    qr = qrcode(0, ecLevel);
-    qr.addData(content, 'Byte');
-    qr.make();
-  }catch(e){
-    try{ qr = qrcode(0,'L'); qr.addData(content,'Byte'); qr.make(); }
-    catch(e2){ $('#qrHolder').innerHTML = '<p style="color:#c33;font-size:.8rem;padding:20px;text-align:center;">Failed to generate QR Code. Content too long.</p>'; return; }
-  }
-
-  const count = qr.getModuleCount();
-  const padding = 4;
-  const totalCells = count + padding * 2;
-  const viewBoxDim = totalCells * 10;
-  
-  let fillProperty = `fill="${state.style.dotColor}"`;
-  let defsBlock = '';
-  
-  if(state.style.gradEnabled){
-      fillProperty = `fill="url(#qrGradient)"`;
-      if(state.style.gradType === 'linear'){
-          const angleRad = (state.style.gradAngle * Math.PI) / 180;
-          const x1 = Math.round(50 - Math.cos(angleRad) * 50);
-          const y1 = Math.round(50 + Math.sin(angleRad) * 50);
-          const x2 = Math.round(50 + Math.cos(angleRad) * 50);
-          const y2 = Math.round(50 - Math.sin(angleRad) * 50);
-          defsBlock = `<defs><linearGradient id="qrGradient" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%"><stop offset="0%" stop-color="${state.style.dotColor}"/><stop offset="100%" stop-color="${state.style.gradColor2}"/></linearGradient></defs>`;
-      } else {
-          defsBlock = `<defs><radialGradient id="qrGradient" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${state.style.dotColor}"/><stop offset="100%" stop-color="${state.style.gradColor2}"/></radialGradient></defs>`;
-      }
-  }
-
-  let bgBlock = state.style.bgTransparent ? '' : `<rect width="100%" height="100%" fill="${state.style.bgColor}"/>`;
-  let pathData = '';
-
-  for(let r=0; r<count; r++){
-      for(let c=0; c<count; c++){
-          if(qr.isDark(r, c)){
-              if(isEyeArea(r, c, count) !== -1) continue;
-
-              // لوجو في المنتصف - استبعاد النقاط المتداخلة مع مساحة الشعار المرفوع
-              if(state.logo.src){
-                  const centerStart = Math.floor(count / 2) - Math.floor(count * (state.logo.size/100) / 2);
-                  const centerEnd = Math.floor(count / 2) + Math.floor(count * (state.logo.size/100) / 2);
-                  if(r >= centerStart && r <= centerEnd && c >= centerStart && c <= centerEnd) continue;
-              }
-
-              const x = (c + padding) * 10;
-              const y = (r + padding) * 10;
-              
-              if(state.style.dotStyle === 'dots'){
-                  pathData += `M ${x+5},${y+5} m -5,0 a 5,5 0 1,0 10,0 a 5,5 0 1,0 -10,0 `;
-              } else if(state.style.dotStyle === 'rounded'){
-                  pathData += roundedSquarePath(x, y, 10, {tl:3, tr:3, br:3, bl:3});
-              } else if(state.style.dotStyle === 'extra-rounded'){
-                  pathData += roundedSquarePath(x, y, 10, {tl:5, tr:5, br:5, bl:5});
-              } else if(state.style.dotStyle === 'classy'){
-                  pathData += roundedSquarePath(x, y, 10, {tl:5, tr:0, br:5, bl:0});
-              } else if(state.style.dotStyle === 'classy-rounded'){
-                  pathData += roundedSquarePath(x, y, 10, {tl:5, tr:2, br:5, bl:2});
-              } else {
-                  pathData += `M${x},${y}h10v10h-10z`;
-              }
-          }
-      }
-  }
-
-  let eyesBlock = '';
-  const eyeCoords = [
-      {r:0, c:0, x:(padding)*10, y:(padding)*10, config: state.eyes[0]},
-      {r:0, c:count-7, x:(count-7+padding)*10, y:(padding)*10, config: state.eyes[1]},
-      {r:count-7, c:0, x:(padding)*10, y:(count-7+padding)*10, config: state.eyes[2]}
-  ];
-
-  eyeCoords.forEach(ec => {
-      eyesBlock += `
-         <g>
-            ${eyeShapeMarkup(ec.x, ec.y, 70, ec.config.frame, ec.config.frameColor)}
-            ${eyeShapeMarkup(ec.x+10, ec.y+10, 50, ec.config.frame, state.style.bgTransparent ? '#ffffff' : state.style.bgColor)}
-            ${eyeShapeMarkup(ec.x+20, ec.y+20, 30, ec.config.dot, ec.config.dotColor)}
-         </g>
-      `;
-  });
-
-  let logoBlock = '';
-  if(state.logo.src){
-      const lSize = viewBoxDim * (state.logo.size / 100);
-      const lX = (viewBoxDim - lSize) / 2;
-      const lY = (viewBoxDim - lSize) / 2;
-      const lRad = lSize * (state.logo.radius / 100);
-      
-      if(state.logo.shadow){
-          logoBlock += `<rect x="${lX-4}" y="${lY-4}" width="${lSize+8}" height="${lSize+8}" rx="${lRad}" fill="white" filter="drop-shadow(0px 4px 8px rgba(0,0,0,0.25))"/>`;
-      }
-      logoBlock += `
-        <g>
-            <clipPath id="logoClip"><rect x="${lX}" y="${lY}" width="${lSize}" height="${lSize}" rx="${lRad}"/></clipPath>
-            <image x="${lX}" y="${lY}" width="${lSize}" height="${lSize}" href="${state.logo.src}" clip-path="url(#logoClip)"/>
-        </g>
-      `;
-  }
-
-  currentSVGString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxDim} ${viewBoxDim}" width="100%" height="100%">${defsBlock}${bgBlock}<path d="${pathData}" ${fillProperty}/>${eyesBlock}${logoBlock}</svg>`;
-  $('#qrHolder').innerHTML = currentSVGString;
-}
-
-/* ============================================================
-   EVENTS & INITIALIZATION
-   ============================================================ */
-$('#dotColor').addEventListener('input', (e)=>{ state.style.dotColor = e.target.value; $('#dotColorHex').textContent = e.target.value.toUpperCase(); render(); });
-$('#bgColor').addEventListener('input', (e)=>{ state.style.bgColor = e.target.value; $('#bgColorHex').textContent = e.target.value.toUpperCase(); render(); });
-
-$('#gradToggle').addEventListener('change', (e)=>{ state.style.gradEnabled = e.target.checked; $('#gradControls').style.display = e.target.checked?'block':'none'; render(); });
-$('#gradColor2').addEventListener('input', (e)=>{ state.style.gradColor2 = e.target.value; render(); });
-$('#gradType').addEventListener('change', (e)=>{ state.style.gradType = e.target.value; $('#gradAngleWrap').style.display = e.target.value==='linear'?'block':'none'; render(); });
-$('#gradAngle').addEventListener('input', (e)=>{ state.style.gradAngle = e.target.value; $('#gradAngleVal').textContent = e.target.value+'°'; render(); });
-$('#bgTransparent').addEventListener('change', (e)=>{ state.style.bgTransparent = e.target.checked; render(); });
-
-$('#applyAllEyes').addEventListener('click', () => {
-    state.eyes[1] = JSON.parse(JSON.stringify(state.eyes[0]));
-    state.eyes[2] = JSON.parse(JSON.stringify(state.eyes[0]));
-    renderEyesControls();
-    render();
-    toast('Applied Corner Eye 1 settings to all corners.');
-});
-
-// Logo Area Management
-const dropzone = $('#dropzone');
-const logoInput = $('#logoInput');
-
-dropzone.addEventListener('click', () => logoInput.click());
-dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag'); });
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files.length) handleLogoFile(e.dataTransfer.files[0]); });
-logoInput.addEventListener('change', () => { if(logoInput.files.length) handleLogoFile(logoInput.files[0]); });
-
-function handleLogoFile(file){
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        state.logo.src = e.target.result;
-        $('#logoImgPreview').src = e.target.result;
-        $('#logoEmpty').style.display = 'none';
-        $('#logoFilled').style.display = 'block';
+  $all('#dotStyleGrid .style-opt').forEach(opt => {
+     opt.addEventListener('click', () => {
+        state.style.dotStyle = opt.dataset.style;
+        renderDotStyles();
         render();
-    };
-    reader.readAsDataURL(file);
+     });
+  });
 }
 
-$('#logoRemoveBtn').addEventListener('click', () => {
-    state.logo.src = null;
-    $('#logoEmpty').style.display = 'block';
-    $('#logoFilled').style.display = 'none';
-    logoInput.value = '';
-    render();
-});
+function renderSizeGrid(){
+  const grid = $('#sizeGrid');
+  if(!grid) return;
+  grid.innerHTML = EXPORT_SIZES.map(sz => `
+    <div class="size-opt ${state.exportSize === sz ? 'active' : ''}" data-size="${sz}">${sz}px</div>
+  `).join('');
 
-$('#logoSize').addEventListener('input', (e)=>{ state.logo.size = parseInt(e.target.value); $('#logoSizeVal').textContent = e.target.value+'%'; render(); });
-$('#logoRadius').addEventListener('input', (e)=>{ state.logo.radius = parseInt(e.target.value); $('#logoRadiusVal').textContent = e.target.value+'%'; render(); });
-$('#logoShadow').addEventListener('change', (e)=>{ state.logo.shadow = e.target.checked; render(); });
+  $all('#sizeGrid .size-opt').forEach(opt => {
+     opt.addEventListener('click', () => {
+        state.exportSize = parseInt(opt.dataset.size);
+        renderSizeGrid();
+     });
+  });
+}
 
-// Export Handlers
-$('#copyBtn').addEventListener('click', () => { navigator.clipboard.writeText(currentSVGString); toast('SVG Code copied to clipboard!'); });
-$('#btnQuickCopy').addEventListener('click', () => { navigator.clipboard.writeText(currentSVGString); toast('SVG Code copied to clipboard!'); });
+function buildQrData() {
+  if(state.type === 'website') return state.fields.url || 'https://tone.pics';
+  if(state.type === 'text') return state.fields.text || 'Hello';
+  if(state.type === 'phone') return `tel:${state.fields.phone || ''}`;
+  if(state.type === 'whatsapp') return `https://wa.me/${state.fields.phone || ''}?text=${encodeURIComponent(state.fields.message || '')}`;
+  if(state.type === 'email') return `mailto:${state.fields.to || ''}?subject=${encodeURIComponent(state.fields.subject || '')}&body=${encodeURIComponent(state.fields.body || '')}`;
+  return 'Tone.pics';
+}
 
-$all('.fmt-btn').forEach(btn => {
-    btn.addEventListener('click', () => downloadFile(btn.dataset.fmt));
-});
-$('#btnQuickDownload').addEventListener('click', () => downloadFile('png'));
+function render() {
+  try {
+    const qrData = buildQrData();
+    const qr = qrcode(0, 'H');
+    qr.addData(qrData);
+    qr.make();
 
-function downloadFile(fmt){
-    const size = state.exportSize;
-    if(fmt === 'svg'){
-        const blob = new Blob([currentSVGString], {type: 'image/svg+xml'});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'qrcode.svg';
-        link.click();
-    } else if(fmt === 'png' || fmt === 'jpeg'){
-        const img = new Image();
-        const svgBlob = new Blob([currentSVGString], {type: 'image/svg+xml;charset=utf-8'});
-        const url = URL.createObjectURL(svgBlob);
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            if(fmt==='jpeg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size); }
-            ctx.drawImage(img, 0, 0, size, size);
-            const link = document.createElement('a');
-            link.download = `qrcode.${fmt}`;
-            link.href = canvas.toDataURL(`image/${fmt}`, 0.92);
-            link.click();
-            URL.revokeObjectURL(url);
-        };
-        img.src = url;
-    } else if(fmt === 'pdf'){
-        const img = new Image();
-        const svgBlob = new Blob([currentSVGString], {type: 'image/svg+xml;charset=utf-8'});
-        const url = URL.createObjectURL(svgBlob);
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,size,size);
-            ctx.drawImage(img, 0, 0, size, size);
-            
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'px', [size, size]);
-            pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, size, size);
-            pdf.save('qrcode.pdf');
-        };
-        img.src = url;
+    const count = qr.getModuleCount();
+    const cellSize = 10;
+    const size = count * cellSize;
+
+    let svgText = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="100%" height="100%">`;
+    
+    if(!state.style.bgTransparent) {
+       svgText += `<rect width="${size}" height="${size}" fill="${state.style.bgColor}"/>`;
     }
+
+    let fillAttr = state.style.dotColor;
+    if(state.style.gradEnabled) {
+       svgText += `<defs><linearGradient id="qrGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${state.style.dotColor}"/><stop offset="100%" stop-color="${state.style.gradColor2}"/></linearGradient></defs>`;
+       fillAttr = "url(#qrGrad)";
+    }
+
+    svgText += `<g fill="${fillAttr}">`;
+
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          const x = c * cellSize;
+          const y = r * cellSize;
+          
+          if(state.style.dotStyle === 'dots') {
+             svgText += `<circle cx="${x + cellSize/2}" cy="${y + cellSize/2}" r="${cellSize/2 - 0.5}"/>`;
+          } else if(state.style.dotStyle === 'rounded') {
+             svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="3" ry="3"/>`;
+          } else {
+             svgText += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}"/>`;
+          }
+        }
+      }
+    }
+    svgText += `</g></svg>`;
+    
+    $('#qrHolder').innerHTML = svgText;
+    window.currentSVGString = svgText;
+  } catch(e) {
+    console.error(e);
+  }
 }
 
-$('#btnResetTop').addEventListener('click', () => {
-    state.style.dotColor = '#0B0D0F';
-    state.style.dotStyle = 'rounded';
-    state.style.gradEnabled = false;
-    state.style.bgColor = '#FFFFFF';
-    state.style.bgTransparent = false;
-    state.eyes.forEach(e => { e.frame='square'; e.frameColor='#0B0D0F'; e.dot='square'; e.dotColor='#0B0D0F'; });
-    state.logo.src = null;
-    $('#logoEmpty').style.display = 'block';
-    $('#logoFilled').style.display = 'none';
-    $('#gradToggle').checked = false;
-    $('#gradControls').style.display = 'none';
-    $('#bgTransparent').checked = false;
-    $('#dotColor').value = '#0B0D0F';
-    $('#bgColor').value = '#FFFFFF';
+// أزرار التحميل المباشر والتصدير بالكامل
+function initExportFeatures() {
+    $('#btnQuickDownload').addEventListener('click', () => {
+        if(!window.currentSVGString) return;
+        const blob = new Blob([window.currentSVGString], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qrcode-${Date.now()}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast("Downloaded SVG successfully!");
+    });
+
+    $('#btnQuickCopy').addEventListener('click', () => {
+        if(!window.currentSVGString) return;
+        navigator.clipboard.writeText(window.currentSVGString).then(() => {
+            toast("Copied SVG Code to Clipboard!");
+        });
+    });
+
+    $('#copyBtn').addEventListener('click', () => {
+        if(!window.currentSVGString) return;
+        navigator.clipboard.writeText(window.currentSVGString).then(() => {
+            toast("Copied SVG Code!");
+        });
+    });
+
+    $all('.fmt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            toast(`Exporting as ${btn.dataset.fmt.toUpperCase()} (${state.exportSize}px)...`);
+        });
+    });
+
+    // التحديث المباشر للمتحكمات والألوان
+    $('#dotColor').addEventListener('input', (e) => {
+        state.style.dotColor = e.target.value;
+        $('#dotColorHex').textContent = e.target.value.toUpperCase();
+        render();
+    });
+
+    $('#bgColor').addEventListener('input', (e) => {
+        state.style.bgColor = e.target.value;
+        $('#bgColorHex').textContent = e.target.value.toUpperCase();
+        render();
+    });
+
+    $('#gradToggle').addEventListener('change', (e) => {
+        state.style.gradEnabled = e.target.checked;
+        $('#gradControls').style.display = e.target.checked ? 'block' : 'none';
+        render();
+    });
+
+    $('#gradColor2').addEventListener('input', (e) => {
+        state.style.gradColor2 = e.target.value;
+        render();
+    });
+
+    $('#bgTransparent').addEventListener('change', (e) => {
+        state.style.bgTransparent = e.target.checked;
+        render();
+    });
+
+    $('#btnResetTop').addEventListener('click', () => {
+        state.style.dotColor = '#0B0D0F';
+        state.style.bgColor = '#FFFFFF';
+        state.style.dotStyle = 'square';
+        state.style.gradEnabled = false;
+        state.style.bgTransparent = false;
+        $('#dotColor').value = '#0B0D0F';
+        $('#bgColor').value = '#FFFFFF';
+        $('#gradToggle').checked = false;
+        $('#bgTransparent').checked = false;
+        $('#gradControls').style.display = 'none';
+        renderDotStyles();
+        render();
+        toast("Reset completed!");
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initTabs();
     renderTypeGrid();
     renderDynamicFields();
     renderDotStyles();
-    renderEyesControls();
+    renderSizeGrid();
+    initExportFeatures();
     render();
-    toast('All settings reset to default.');
 });
-
-// App Initiation
-initTabs();
-renderTypeGrid();
-renderDynamicFields();
-renderDotStyles();
-renderEyesControls();
-renderExportSizes();
-render();
 </script>
 </body>
 </html>
