@@ -1,294 +1,308 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" dir="ltr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Picker | Tone.pics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<title>Color Picker - Tone.pics</title>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<link rel="stylesheet" href="tool-style.css">
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .btn-home:hover {
+            color: var(--text-main);
+        }
+
+        /* Hero Header */
+        .hero-section {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Workspace Main Grid */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 10px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tool-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+        }
+
+        /* Custom File Input Style */
+        input[type="file"] {
+            width: 100%;
+            max-width: 350px;
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        canvas {
+            display: none; /* مخفي افتراضياً حتى يتم رفع الصورة */
+            margin: 15px auto;
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            cursor: crosshair;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            object-fit: contain;
+        }
+
+        /* Results Display Panel */
+        #result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        #result h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        #colorBox {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #2d2d34;
+            border: 2px solid var(--border);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            transition: background 0.1s ease;
+        }
+
+        #result p {
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* Copy Button Style */
+        .btn {
+            background-color: var(--accent);
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+    </style>
 </head>
-
-
 <body>
 
-
-<div class="tool-container">
-
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-<div class="tool-header">
-
-<h1>🎯 Color Picker</h1>
-
-<p>
-Pick any color from your image instantly.
-</p>
-
-</div>
-
-
-
-<div class="tool-box">
-
-
-<input 
-type="file" 
-id="imageInput" 
-accept="image/*"
->
-
-
-<canvas id="canvas"></canvas>
-
-
-<div id="result">
-
-<h3>Selected Color</h3>
-
-<div id="colorBox"></div>
-
-<p id="hex">HEX: -</p>
-
-<p id="rgb">RGB: -</p>
-
-<button class="button" id="copyBtn">
-Copy HEX
-</button>
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-<footer>
-
-© 2026 Tone.pics
-
-</footer>
-
-
-
-
-<script>
-
-
-const input = document.getElementById("imageInput");
-
-const canvas = document.getElementById("canvas");
-
-const ctx = canvas.getContext("2d");
-
-const hexText = document.getElementById("hex");
-
-const rgbText = document.getElementById("rgb");
-
-const colorBox = document.getElementById("colorBox");
-
-const copyBtn = document.getElementById("copyBtn");
-
-
-let currentHex = "";
-
-
-
-canvas.style.maxWidth = "100%";
-
-canvas.style.borderRadius = "15px";
-
-canvas.style.cursor = "crosshair";
-
-
-
-input.addEventListener("change", function(){
-
-
-const file = this.files[0];
-
-
-if(!file) return;
-
-
-
-const img = new Image();
-
-
-img.onload = function(){
-
-
-canvas.width = img.width;
-
-canvas.height = img.height;
-
-
-ctx.drawImage(
-img,
-0,
-0
-);
-
-
-};
-
-
-
-img.src = URL.createObjectURL(file);
-
-
-
-});
-
-
-
-canvas.addEventListener("click", function(event){
-
-
-const rect = canvas.getBoundingClientRect();
-
-
-const x = Math.floor(
-(event.clientX - rect.left)
-*
-(canvas.width / rect.width)
-);
-
-
-const y = Math.floor(
-(event.clientY - rect.top)
-*
-(canvas.height / rect.height)
-);
-
-
-
-const pixel = ctx.getImageData(
-x,
-y,
-1,
-1
-).data;
-
-
-
-const r = pixel[0];
-
-const g = pixel[1];
-
-const b = pixel[2];
-
-
-
-currentHex =
-"#" +
-[r,g,b].map(value=>{
-
-
-let h = value.toString(16);
-
-
-return h.length === 1 
-? "0"+h 
-: h;
-
-
-}).join("");
-
-
-
-hexText.textContent =
-"HEX: " + currentHex.toUpperCase();
-
-
-
-rgbText.textContent =
-`RGB: ${r}, ${g}, ${b}`;
-
-
-
-colorBox.style.background = currentHex;
-
-
-
-});
-
-
-
-copyBtn.addEventListener("click", function(){
-
-
-if(currentHex){
-
-navigator.clipboard.writeText(currentHex);
-
-
-alert(
-"Copied " + currentHex.toUpperCase()
-);
-
-
-}
-
-
-});
-
-
-
-</script>
-
-
-
-<style>
-
-#canvas{
-
-display:block;
-
-margin:25px auto;
-
-}
-
-
-#colorBox{
-
-width:120px;
-
-height:120px;
-
-border-radius:20px;
-
-margin:20px auto;
-
-background:#334155;
-
-}
-
-
-
-#result{
-
-margin-top:30px;
-
-}
-
-
-
-</style>
-
-
-
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">🎯 Color Picker</div>
+    </header>
+
+    <section class="hero-section">
+        <h1>
+            <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="20" fill="#DD2E44"/>
+                <circle cx="24" cy="24" r="14" fill="#F4F4F4"/>
+                <circle cx="24" cy="24" r="8" fill="#DD2E44"/>
+                <circle cx="24" cy="24" r="3" fill="#31373D"/>
+            </svg>
+            Color Picker
+        </h1>
+        <p>Pick any color from your image instantly with absolute coordinate pixel mapping.</p>
+    </section>
+
+    <main class="container">
+        
+        <div class="tool-box">
+            <input type="file" id="imageInput" accept="image/*">
+            
+            <canvas id="canvas"></canvas>
+
+            <div id="result">
+                <h3>Selected Color</h3>
+                <div id="colorBox"></div>
+                <p id="hex">HEX: -</p>
+                <p id="rgb">RGB: -</p>
+                <button class="btn" id="copyBtn">Copy HEX</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const input = document.getElementById("imageInput");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const hexText = document.getElementById("hex");
+        const rgbText = document.getElementById("rgb");
+        const colorBox = document.getElementById("colorBox");
+        const copyBtn = document.getElementById("copyBtn");
+
+        let currentHex = "";
+
+        input.addEventListener("change", function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            const img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                canvas.style.display = "block"; // إظهار الكانفاس بعد تحميل الصورة
+            };
+            img.src = URL.createObjectURL(file);
+        });
+
+        // Event listener mapping for target canvas context parsing
+        canvas.addEventListener("click", function(event) {
+            const rect = canvas.getBoundingClientRect();
+
+            // حساب دقيق للإحداثيات الحقيقية للبكسل حتى مع تغير حجم الشاشة
+            const x = Math.floor((event.clientX - rect.left) * (canvas.width / rect.width));
+            const y = Math.floor((event.clientY - rect.top) * (canvas.height / rect.height));
+
+            const pixel = ctx.getImageData(x, y, 1, 1).data;
+
+            const r = pixel[0];
+            const g = pixel[1];
+            const b = pixel[2];
+
+            currentHex = "#" + [r, g, b].map(value => {
+                let h = value.toString(16);
+                return h.length === 1 ? "0" + h : h;
+            }).join("");
+
+            hexText.textContent = "HEX: " + currentHex.toUpperCase();
+            rgbText.textContent = `RGB: ${r}, ${g}, ${b}`;
+            colorBox.style.backgroundColor = currentHex;
+        });
+
+        // Clipboard function with temporary UI feedback loops
+        copyBtn.addEventListener("click", function() {
+            if (currentHex) {
+                navigator.clipboard.writeText(currentHex).then(() => {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = "Copied!";
+                    copyBtn.style.backgroundColor = "rgba(16, 185, 129, 1)"; // Emerald green feedback
+                    copyBtn.style.borderColor = "rgba(16, 185, 129, 1)";
+                    
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                        copyBtn.style.backgroundColor = "";
+                        copyBtn.style.borderColor = "";
+                    }, 1000);
+                }).catch(err => {
+                    console.error('Could not copy color text: ', err);
+                });
+            }
+        });
+
+        // Standardized Theme Dark Footer Element Injection Pipeline
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px 10px";
+        footer.style.color = "var(--text-muted)";
+        footer.style.fontSize = "0.75rem";
+        footer.style.borderTop = "1px solid var(--border)";
+        footer.style.marginTop = "auto";
+        footer.innerHTML = "© 2026 Tone.pics | Creative Asset Utilities";
+        document.body.appendChild(footer);
+    </script>
 </body>
-
 </html>
