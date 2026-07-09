@@ -1,569 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Photo Editor Online | Tone.pics Style</title>
+    <!-- Google Fonts for professional typography rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Dancing+Script&family=Inter:wght@400;600;700&family=Montserrat:wght@700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
 
-<title>Photo Editor - Tone.pics</title>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<link rel="stylesheet" href="tool-style.css">
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<!-- Professional Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&family=Cinzel:wght@600&family=Marck+Script&family=Courier+Prime&display=swap" rel="stylesheet">
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-<style>
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
 
-.editor-layout {
-    display:grid;
-    grid-template-columns:1fr 320px;
-    gap:20px;
-}
+        .btn-home:hover {
+            color: var(--text-main);
+        }
 
-@media(max-width:900px){
-    .editor-layout{
-        grid-template-columns:1fr;
-    }
-}
+        /* Hero Section (Tone.pics style) */
+        .hero-section {
+            text-align: center;
+            padding: 40px 20px 20px 20px;
+        }
 
+        .hero-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.canvas-area {
-    background:#111;
-    min-height:500px;
-    border-radius:15px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:2px dashed #444;
-    overflow:hidden;
-}
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
+        /* Main Workspace Container */
+        .editor-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
 
-#editorCanvas {
-    max-width:100%;
-    max-height:70vh;
-    display:none;
-    border-radius:10px;
-}
+        /* Controls Sidebar */
+        .controls-sidebar {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: fit-content;
+        }
 
+        .control-group {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
 
-.upload-box {
-    text-align:center;
-    cursor:pointer;
-    padding:40px;
-}
+        .control-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
 
+        .control-group h3 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-.upload-box span{
-    font-size:50px;
-}
+        /* Sliders and Range Wrappers */
+        .range-wrapper {
+            margin-bottom: 12px;
+        }
 
+        .range-wrapper label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
 
-.controls {
-    background:#1a1a1e;
-    padding:20px;
-    border-radius:15px;
-}
+        .range-wrapper input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            background: #2d2d34;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
 
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
 
-.control-group{
-    margin-bottom:18px;
-}
+        button {
+            background-color: #252529;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
 
+        button:hover {
+            background-color: #2d2d34;
+            border-color: #4b5563;
+        }
 
-.control-group label{
-    display:block;
-    margin-bottom:6px;
-}
+        /* Inputs & Select Elements */
+        .text-input-field {
+            width: 100%;
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
 
+        select {
+            width: 100%;
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            outline: none;
+        }
 
-input[type="range"]{
-    width:100%;
-}
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
+        .color-picker-wrapper input[type="color"] {
+            border: none;
+            width: 40px;
+            height: 30px;
+            background: transparent;
+            cursor: pointer;
+        }
 
-button,
-select,
-input{
-    width:100%;
-}
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
 
+        /* Canvas Workspace Area */
+        .workspace {
+            flex: 1;
+            min-width: 350px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 500px;
+        }
 
-.editor-btn{
+        /* Drag & Drop Upload Zone */
+        .dropzone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #3f3f46;
+            border-radius: 12px;
+            margin: 20px;
+            background-color: rgba(24, 24, 28, 0.5);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            z-index: 10;
+        }
 
-    margin-top:8px;
-    padding:10px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
+        .dropzone.dragover {
+            border-color: var(--accent);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
 
-}
+        .dropzone p {
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
 
+        /* Canvas Editor Viewport */
+        .canvas-container {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+            overflow: auto;
+            padding: 20px;
+            justify-content: center;
+            align-items: center;
+        }
 
-</style>
+        canvas {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+            max-width: 100%;
+        }
 
+        /* Floating Toolbar */
+        .workspace-toolbar {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+            background: rgba(15, 15, 17, 0.8);
+            padding: 6px;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+        }
+
+        .btn-export {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-export:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
-
-
 <body>
 
-
-<div class="tool-container">
-
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-
-<div class="tool-header">
-
-<h1>🖼️ Photo Editor</h1>
-
-<p>Edit images online professionally.</p>
-
-</div>
-
-
-
-<div class="tool-box">
-
-
-<div class="editor-layout">
-
-
-
-<!-- Canvas Area -->
-
-<div class="canvas-area" id="dropZone">
-
-
-<div class="upload-box" id="uploadBox">
-
-<span>🖼️</span>
-
-<p>
-Drag & Drop Image Here
-<br>
-or Click To Upload
-</p>
-
-
-<input 
-type="file"
-id="imageInput"
-accept="image/*"
-hidden>
-
-
-</div>
-
-
-<canvas id="editorCanvas"></canvas>
-
-
-</div>
-
-
-
-
-
-<!-- Controls -->
-
-<div class="controls">
-
-
-<h3>Basic Tools</h3>
-
-
-
-<div class="control-group">
-
-<label>
-Zoom
-</label>
-
-<input 
-type="range"
-id="zoom"
-min="10"
-max="200"
-value="100">
-
-</div>
-
-
-
-
-<div class="control-group">
-
-<label>
-Rotation
-</label>
-
-<input 
-type="range"
-id="rotation"
-min="-180"
-max="180"
-value="0">
-
-</div>
-
-
-
-
-<button 
-class="editor-btn"
-id="resetBtn">
-
-Reset
-
-</button>
-
-
-<button 
-class="editor-btn"
-id="downloadBtn">
-
-Download
-
-</button>
-
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<footer>
-
-© 2026 Tone.pics
-
-</footer>
-
-
-
-
-
-<script>
-
-
-const imageInput =
-document.getElementById("imageInput");
-
-
-const uploadBox =
-document.getElementById("uploadBox");
-
-
-const dropZone =
-document.getElementById("dropZone");
-
-
-const canvas =
-document.getElementById("editorCanvas");
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-const zoom =
-document.getElementById("zoom");
-
-
-const rotation =
-document.getElementById("rotation");
-
-
-const resetBtn =
-document.getElementById("resetBtn");
-
-
-const downloadBtn =
-document.getElementById("downloadBtn");
-
-
-
-let image =
-new Image();
-
-
-let imageLoaded=false;
-
-
-
-let state={
-
-zoom:1,
-
-rotation:0
-
-};
-
-
-
-
-
-
-uploadBox.onclick=()=>{
-
-imageInput.click();
-
-};
-
-
-
-
-imageInput.onchange=e=>{
-
-loadImage(e.target.files[0]);
-
-};
-
-
-
-
-
-
-dropZone.ondragover=e=>{
-
-e.preventDefault();
-
-dropZone.classList.add("active");
-
-};
-
-
-
-
-dropZone.ondragleave=()=>{
-
-dropZone.classList.remove("active");
-
-};
-
-
-
-
-dropZone.ondrop=e=>{
-
-e.preventDefault();
-
-dropZone.classList.remove("active");
-
-loadImage(
-e.dataTransfer.files[0]
-);
-
-};
-
-
-
-
-
-
-
-function loadImage(file){
-
-
-if(!file || !file.type.startsWith("image/"))
-return;
-
-
-const url =
-URL.createObjectURL(file);
-
-
-image.onload=()=>{
-
-
-canvas.style.display="block";
-
-uploadBox.style.display="none";
-
-
-canvas.width=image.width;
-
-canvas.height=image.height;
-
-
-imageLoaded=true;
-
-
-render();
-
-
-URL.revokeObjectURL(url);
-
-
-};
-
-
-image.src=url;
-
-
-}
-
-
-
-
-
-
-zoom.oninput=()=>{
-
-state.zoom =
-zoom.value /100;
-
-render();
-
-};
-
-
-
-rotation.oninput=()=>{
-
-state.rotation =
-rotation.value;
-
-render();
-
-};
-
-
-
-
-
-
-
-function render(){
-
-
-if(!imageLoaded)
-return;
-
-
-ctx.clearRect(
-0,
-0,
-canvas.width,
-canvas.height
-);
-
-
-ctx.save();
-
-
-
-ctx.translate(
-canvas.width/2,
-canvas.height/2
-);
-
-
-
-ctx.rotate(
-state.rotation*Math.PI/180
-);
-
-
-
-ctx.scale(
-state.zoom,
-state.zoom
-);
-
-
-
-ctx.drawImage(
-
-image,
-
--image.width/2,
-
--image.height/2
-
-);
-
-
-
-ctx.restore();
-
-
-
-}
-
-
-
-
-
-
-
-resetBtn.onclick=()=>{
-
-
-state.zoom=1;
-
-state.rotation=0;
-
-
-zoom.value=100;
-
-rotation.value=0;
-
-
-render();
-
-
-};
-
-
-
-
-
-
-
-downloadBtn.onclick=()=>{
-
-
-if(!imageLoaded)
-return;
-
-
-const link =
-document.createElement("a");
-
-
-link.download="edited-image.png";
-
-
-link.href=
-canvas.toDataURL("image/png");
-
-
-link.click();
-
-
-};
-
-
-
-</script>
-
-
+    <!-- Header Navigation -->
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1.2rem; color: #fff;">📸 PhotoEditor Pro</div>
+    </header>
+
+    <!-- App Identity Hero (Tone.pics style) -->
+    <section class="hero-section">
+        <h1>Edit Images Online Professionally</h1>
+        <p>A fast, browser-based image editor to easily apply filters, manipulate alignment, add text overlays, and export instantly without watermarks.</p>
+    </section>
+
+    <!-- Main Editor Interface -->
+    <main class="editor-container">
+        
+        <!-- Sidebar Controls Grid -->
+        <aside class="controls-sidebar">
+            
+            <!-- Transform and Zoom -->
+            <div class="control-group">
+                <h3>Transform & Zoom</h3>
+                <div class="range-wrapper">
+                    <label>
+                        <span>Zoom</span>
+                        <span id="zoom-val" style="color: var(--accent);">100%</span>
+                    </label>
+                    <input type="range" id="zoom-range" min="10" max="200" value="100">
+                </div>
+                <div class="btn-grid">
+                    <button id="btn-rotate">🔄 Rotate 90°</button>
+                    <button id="btn-flip-h">↔️ Flip Horiz.</button>
+                    <button id="btn-flip-v">↕️ Flip Vert.</button>
+                    <button id="btn-reset" style="color: #ef4444;">🧹 Reset All</button>
+                </div>
+            </div>
+
+            <!-- Essential Adjustment Filters -->
+            <div class="control-group">
+                <h3>Adjustments & Filters</h3>
+                
+                <!-- Brightness -->
+                <div class="range-wrapper">
+                    <label><span>Brightness</span><span id="brightness-val">100%</span></label>
+                    <input type="range" id="brightness" min="0" max="200" value="100">
+                </div>
+
+                <!-- Contrast -->
+                <div class="range-wrapper">
+                    <label><span>Contrast</span><span id="contrast-val">100%</span></label>
+                    <input type="range" id="contrast" min="0" max="200" value="100">
+                </div>
+
+                <!-- Saturation -->
+                <div class="range-wrapper">
+                    <label><span>Saturation</span><span id="saturation-val">100%</span></label>
+                    <input type="range" id="saturation" min="0" max="200" value="100">
+                </div>
+
+                <!-- Grayscale -->
+                <div class="range-wrapper">
+                    <label><span>Grayscale</span><span id="grayscale-val">0%</span></label>
+                    <input type="range" id="grayscale" min="0" max="100" value="0">
+                </div>
+
+                <!-- Sepia -->
+                <div class="range-wrapper">
+                    <label><span>Sepia</span><span id="sepia-val">0%</span></label>
+                    <input type="range" id="sepia" min="0" max="100" value="0">
+                </div>
+
+                <!-- Blur -->
+                <div class="range-wrapper">
+                    <label><span>Blur</span><span id="blur-val">0px</span></label>
+                    <input type="range" id="blur" min="0" max="20" value="0">
+                </div>
+            </div>
+
+            <!-- Typography & Text Overlay -->
+            <div class="control-group">
+                <h3>Text Overlay</h3>
+                <input type="text" id="text-string" class="text-input-field" placeholder="Type text here...">
+                
+                <label style="font-size: 0.85rem; color: var(--text-muted);">Font Style</label>
+                <select id="text-font">
+                    <option value="'Inter', sans-serif">Modern</option>
+                    <option value="'Playfair Display', serif">Classic</option>
+                    <option value="'Courier Prime', monospace">Typewriter</option>
+                    <option value="'Dancing Script', cursive">Handwriting</option>
+                    <option value="'Montserrat', sans-serif">Bold</option>
+                </select>
+
+                <div class="range-wrapper">
+                    <label><span>Font Size</span><span id="font-size-val">40px</span></label>
+                    <input type="range" id="text-size" min="10" max="150" value="40">
+                </div>
+
+                <div class="color-picker-wrapper">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); flex: 1;">Text Color:</label>
+                    <input type="color" id="text-color" value="#ffffff">
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="text-shadow" checked>
+                    <label for="text-shadow">Enable Text Shadow</label>
+                </div>
+            </div>
+
+            <!-- Export Configurations -->
+            <div class="control-group">
+                <h3>Export Image</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="export-format" style="flex: 1; margin-bottom:0;">
+                        <option value="image/jpeg">JPG</option>
+                        <option value="image/png">PNG</option>
+                        <option value="image/webp">WebP</option>
+                    </select>
+                    <button id="btn-download" class="btn-export">Save & Download</button>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Canvas Workspace Area -->
+        <section class="workspace" id="workspace-area">
+            
+            <!-- Native Drag & Drop Zone -->
+            <div class="dropzone" id="drop-zone">
+                <span style="font-size: 3.5rem;">🖼️</span>
+                <p>Drag & drop your image here or click to browse</p>
+                <input type="file" id="file-input" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Dynamic Canvas Wrapper -->
+            <div class="canvas-container" id="canvas-holder">
+                <canvas id="main-canvas"></canvas>
+            </div>
+
+            <!-- Contextual Active Toolbars -->
+            <div class="workspace-toolbar hidden" id="w-toolbar">
+                <button id="btn-change-img" style="font-size: 0.8rem;">Change Image 🔁</button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // DOM Selectors
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const canvasHolder = document.getElementById('canvas-holder');
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        const wToolbar = document.getElementById('w-toolbar');
+        const btnChangeImg = document.getElementById('btn-change-img');
+
+        // Manipulation Elements
+        const zoomRange = document.getElementById('zoom-range');
+        const zoomVal = document.getElementById('zoom-val');
+        const brightnessInput = document.getElementById('brightness');
+        const contrastInput = document.getElementById('contrast');
+        const saturationInput = document.getElementById('saturation');
+        const grayscaleInput = document.getElementById('grayscale');
+        const sepiaInput = document.getElementById('sepia');
+        const blurInput = document.getElementById('blur');
+
+        // Typography Elements
+        const textString = document.getElementById('text-string');
+        const textFont = document.getElementById('text-font');
+        const textSize = document.getElementById('text-size');
+        const textColor = document.getElementById('text-color');
+        const textShadow = document.getElementById('text-shadow');
+
+        // Action Buttons
+        const btnRotate = document.getElementById('btn-rotate');
+        const btnFlipH = document.getElementById('btn-flip-h');
+        const btnFlipV = document.getElementById('btn-flip-v');
+        const btnReset = document.getElementById('btn-reset');
+        const btnDownload = document.getElementById('btn-download');
+        const exportFormat = document.getElementById('export-format');
+
+        // State Machine Objects
+        let originalImage = new Image();
+        let rotation = 0; 
+        let flipH = 1;    
+        let flipV = 1;    
+        let currentZoom = 100;
+
+        // Upload Mechanics
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                loadImage(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                loadImage(e.target.files[0]);
+            }
+        });
+
+        btnChangeImg.addEventListener('click', () => fileInput.click());
+
+        // Stream File Processing
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage.src = event.target.result;
+                originalImage.onload = function() {
+                    resetSettings();
+                    dropZone.classList.add('hidden');
+                    canvasHolder.style.display = 'flex';
+                    wToolbar.classList.remove('hidden');
+                    renderCanvas();
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // Factory Reset Metrics
+        function resetSettings() {
+            rotation = 0;
+            flipH = 1;
+            flipV = 1;
+            currentZoom = 100;
+            zoomRange.value = 100;
+            zoomVal.innerText = '100%';
+            
+            brightnessInput.value = 100;
+            contrastInput.value = 100;
+            saturationInput.value = 100;
+            grayscaleInput.value = 0;
+            sepiaInput.value = 0;
+            blurInput.value = 0;
+
+            textString.value = '';
+            
+            updateLabels();
+        }
+
+        function updateLabels() {
+            document.getElementById('brightness-val').innerText = brightnessInput.value + '%';
+            document.getElementById('contrast-val').innerText = contrastInput.value + '%';
+            document.getElementById('saturation-val').innerText = saturationInput.value + '%';
+            document.getElementById('grayscale-val').innerText = grayscaleInput.value + '%';
+            document.getElementById('sepia-val').innerText = sepiaInput.value + '%';
+            document.getElementById('blur-val').innerText = blurInput.value + 'px';
+            document.getElementById('font-size-val').innerText = textSize.value + 'px';
+        }
+
+        // Core Rendering Loop
+        function renderCanvas() {
+            if (!originalImage.src) return;
+
+            const isSwapped = rotation === 90 || rotation === 270;
+            const targetWidth = isSwapped ? originalImage.height : originalImage.width;
+            const targetHeight = isSwapped ? originalImage.width : originalImage.height;
+
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+
+            // 1. Structural Orientations
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.scale(flipH, flipV);
+
+            // 2. CSS-Equivalent Filter Layers
+            ctx.filter = `
+                brightness(${brightnessInput.value}%)
+                contrast(${contrastInput.value}%)
+                saturate(${saturationInput.value}%)
+                grayscale(${grayscaleInput.value}%)
+                sepia(${sepiaInput.value}%)
+                blur(${blurInput.value}px)
+            `;
+
+            ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
+            ctx.restore(); 
+
+            // 3. Independent Vector Text Overlays
+            if (textString.value.trim() !== "") {
+                ctx.save();
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                
+                ctx.font = `${textSize.value}px ${textFont.value}`;
+                ctx.fillStyle = textColor.value;
+
+                if (textShadow.checked) {
+                    ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 4;
+                    ctx.shadowOffsetY = 4;
+                } else {
+                    ctx.shadowColor = "transparent";
+                }
+
+                ctx.fillText(textString.value, canvas.width / 2, canvas.height / 2);
+                ctx.restore();
+            }
+        }
+
+        // Event Listeners for Live Previews
+        const inputs = [brightnessInput, contrastInput, saturationInput, grayscaleInput, sepiaInput, blurInput, textString, textFont, textSize, textColor, textShadow];
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                updateLabels();
+                renderCanvas();
+            });
+        });
+
+        // Viewport Scaling Interface (Doesn't lose export resolution)
+        zoomRange.addEventListener('input', (e) => {
+            currentZoom = e.target.value;
+            zoomVal.innerText = currentZoom + '%';
+            canvas.style.transform = `scale(${currentZoom / 100})`;
+        });
+
+        // Event Interceptors
+        btnRotate.addEventListener('click', () => {
+            rotation = (rotation + 90) % 360;
+            renderCanvas();
+        });
+
+        btnFlipH.addEventListener('click', () => {
+            flipH = flipH === 1 ? -1 : 1;
+            renderCanvas();
+        });
+
+        btnFlipV.addEventListener('click', () => {
+            flipV = flipV === 1 ? -1 : 1;
+            renderCanvas();
+        });
+
+        btnReset.addEventListener('click', () => {
+            resetSettings();
+            canvas.style.transform = `scale(1)`;
+            renderCanvas();
+        });
+
+        // Packaging and Downstream Execution
+        btnDownload.addEventListener('click', () => {
+            if (!originalImage.src) return;
+
+            const format = exportFormat.value; 
+            let ext = 'jpg';
+            if (format === 'image/png') ext = 'png';
+            if (format === 'image/webp') ext = 'webp';
+
+            const link = document.createElement('a');
+            link.download = `photo-editor-${Date.now()}.${ext}`;
+            link.href = canvas.toDataURL(format, 0.95);
+            link.click();
+        });
+    </script>
 </body>
-
 </html>
-
