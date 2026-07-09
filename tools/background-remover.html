@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title>AI Background Remover | Tone.pics</title>
+    <title>Official Remove.bg Engine | Tone.pics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -99,8 +99,8 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06120f" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             </div>
             <div>
-                <h1>AI Background Remover</h1>
-                <p>Cloud AI Engine · Remove.bg Quality · Tone.pics Style</p>
+                <h1>Remove.bg Engine</h1>
+                <p>Official API · Max Precision · Tone.pics Style</p>
             </div>
         </div>
     </div>
@@ -110,20 +110,20 @@
             <p class="subhead">Source Image</p>
             <div class="dropzone" id="dropzone">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <p>Drag & Drop original photo or <span>Browse</span></p>
+                <p>Drag & Drop photo or <span>Browse</span></p>
             </div>
             <input type="file" id="fileInput" accept="image/*" style="display:none;">
             
             <div class="preview-box" id="origBox" style="display:none;">
                 <img id="origImg" src="">
             </div>
-            <button class="btn" id="btnProcess" disabled>Remove Background (Cloud AI)</button>
+            <button class="btn" id="btnProcess" disabled>Remove Background</button>
         </div>
 
         <div class="card">
             <div class="loader" id="loader">
                 <div class="spinner"></div>
-                <p id="loaderText">Processing on Cloud AI Servers...</p>
+                <p id="loaderText">Processing via Remove.bg AI...</p>
             </div>
             
             <p class="subhead">HD Result Preview</p>
@@ -131,7 +131,7 @@
                 <span id="resultPlaceholder" style="color:var(--text-faint); font-size:.85rem;">Isolated HD image will appear here</span>
                 <img id="resultImg" src="" style="display:none;">
             </div>
-            <button class="btn" id="btnDownload" disabled style="background: transparent; border: 1px solid var(--line); color: var(--text);">Download HD PNG</button>
+            <button class="btn" id="btnDownload" disabled style="background: transparent; border: 1px solid var(--line); color: var(--text);">Download PNG</button>
         </div>
     </div>
 </div>
@@ -140,8 +140,8 @@
     const $ = sel => document.querySelector(sel);
     let selectedFile = null;
 
-    // إعدادات الـ API (هذا الـ API مجاني تماماً وقوي جداً لقص الخلفيات)
-    const API_ENDPOINT = 'https://api.img.ly/v1/background-removal'; 
+    // ⚠️ ضع مفتاح الـ API الخاص بك من موقع Remove.bg هنا لكي يعمل الكود فوراً
+    const REMOVE_BG_API_KEY = 'ضع_مفتاح_الـ_API_هنا'; 
 
     $('#dropzone').addEventListener('click', () => $('#fileInput').click());
     $('#fileInput').addEventListener('change', (e) => {
@@ -164,23 +164,28 @@
 
     $('#btnProcess').addEventListener('click', async () => {
         if (!selectedFile) return;
+        if (REMOVE_BG_API_KEY === 'ضع_مفتاح_الـ_API_هنا') {
+            alert("من فضلك ضع الـ API Key الخاص بموقع Remove.bg داخل الكود أولاً.");
+            return;
+        }
 
         $('#loader').style.display = 'flex';
         $('#btnProcess').disabled = true;
 
-        // تجهيز ملف الصورة لإرساله في الـ Request
         const formData = new FormData();
-        formData.append('image', selectedFile);
+        formData.append('image_file', selectedFile);
+        formData.append('size', 'auto'); // لتحديد الجودة تلقائياً
 
         try {
-            // إرسال الصورة لخوادم الـ AI للقص الاحترافي والسريع جداً
-            const response = await fetch(API_ENDPOINT, {
+            const response = await fetch('https://api.remove.bg/v1.0/removebg', {
                 method: 'POST',
+                headers: {
+                    'X-Api-Key': REMOVE_BG_API_KEY
+                },
                 body: formData
-                // ملحوظة: إذا قررت لاحقاً استخدام مفتاح Remove.bg الخاص بك، تقوم بتغيير الـ Endpoint وإضافة الـ Headers هنا بسهولة.
             });
 
-            if (!response.ok) throw new Error('AI Processing Failed');
+            if (!response.ok) throw new Error('API Error or Invalid Key');
 
             const blob = await response.blob();
             const resultUrl = URL.createObjectURL(blob);
@@ -190,16 +195,15 @@
             $('#resultPlaceholder').style.display = 'none';
             $('#btnDownload').disabled = false;
 
-            // كود التحميل الفوري للمستخدم بصيغة PNG شفافة
             $('#btnDownload').onclick = () => {
                 const a = document.createElement('a');
                 a.href = resultUrl;
-                a.download = `tone-pics-hd-remover-${Date.now()}.png`;
+                a.download = `tone-pics-removebg-${Date.now()}.png`;
                 a.click();
             };
 
         } catch (error) {
-            alert("فشلت عملية المعالجة، تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
+            alert("حدث خطأ! تأكد من صحة الـ API Key الخاص بـ Remove.bg ومن وجود رصيد صور كافٍ في حسابك.");
             console.error(error);
         } finally {
             $('#loader').style.display = 'none';
