@@ -1,245 +1,331 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Generator | Tone.pics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f0f11;
+            --bg-card: #18181c;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #2d2d34;
+        }
 
-<title>Gradient Generator - Tone.pics</title>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-<link rel="stylesheet" href="tool-style.css">
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-<style>
-.gradient-preview {
-    width:100%;
-    height:300px;
-    border-radius:15px;
-    margin:20px 0;
-    border:2px solid #333;
-}
+        /* Navbar Style */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.controls {
-    display:grid;
-    gap:15px;
-}
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
 
-.row {
-    display:flex;
-    gap:10px;
-    align-items:center;
-}
+        .btn-home:hover {
+            color: var(--text-main);
+        }
 
-input[type="color"] {
-    width:60px;
-    height:40px;
-    border:none;
-}
+        /* Hero Header */
+        .hero-section {
+            text-align: center;
+            padding: 25px 20px 10px 20px;
+        }
 
-select,input {
-    padding:10px;
-    border-radius:8px;
-}
+        .hero-section h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
+        }
 
-.code-box {
-    background:#111;
-    padding:15px;
-    border-radius:10px;
-    word-break:break-all;
-    margin-top:15px;
-}
-</style>
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
 
+        /* Workspace Main Grid */
+        .container {
+            max-width: 550px;
+            width: 100%;
+            margin: 10px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tool-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Canvas Preview Panel */
+        .gradient-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Controls Block Configuration */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Customizing Native Color Pickers and Select Fields */
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 70px;
+            height: 34px;
+            background-color: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 3px;
+        }
+
+        select {
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 150px;
+            text-align: left;
+        }
+
+        /* Action Copy Buttons Layout */
+        .btn {
+            background-color: var(--accent);
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Code Generation Terminal Box */
+        .code-box {
+            background-color: #0f0f11;
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #3b82f6;
+            text-align: left;
+        }
+
+        code {
+            font-family: monospace;
+            user-select: all;
+        }
+    </style>
 </head>
-
 <body>
 
-
-<div class="tool-container">
-
-<a class="back-home" href="../index.html">
-← Back Home
-</a>
-
-
-<div class="tool-header">
-
-<h1>🌈 Gradient Generator</h1>
-
-<p>Create beautiful CSS gradients.</p>
-
-</div>
-
-
-<div class="tool-box">
-
-
-<div id="preview" class="gradient-preview"></div>
-
-
-<div class="controls">
-
-
-<div class="row">
-
-<label>Color 1</label>
-
-<input type="color" id="color1" value="#ff0000">
-
-</div>
-
-
-<div class="row">
-
-<label>Color 2</label>
-
-<input type="color" id="color2" value="#0000ff">
-
-</div>
-
-
-<div class="row">
-
-<label>Direction</label>
-
-<select id="direction">
-
-<option value="to right">
-Left → Right
-</option>
-
-<option value="to bottom">
-Top → Bottom
-</option>
-
-<option value="135deg">
-Diagonal
-</option>
-
-<option value="45deg">
-Reverse Diagonal
-</option>
-
-</select>
-
-</div>
-
-
-
-<div class="row">
-
-<label>
-Type
-</label>
-
-
-<select id="type">
-
-<option value="linear-gradient">
-Linear
-</option>
-
-<option value="radial-gradient">
-Radial
-</option>
-
-</select>
-
-
-</div>
-
-
-</div>
-
-
-<br>
-
-
-<button class="button" onclick="copyCSS()">
-Copy CSS 📋
-</button>
-
-
-<div class="code-box">
-
-<code id="cssCode"></code>
-
-</div>
-
-
-</div>
-
-</div>
-
-
-<footer>
-© 2026 Tone.pics
-</footer>
-
-
-
-<script>
-
-
-const color1=document.getElementById("color1");
-const color2=document.getElementById("color2");
-const direction=document.getElementById("direction");
-const type=document.getElementById("type");
-
-const preview=document.getElementById("preview");
-const cssCode=document.getElementById("cssCode");
-
-
-function updateGradient(){
-
-let gradient;
-
-
-if(type.value==="linear-gradient"){
-
-gradient=
-`linear-gradient(${direction.value}, ${color1.value}, ${color2.value})`;
-
-}else{
-
-gradient=
-`radial-gradient(circle, ${color1.value}, ${color2.value})`;
-
-}
-
-
-preview.style.background=gradient;
-
-
-cssCode.textContent=
-`background: ${gradient};`;
-
-}
-
-
-
-color1.oninput=updateGradient;
-color2.oninput=updateGradient;
-direction.onchange=updateGradient;
-type.onchange=updateGradient;
-
-
-
-function copyCSS(){
-
-navigator.clipboard.writeText(
-cssCode.textContent
-);
-
-
-alert("CSS copied!");
-
-}
-
-
-updateGradient();
-
-
-</script>
-
-
+    <header>
+        <a href="/" class="btn-home">
+            <span>←</span> Back Home
+        </a>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">🌈 Generator</div>
+    </header>
+
+    <section class="hero-section">
+        <h1>🌈 Gradient Generator</h1>
+        <p>Create beautiful CSS linear and radial gradients instantly for your custom stylesheets.</p>
+    </section>
+
+    <main class="container">
+        
+        <div class="tool-box">
+            
+            <div id="preview" class="gradient-preview"></div>
+
+            <div class="controls">
+                <div class="control-row">
+                    <label for="color1">First Color Asset:</label>
+                    <input type="color" id="color1" value="#ff0000">
+                </div>
+
+                <div class="control-row">
+                    <label for="color2">Second Color Asset:</label>
+                    <input type="color" id="color2" value="#0000ff">
+                </div>
+
+                <div class="control-row">
+                    <label for="direction">Linear Angle Direction:</label>
+                    <select id="direction">
+                        <option value="to right">Left → Right</option>
+                        <option value="to bottom">Top → Bottom</option>
+                        <option value="135deg">Diagonal Left</option>
+                        <option value="45deg">Diagonal Right</option>
+                    </select>
+                </div>
+
+                <div class="control-row">
+                    <label for="type">Gradient Structural Type:</label>
+                    <select id="type">
+                        <option value="linear-gradient">Linear</option>
+                        <option value="radial-gradient">Radial</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" id="copyBtn" onclick="copyCSS()">Copy CSS Properties 📋</button>
+
+            <div class="code-box">
+                <code id="cssCode">background: linear-gradient(to right, #ff0000, #0000ff);</code>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        const color1 = document.getElementById("color1");
+        const color2 = document.getElementById("color2");
+        const direction = document.getElementById("direction");
+        const type = document.getElementById("type");
+        const preview = document.getElementById("preview");
+        const cssCode = document.getElementById("cssCode");
+        const copyBtn = document.getElementById("copyBtn");
+
+        // Realtime CSS background rendering pipeline 
+        function updateGradient() {
+            let gradient;
+
+            if (type.value === "linear-gradient") {
+                gradient = `linear-gradient(${direction.value}, ${color1.value}, ${color2.value})`;
+                direction.disabled = false;
+                direction.style.opacity = "1";
+                direction.style.cursor = "pointer";
+            } else {
+                gradient = `radial-gradient(circle, ${color1.value}, ${color2.value})`;
+                direction.disabled = true;
+                direction.style.opacity = "0.4";
+                direction.style.cursor = "not-allowed";
+            }
+
+            preview.style.background = gradient;
+            cssCode.textContent = `background: ${gradient};`;
+        }
+
+        // Add execution triggers hooks
+        color1.oninput = updateGradient;
+        color2.oninput = updateGradient;
+        direction.onchange = updateGradient;
+        type.onchange = updateGradient;
+
+        // Clipboard copy pipeline engine
+        function copyCSS() {
+            navigator.clipboard.writeText(cssCode.textContent).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = "Copied to Clipboard! ✔";
+                copyBtn.style.backgroundColor = "#10b981";
+                copyBtn.style.borderColor = "#10b981";
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.backgroundColor = "var(--accent)";
+                    copyBtn.style.borderColor = "var(--accent)";
+                }, 1500);
+            }).catch(err => {
+                console.error("Could not copy styling parameters: ", err);
+            });
+        }
+
+        // Initialize setup compilation
+        updateGradient();
+
+        // Standardized Theme Dark Footer Element Injection Pipeline
+        const footer = document.createElement("footer");
+        footer.style.textAlign = "center";
+        footer.style.padding = "20px 10px";
+        footer.style.color = "var(--text-muted)";
+        footer.style.fontSize = "0.75rem";
+        footer.style.borderTop = "1px solid var(--border)";
+        footer.style.marginTop = "auto";
+        footer.innerHTML = "© 2026 Tone.pics | Creative Asset Utilities";
+        document.body.appendChild(footer);
+    </script>
 </body>
 </html>
