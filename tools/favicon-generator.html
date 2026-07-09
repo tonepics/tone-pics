@@ -18,15 +18,17 @@
 
         .tool-container {
             max-width: 900px;
-            margin: 40px auto;
+            margin: 20px auto 40px auto; /* تقليل الهامش العلوي للحاوية بالكامل */
             padding: 20px;
         }
 
-        /* هيكلة علوية مرنة متطابقة تماماً مع أداة Image Converter */
+        /* رفع الشريط العلوي لأعلى نقطة وتصفير أي هوامش */
         .tool-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
             margin-bottom: 30px;
             padding-bottom: 15px;
             border-bottom: 1px solid #222;
@@ -225,8 +227,6 @@
     const preview = document.getElementById("preview");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    const Math_min = Math.min; // لتسريع عملية الاستدعاء الرياضي
-
     const results = document.getElementById("results");
 
     let image = new Image();
@@ -281,7 +281,7 @@
         results.innerHTML = "";
         faviconFiles = [];
 
-        const minDim = Math_min(image.width, image.height);
+        const minDim = Math.min(image.width, image.height);
         const sx = (image.width - minDim) / 2;
         const sy = (image.height - minDim) / 2;
 
