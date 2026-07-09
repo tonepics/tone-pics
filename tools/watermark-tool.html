@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة العلامة المائية الاحترافية | Tone.pics Style</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Professional Watermark Tool | Tone.pics Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #0f0f11;
@@ -20,7 +20,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Cairo', 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
@@ -65,7 +65,7 @@
             font-size: 1.6rem;
             font-weight: 700;
             margin-bottom: 5px;
-            background: linear-gradient(to left, #fff, #9ca3af);
+            background: linear-gradient(to right, #fff, #9ca3af);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -89,7 +89,7 @@
             flex: 1;
         }
 
-        /* Controls Sidebar - Narrower & More Compact */
+        /* Controls Sidebar */
         .control-panel {
             background-color: var(--bg-card);
             border: 1px solid var(--border);
@@ -257,7 +257,7 @@
             overflow: auto;
         }
 
-        /* Upload Placeholder Style inside workspace */
+        /* Upload Placeholder Style */
         .upload-placeholder {
             display: flex;
             flex-direction: column;
@@ -293,14 +293,14 @@
 
     <header>
         <a href="/" class="btn-home">
-            <span>→</span> العودة للمبوبة الرئيسية
+            <span>←</span> Back Home
         </a>
         <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">💧 Watermark Pro</div>
     </header>
 
     <section class="hero-section">
-        <h1>إضافة علامة مائية على الصور أونلاين</h1>
-        <p>احمِ حقوق أعمالك بإضافة نصوص أو شعارات مخصصة بسرعة وسهولة.</p>
+        <h1>Add Watermark to Images Online</h1>
+        <p>Protect your visual property by easily applying custom text or logo overlays.</p>
     </section>
 
     <main class="container">
@@ -308,72 +308,72 @@
         <aside class="control-panel">
             
             <div class="group">
-                <label>1. الصورة الأساسية</label>
+                <label>1. Base Image</label>
                 <input type="file" id="main-image-input" accept="image/*">
             </div>
 
             <div class="group">
-                <label>2. نوع العلامة المائية</label>
+                <label>2. Watermark Type</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="wm-type" value="text" checked> نص</label>
-                    <label><input type="radio" name="wm-type" value="image"> شعار (صورة)</label>
+                    <label><input type="radio" name="wm-type" value="text" checked> Text</label>
+                    <label><input type="radio" name="wm-type" value="image"> Logo (Image)</label>
                 </div>
 
                 <div id="text-options">
                     <input type="text" id="wm-text" value="Tone.pics">
                     
-                    <label>الخط</label>
+                    <label>Font Family</label>
                     <select id="wm-font">
-                        <option value="Cairo">Cairo (افتراضي)</option>
+                        <option value="Inter">Inter (Default)</option>
                         <option value="Arial">Arial</option>
                         <option value="Times New Roman">Times New Roman</option>
                         <option value="Impact">Impact</option>
                     </select>
 
                     <div class="color-picker-wrapper">
-                        <label style="font-size: 0.75rem; color: var(--text-muted); flex: 1;">لون النص:</label>
+                        <label style="font-size: 0.75rem; color: var(--text-muted); flex: 1;">Color:</label>
                         <input type="color" id="wm-color" value="#ffffff">
                     </div>
                 </div>
 
                 <div id="image-options" class="hidden">
-                    <label>اختر صورة الشعار</label>
+                    <label>Choose Logo Image</label>
                     <input type="file" id="wm-image-input" accept="image/*">
                 </div>
             </div>
 
             <div class="group">
-                <label>3. الإعدادات المتقدمة</label>
+                <label>3. Advanced Settings</label>
                 
-                <label>الحجم</label>
+                <label>Size</label>
                 <div class="range-container">
                     <input type="range" id="wm-size" min="10" max="200" value="40">
                 </div>
 
-                <label>الشفافية (Opacity)</label>
+                <label>Opacity</label>
                 <div class="range-container">
                     <input type="range" id="wm-opacity" min="0" max="100" value="70">
                 </div>
 
-                <label>التدوير (درجة)</label>
+                <label>Rotation (Degrees)</label>
                 <div class="range-container">
                     <input type="range" id="wm-rotation" min="0" max="360" value="0">
                 </div>
 
                 <div class="checkbox-wrapper">
                     <input type="checkbox" id="wm-tile">
-                    <label for="wm-tile">تكرار على كامل الصورة (Tile)</label>
+                    <label for="wm-tile">Repeat across image (Tile)</label>
                 </div>
             </div>
 
             <div class="group">
-                <label>4. حفظ وتصدير</label>
+                <label>4. Export Settings</label>
                 <select id="export-format" style="margin-bottom: 8px;">
                     <option value="image/jpeg">JPG</option>
                     <option value="image/png">PNG</option>
                     <option value="image/webp">WebP</option>
                 </select>
-                <button class="btn" id="download-btn">تحميل الصورة المعدلة ✨</button>
+                <button class="btn" id="download-btn">Save Image ✨</button>
             </div>
         </aside>
 
@@ -381,7 +381,7 @@
             
             <div class="upload-placeholder" id="placeholder-box" onclick="document.getElementById('main-image-input').click();">
                 <span style="font-size: 2rem;">🖼️</span>
-                <p>يرجى رفع صورة أولاً لبدء العمل</p>
+                <p>Upload an image to start working</p>
             </div>
 
             <div id="canvas-container" class="hidden">
@@ -389,7 +389,7 @@
             </div>
             
             <p id="helper-text" style="font-size: 11px; color: var(--text-muted); margin-top: 10px;" class="hidden">
-                * يمكنك سحب النص أو الشعار مباشرة لتعديل موضعه على الصورة الحية.
+                * You can drag the text or logo directly to change its position dynamically.
             </p>
         </section>
     </main>
@@ -541,7 +541,7 @@
             }
         }
 
-        // Mouse & Touch coordinate translation matrix calculation
+        // Mouse & Touch coordinate translation
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -600,7 +600,7 @@
         // Download Pipeline Trigger Action
         downloadBtn.addEventListener('click', () => {
             if (!mainImg) {
-                alert('الرجاء رفع صورة أولاً!');
+                alert('Please upload an image first!');
                 return;
             }
             const format = exportFormat.value; 
@@ -621,7 +621,7 @@
         footer.style.fontSize = "0.75rem";
         footer.style.borderTop = "1px solid var(--border)";
         footer.style.marginTop = "auto";
-        footer.innerHTML = "© 2026 Tone.pics | أداة حماية الحقوق الذكية";
+        footer.innerHTML = "© 2026 Tone.pics | Smart Rights Protection Tool";
         document.body.appendChild(footer);
     </script>
 </body>
