@@ -32,10 +32,15 @@
             border-bottom: 1px solid #222;
         }
 
-        /* ترك الخط واللون ليرث خصائص الاستايل الموحد المتواجد في style.css الخاص بك */
+        /* تعديل اللون الافتراضي إلى الرمادي وعند الـ Hover يتحول للأبيض */
         .back-home {
+            color: #aaa;
             text-decoration: none;
             transition: color 0.2s;
+        }
+
+        .back-home:hover {
+            color: #fff;
         }
 
         .header-logo {
@@ -220,6 +225,8 @@
     const preview = document.getElementById("preview");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    const Math_min = Math.min; // لتسريع عملية الاستدعاء الرياضي
+
     const results = document.getElementById("results");
 
     let image = new Image();
@@ -274,7 +281,7 @@
         results.innerHTML = "";
         faviconFiles = [];
 
-        const minDim = Math.min(image.width, image.height);
+        const minDim = Math_min(image.width, image.height);
         const sx = (image.width - minDim) / 2;
         const sy = (image.height - minDim) / 2;
 
