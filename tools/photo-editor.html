@@ -1,324 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Photo Editor - Tone.pics</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;700;900&family=Marck+Script&family=Poppins:wght@400;700;900&family=Bungee&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tool-style.css">
+
+<!-- Professional Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&family=Cinzel:wght@600&family=Marck+Script&family=Courier+Prime&display=swap" rel="stylesheet">
 
 <style>
 
-:root{
-    --bg:#121214;
-    --surface:#1b1b20;
-    --control:#25252b;
-    --border:#383842;
-    --accent:#6366f1;
-    --text:#f5f5f5;
-}
-
-
-*{
-    box-sizing:border-box;
-}
-
-
-body{
-
-    margin:0;
-    padding:20px;
-
-    min-height:100vh;
-
-    background:var(--bg);
-
-    color:var(--text);
-
-    font-family:Poppins,sans-serif;
-
-}
-
-
-.editor-wrapper{
-
-    width:100%;
-    max-width:1300px;
-
-    margin:auto;
-
+.editor-layout {
     display:grid;
-
-    grid-template-columns:1fr 380px;
-
+    grid-template-columns:1fr 320px;
     gap:20px;
+}
 
+@media(max-width:900px){
+    .editor-layout{
+        grid-template-columns:1fr;
+    }
 }
 
 
-
-@media(max-width:950px){
-
-.editor-wrapper{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-
-
-
-.canvas-area{
-
-background:#0d0d10;
-
-border:2px dashed var(--border);
-
-border-radius:15px;
-
-min-height:600px;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-position:relative;
-
-overflow:hidden;
-
+.canvas-area {
+    background:#111;
+    min-height:500px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px dashed #444;
+    overflow:hidden;
 }
 
 
-
-.canvas-area.active{
-
-border-color:var(--accent);
-
+#editorCanvas {
+    max-width:100%;
+    max-height:70vh;
+    display:none;
+    border-radius:10px;
 }
 
 
-
-#canvas{
-
-max-width:100%;
-
-max-height:80vh;
-
-display:none;
-
-border-radius:10px;
-
-box-shadow:0 10px 30px #000;
-
+.upload-box {
+    text-align:center;
+    cursor:pointer;
+    padding:40px;
 }
-
-
-
-
-.upload-box{
-
-text-align:center;
-
-cursor:pointer;
-
-color:#aaa;
-
-}
-
 
 
 .upload-box span{
-
-font-size:60px;
-
-display:block;
-
+    font-size:50px;
 }
 
 
-
-
-.panel{
-
-background:var(--surface);
-
-border:1px solid var(--border);
-
-border-radius:15px;
-
-padding:15px;
-
-display:flex;
-
-flex-direction:column;
-
-gap:15px;
-
-max-height:85vh;
-
-overflow:auto;
-
+.controls {
+    background:#1a1a1e;
+    padding:20px;
+    border-radius:15px;
 }
 
 
-
-.section{
-
-background:var(--control);
-
-border-radius:10px;
-
-padding:15px;
-
-border:1px solid var(--border);
-
+.control-group{
+    margin-bottom:18px;
 }
 
 
-
-.section h3{
-
-margin:0 0 12px;
-
-font-size:16px;
-
-border-bottom:1px solid var(--border);
-
-padding-bottom:8px;
-
+.control-group label{
+    display:block;
+    margin-bottom:6px;
 }
 
 
-
-
-label{
-
-display:block;
-
-font-size:13px;
-
-color:#aaa;
-
-margin-bottom:5px;
-
+input[type="range"]{
+    width:100%;
 }
 
 
-
-
-input,
+button,
 select,
-button{
-
-width:100%;
-
-padding:10px;
-
-border-radius:7px;
-
-border:1px solid var(--border);
-
-background:#111;
-
-color:white;
-
+input{
+    width:100%;
 }
 
 
+.editor-btn{
 
-input[type=color]{
-
-height:40px;
-
-padding:2px;
-
-}
-
-
-
-
-input[type=range]{
-
-accent-color:var(--accent);
-
-padding:0;
+    margin-top:8px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
 
 }
-
-
-
-
-button{
-
-cursor:pointer;
-
-background:#18181b;
-
-transition:.2s;
-
-}
-
-
-
-button:hover{
-
-background:var(--accent);
-
-}
-
-
-
-
-.grid{
-
-display:grid;
-
-grid-template-columns:1fr 1fr;
-
-gap:8px;
-
-}
-
-
-
-.primary{
-
-background:var(--accent);
-
-font-weight:bold;
-
-}
-
-
-
-
-.text-item{
-
-padding:8px;
-
-margin-top:5px;
-
-border:1px solid var(--border);
-
-border-radius:6px;
-
-cursor:pointer;
-
-}
-
-
-
-.text-item.active{
-
-background:var(--accent);
-
-}
-
 
 
 </style>
@@ -329,10 +108,33 @@ background:var(--accent);
 <body>
 
 
+<div class="tool-container">
 
-<div class="editor-wrapper">
+
+<a class="back-home" href="../index.html">
+← Back Home
+</a>
 
 
+
+<div class="tool-header">
+
+<h1>🖼️ Photo Editor</h1>
+
+<p>Edit images online professionally.</p>
+
+</div>
+
+
+
+<div class="tool-box">
+
+
+<div class="editor-layout">
+
+
+
+<!-- Canvas Area -->
 
 <div class="canvas-area" id="dropZone">
 
@@ -341,38 +143,24 @@ background:var(--accent);
 
 <span>🖼️</span>
 
-<p>Drag & Drop Image<br>or Click</p>
+<p>
+Drag & Drop Image Here
+<br>
+or Click To Upload
+</p>
 
-<input id="fileInput" type="file" accept="image/*" hidden>
+
+<input 
+type="file"
+id="imageInput"
+accept="image/*"
+hidden>
+
 
 </div>
 
 
-<canvas id="canvas"></canvas>
-
-
-</div>
-
-
-
-
-
-<div class="panel">
-
-
-
-<div class="section">
-
-<h3>History</h3>
-
-
-<div class="grid">
-
-<button onclick="undo()">↶ Undo</button>
-
-<button onclick="redo()">↷ Redo</button>
-
-</div>
+<canvas id="editorCanvas"></canvas>
 
 
 </div>
@@ -381,448 +169,250 @@ background:var(--accent);
 
 
 
-<div class="section">
+<!-- Controls -->
 
-<h3>Image</h3>
-
-
-<div class="grid">
-
-<button onclick="rotateImage(90)">Rotate +90</button>
-
-<button onclick="rotateImage(-90)">Rotate -90</button>
-
-<button onclick="flipImage('x')">Flip X</button>
-
-<button onclick="flipImage('y')">Flip Y</button>
-
-</div>
+<div class="controls">
 
 
-</div>
+<h3>Basic Tools</h3>
 
 
 
+<div class="control-group">
 
+<label>
+Zoom
+</label>
 
-<div class="section">
-
-
-<h3>Filters</h3>
-
-
-<label>Brightness</label>
-
-<input type="range" id="brightness" min="0" max="200" value="100">
-
-
-
-<label>Contrast</label>
-
-<input type="range" id="contrast" min="0" max="200" value="100">
-
-
-
-<label>Saturation</label>
-
-<input type="range" id="saturation" min="0" max="200" value="100">
-
-
-
-<label>Blur</label>
-
-<input type="range" id="blur" min="0" max="20" value="0">
-
+<input 
+type="range"
+id="zoom"
+min="10"
+max="200"
+value="100">
 
 </div>
 
 
 
 
+<div class="control-group">
 
-<div class="section">
+<label>
+Rotation
+</label>
 
-
-<h3>Add Text</h3>
-
-
-<input id="newText" placeholder="Write text">
-
-
-<button class="primary" onclick="addText()">+ Add Text</button>
-
-
-<div id="textList"></div>
-
+<input 
+type="range"
+id="rotation"
+min="-180"
+max="180"
+value="0">
 
 </div>
 
 
 
 
+<button 
+class="editor-btn"
+id="resetBtn">
 
-<div class="section">
-
-
-<h3>Text Style</h3>
-
-
-
-<label>Font</label>
-
-<select id="font">
-
-<option value="Poppins">Bold Modern</option>
-
-<option value="Cinzel">Classic</option>
-
-<option value="Inter">Clean</option>
-
-<option value="Marck Script">Handwriting</option>
-
-<option value="Courier Prime">Typewriter</option>
-
-<option value="Bungee">Graffiti</option>
-
-<option value="Press Start 2P">Pixel</option>
-
-</select>
-
-
-
-<label>Size</label>
-
-<input id="fontSize" type="range" min="10" max="200" value="50">
-
-
-
-<label>Color</label>
-
-<input id="fontColor" type="color" value="#ffffff">
-
-
-
-<label>Stroke</label>
-
-<input id="strokeColor" type="color" value="#000000">
-
-
-
-<label>Stroke Width</label>
-
-<input id="strokeWidth" type="range" min="0" max="10" value="2">
-
-
-
-<label>Opacity</label>
-
-<input id="textOpacity" type="range" min="0" max="100" value="100">
-
-
-</div>
-
-
-
-
-<div class="section">
-
-<h3>Export</h3>
-
-
-<select id="exportType">
-
-<option value="image/png">PNG</option>
-
-<option value="image/jpeg">JPG</option>
-
-<option value="image/webp">WebP</option>
-
-</select>
-
-
-<button class="primary" onclick="downloadImage()">
-
-💾 Save Image
+Reset
 
 </button>
 
 
+<button 
+class="editor-btn"
+id="downloadBtn">
+
+Download
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
 </div>
 
 
 
 
-</div>
+<footer>
+
+© 2026 Tone.pics
+
+</footer>
 
 
-</div>
 
 
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-const uploadBox = document.getElementById("uploadBox");
-
-let image = new Image();
-
-let imageLoaded = false;
-
-let rotation = 0;
-let flipX = 1;
-let flipY = 1;
 
 
-let filters = {
-    brightness:100,
-    contrast:100,
-    saturation:100,
-    blur:0
-};
+const imageInput =
+document.getElementById("imageInput");
 
 
-
-let texts = [];
-
-let selectedText = null;
-
-let history = [];
-let future = [];
+const uploadBox =
+document.getElementById("uploadBox");
 
 
-
-/* =========================
-   Upload Image
-========================= */
+const dropZone =
+document.getElementById("dropZone");
 
 
-dropZone.onclick = ()=>{
-
-    if(!imageLoaded)
-        fileInput.click();
-
-};
+const canvas =
+document.getElementById("editorCanvas");
 
 
-fileInput.onchange = e=>{
+const ctx =
+canvas.getContext("2d");
 
-    loadImage(e.target.files[0]);
 
-};
+const zoom =
+document.getElementById("zoom");
+
+
+const rotation =
+document.getElementById("rotation");
+
+
+const resetBtn =
+document.getElementById("resetBtn");
+
+
+const downloadBtn =
+document.getElementById("downloadBtn");
 
 
 
-dropZone.ondragover = e=>{
-
-    e.preventDefault();
-
-    dropZone.classList.add("active");
-
-};
+let image =
+new Image();
 
 
-dropZone.ondragleave = ()=>{
+let imageLoaded=false;
 
-    dropZone.classList.remove("active");
+
+
+let state={
+
+zoom:1,
+
+rotation:0
 
 };
 
 
 
-dropZone.ondrop = e=>{
 
-    e.preventDefault();
 
-    dropZone.classList.remove("active");
 
-    loadImage(e.dataTransfer.files[0]);
+uploadBox.onclick=()=>{
+
+imageInput.click();
 
 };
+
+
+
+
+imageInput.onchange=e=>{
+
+loadImage(e.target.files[0]);
+
+};
+
+
+
+
+
+
+dropZone.ondragover=e=>{
+
+e.preventDefault();
+
+dropZone.classList.add("active");
+
+};
+
+
+
+
+dropZone.ondragleave=()=>{
+
+dropZone.classList.remove("active");
+
+};
+
+
+
+
+dropZone.ondrop=e=>{
+
+e.preventDefault();
+
+dropZone.classList.remove("active");
+
+loadImage(
+e.dataTransfer.files[0]
+);
+
+};
+
+
+
 
 
 
 
 function loadImage(file){
 
-    if(!file || !file.type.startsWith("image/"))
-        return;
 
-
-    saveState();
-
-
-    const reader = new FileReader();
-
-
-    reader.onload=e=>{
-
-        image.src=e.target.result;
-
-
-        image.onload=()=>{
-
-
-            imageLoaded=true;
-
-
-            canvas.style.display="block";
-
-            uploadBox.style.display="none";
-
-
-            canvas.width=image.width;
-
-            canvas.height=image.height;
-
-
-            render();
-
-
-        }
-
-
-    };
-
-
-    reader.readAsDataURL(file);
-
-
-}
-
-
-
-
-
-/* =========================
-   Filters
-========================= */
-
-
-["brightness","contrast","saturation","blur"]
-
-.forEach(id=>{
-
-
-document.getElementById(id).oninput=e=>{
-
-
-filters[id]=e.target.value;
-
-
-render();
-
-
-};
-
-
-});
-
-
-
-
-
-
-/* =========================
-   Image Transform
-========================= */
-
-
-function rotateImage(value){
-
-saveState();
-
-rotation+=value;
-
-render();
-
-}
-
-
-
-
-function flipImage(type){
-
-saveState();
-
-
-if(type==="x")
-
-flipX*=-1;
-
-
-if(type==="y")
-
-flipY*=-1;
-
-
-render();
-
-}
-
-
-
-
-
-
-
-/* =========================
-   Text System
-========================= */
-
-
-function addText(){
-
-
-let value=document.getElementById("newText").value;
-
-
-if(!value)
+if(!file || !file.type.startsWith("image/"))
 return;
 
 
+const url =
+URL.createObjectURL(file);
 
-saveState();
+
+image.onload=()=>{
 
 
+canvas.style.display="block";
 
-let obj={
+uploadBox.style.display="none";
 
-id:Date.now(),
 
-text:value,
+canvas.width=image.width;
 
-x:canvas.width/2,
+canvas.height=image.height;
 
-y:canvas.height/2,
 
-font:"Poppins",
+imageLoaded=true;
 
-size:50,
 
-color:"#ffffff",
+render();
 
-stroke:"#000000",
 
-strokeWidth:2,
+URL.revokeObjectURL(url);
 
-opacity:1
 
 };
 
 
-texts.push(obj);
-
-
-selectedText=obj;
-
-
-refreshTextList();
-
-
-render();
+image.src=url;
 
 
 }
@@ -831,39 +421,11 @@ render();
 
 
 
-function refreshTextList(){
 
+zoom.oninput=()=>{
 
-const list=document.getElementById("textList");
-
-
-list.innerHTML="";
-
-
-texts.forEach(t=>{
-
-
-let div=document.createElement("div");
-
-
-div.className="text-item";
-
-
-if(t===selectedText)
-
-div.classList.add("active");
-
-
-
-div.innerText=t.text;
-
-
-
-div.onclick=()=>{
-
-selectedText=t;
-
-refreshTextList();
+state.zoom =
+zoom.value /100;
 
 render();
 
@@ -871,101 +433,19 @@ render();
 
 
 
-list.appendChild(div);
+rotation.oninput=()=>{
 
-
-
-});
-
-
-
-}
-
-
-
-
-
-/* =========================
-   Text Controls
-========================= */
-
-
-[
-"font",
-"fontSize",
-"fontColor",
-"strokeColor",
-"strokeWidth",
-"textOpacity"
-
-].forEach(id=>{
-
-
-document.getElementById(id).oninput=e=>{
-
-
-if(!selectedText)
-return;
-
-
-
-saveState();
-
-
-
-if(id==="font")
-
-selectedText.font=e.target.value;
-
-
-
-if(id==="fontSize")
-
-selectedText.size=parseInt(e.target.value);
-
-
-
-if(id==="fontColor")
-
-selectedText.color=e.target.value;
-
-
-
-if(id==="strokeColor")
-
-selectedText.stroke=e.target.value;
-
-
-
-if(id==="strokeWidth")
-
-selectedText.strokeWidth=parseInt(e.target.value);
-
-
-
-if(id==="textOpacity")
-
-selectedText.opacity=e.target.value/100;
-
-
+state.rotation =
+rotation.value;
 
 render();
-
 
 };
 
 
-});
 
 
 
-
-
-
-
-/* =========================
-   Canvas Rendering
-========================= */
 
 
 function render(){
@@ -975,20 +455,12 @@ if(!imageLoaded)
 return;
 
 
-
-canvas.width=image.width;
-
-canvas.height=image.height;
-
-
-
 ctx.clearRect(
 0,
 0,
 canvas.width,
 canvas.height
 );
-
 
 
 ctx.save();
@@ -1002,32 +474,27 @@ canvas.height/2
 
 
 
-ctx.rotate(rotation*Math.PI/180);
+ctx.rotate(
+state.rotation*Math.PI/180
+);
 
 
 
-ctx.scale(flipX,flipY);
-
-
-
-ctx.filter=`
-
-brightness(${filters.brightness}%)
-
-contrast(${filters.contrast}%)
-
-saturate(${filters.saturation}%)
-
-blur(${filters.blur}px)
-
-`;
+ctx.scale(
+state.zoom,
+state.zoom
+);
 
 
 
 ctx.drawImage(
+
 image,
+
 -image.width/2,
+
 -image.height/2
+
 );
 
 
@@ -1036,9 +503,6 @@ ctx.restore();
 
 
 
-drawTexts();
-
-
 }
 
 
@@ -1046,146 +510,21 @@ drawTexts();
 
 
 
-function drawTexts(){
 
+resetBtn.onclick=()=>{
 
-texts.forEach(t=>{
 
+state.zoom=1;
 
-ctx.save();
+state.rotation=0;
 
 
+zoom.value=100;
 
-ctx.globalAlpha=t.opacity;
-
-
-
-ctx.font=
-
-`${t.size}px "${t.font}"`;
-
-
-
-ctx.textAlign="center";
-
-ctx.textBaseline="middle";
-
-
-
-ctx.lineWidth=t.strokeWidth;
-
-ctx.strokeStyle=t.stroke;
-
-
-ctx.fillStyle=t.color;
-
-
-
-ctx.strokeText(
-t.text,
-t.x,
-t.y
-);
-
-
-
-ctx.fillText(
-t.text,
-t.x,
-t.y
-);
-
-
-
-ctx.restore();
-
-
-
-});
-
-
-
-}
-
-
-
-
-
-
-/* =========================
- Drag Text With Mouse
-========================= */
-
-
-let dragging=false;
-
-let offsetX=0;
-let offsetY=0;
-
-
-
-canvas.onmousedown=e=>{
-
-
-if(!selectedText)
-return;
-
-
-
-let rect=canvas.getBoundingClientRect();
-
-
-
-let x=e.clientX-rect.left;
-
-let y=e.clientY-rect.top;
-
-
-
-selectedText.x=x;
-
-selectedText.y=y;
-
-
-
-dragging=true;
-
-
-
-};
-
-
-
-canvas.onmousemove=e=>{
-
-
-if(!dragging || !selectedText)
-return;
-
-
-
-let rect=canvas.getBoundingClientRect();
-
-
-
-selectedText.x=e.clientX-rect.left;
-
-selectedText.y=e.clientY-rect.top;
-
+rotation.value=0;
 
 
 render();
-
-
-
-};
-
-
-
-window.onmouseup=()=>{
-
-
-dragging=false;
 
 
 };
@@ -1194,346 +533,30 @@ dragging=false;
 
 
 
-/* =========================
- Undo / Redo
-========================= */
 
 
-function saveState(){
+downloadBtn.onclick=()=>{
 
 
-history.push(JSON.stringify({
-
-texts:texts,
-
-rotation:rotation,
-
-flipX:flipX,
-
-flipY:flipY,
-
-filters:filters
-
-
-}));
-
-
-if(history.length>30)
-
-history.shift();
-
-
-future=[];
-
-
-}
-
-
-
-function restore(state){
-
-
-let data=JSON.parse(state);
-
-
-texts=data.texts;
-
-
-rotation=data.rotation;
-
-
-flipX=data.flipX;
-
-
-flipY=data.flipY;
-
-
-filters=data.filters;
-
-
-refreshTextList();
-
-
-render();
-
-
-}
-
-
-
-
-function undo(){
-
-
-if(history.length===0)
+if(!imageLoaded)
 return;
 
 
-future.push(JSON.stringify({
+const link =
+document.createElement("a");
 
-texts:texts,
 
-rotation,
+link.download="edited-image.png";
 
-flipX,
 
-flipY,
-
-filters
-
-
-}));
-
-
-restore(history.pop());
-
-
-}
-
-
-
-
-function redo(){
-
-
-if(future.length===0)
-return;
-
-
-history.push(JSON.stringify({
-
-texts:texts,
-
-rotation,
-
-flipX,
-
-flipY,
-
-filters
-
-
-}));
-
-
-restore(future.pop());
-
-
-}
- 
-/* =========================
-   Mouse Wheel Text Scaling
-========================= */
-
-
-canvas.addEventListener("wheel", e=>{
-
-
-if(!selectedText)
-return;
-
-
-e.preventDefault();
-
-
-saveState();
-
-
-
-if(e.deltaY < 0){
-
-selectedText.size += 5;
-
-}
-else{
-
-selectedText.size -= 5;
-
-}
-
-
-
-if(selectedText.size < 5)
-
-selectedText.size = 5;
-
-
-
-render();
-
-
-});
-
-
-
-
-
-/* =========================
-   Double Click Select Text
-========================= */
-
-
-canvas.addEventListener("dblclick",e=>{
-
-
-let rect=canvas.getBoundingClientRect();
-
-
-let x=e.clientX-rect.left;
-
-let y=e.clientY-rect.top;
-
-
-
-let found=null;
-
-
-
-texts.forEach(t=>{
-
-
-let width=ctx.measureText(t.text).width;
-
-
-if(
-x > t.x-width/2 &&
-x < t.x+width/2 &&
-y > t.y-t.size &&
-y < t.y+t.size
-){
-
-found=t;
-
-}
-
-
-});
-
-
-
-if(found){
-
-
-selectedText=found;
-
-refreshTextList();
-
-render();
-
-
-}
-
-
-
-});
-
-
-
-
-
-/* =========================
-   Export Image
-========================= */
-
-
-function downloadImage(){
-
-
-if(!imageLoaded){
-
-alert("Please upload image first");
-
-return;
-
-}
-
-
-
-const type=document.getElementById("exportType").value;
-
-
-
-const link=document.createElement("a");
-
-
-
-link.download=
-
-"tone-pics-edited-image."+
-
-type.split("/")[1];
-
-
-
-link.href=canvas.toDataURL(
-type,
-0.95
-);
-
+link.href=
+canvas.toDataURL("image/png");
 
 
 link.click();
 
 
-
-}
-
-
-
-
-
-
-/* =========================
-   Keyboard Delete Text
-========================= */
-
-
-document.addEventListener("keydown",e=>{
-
-
-if(e.key==="Delete" && selectedText){
-
-
-saveState();
-
-
-texts=texts.filter(
-t=>t!==selectedText
-);
-
-
-selectedText=null;
-
-
-refreshTextList();
-
-
-render();
-
-
-}
-
-
-});
-
-
-
-
-
-
-
-/* =========================
-   Wait For Fonts
-========================= */
-
-
-document.fonts.ready.then(()=>{
-
-console.log("Fonts loaded");
-
-render();
-
-});
+};
 
 
 
@@ -1541,4 +564,6 @@ render();
 
 
 </body>
+
 </html>
+
