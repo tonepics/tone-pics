@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PDF Tools | Tone.pics</title>
+
+<link rel="stylesheet" href="../style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+<style>
+
+:root{
+    --bg:#111113;
+    --card:#1b1b20;
+    --border:#33333a;
+    --accent:#6366f1;
+    --text:#ffffff;
+    --muted:#9ca3af;
+}
+
+
+*{
+    box-sizing:border-box;
+    font-family:Inter,sans-serif;
+}
+
+
+body{
+
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+
+}
+
+
+
+.container{
+
+    max-width:1100px;
+    margin:auto;
+    padding:30px 20px;
+
+}
+
+
+
+.home-btn{
+
+    color:#aaa;
+    text-decoration:none;
+    display:inline-block;
+    margin-bottom:30px;
+
+}
+
+
+.header{
+
+    text-align:center;
+    margin-bottom:40px;
+
+}
+
+
+.header h1{
+
+    font-size:42px;
+    margin-bottom:10px;
+
+}
+
+
+.header p{
+
+    color:var(--muted);
+    font-size:18px;
+
+}
+
+
+
+
+.tools-grid{
+
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+
+}
+
+
+
+.tool-card{
+
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+
+}
+
+
+
+.tool-card h2{
+
+    font-size:22px;
+
+}
+
+
+
+.tool-card p{
+
+    color:var(--muted);
+
+}
+
+
+
+
+.drop-zone{
+
+    margin-top:20px;
+    padding:35px;
+
+    border:2px dashed #555;
+    border-radius:12px;
+
+    cursor:pointer;
+
+    color:#aaa;
+
+}
+
+
+
+.drop-zone:hover{
+
+    border-color:var(--accent);
+
+}
+
+
+
+
+input[type=file]{
+
+    display:none;
+
+}
+
+
+
+
+button{
+
+    background:var(--accent);
+    color:white;
+
+    border:none;
+
+    padding:12px 20px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    margin-top:15px;
+
+}
+
+
+button:hover{
+
+    opacity:.85;
+
+}
+
+
+
+
+.file-list{
+
+    margin-top:15px;
+    text-align:left;
+
+    color:#bbb;
+
+}
+
+
+
+.result{
+
+    margin-top:20px;
+
+}
+
+
+
+footer{
+
+    text-align:center;
+
+    color:#777;
+
+    padding:30px;
+
+}
+
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<a class="home-btn" href="../index.html">
+← Back Home
+</a>
+
+
+
+<div class="header">
+
+<h1>📄 PDF Tools</h1>
+
+<p>
+Convert, merge and compress PDF files easily.
+</p>
+
+</div>
+
+
+
+
+
+<div class="tools-grid">
+
+
+
+<div class="tool-card">
+
+<h2>🖼️ Images → PDF</h2>
+
+<p>Create PDF from images</p>
+
+
+<div class="drop-zone" id="imageDrop">
+
+Click or Drop Images
+
+<input 
+type="file"
+id="imageInput"
+accept="image/*"
+multiple>
+
+</div>
+
+
+<div class="file-list" id="imageList"></div>
+
+
+<button id="createPDF">
+Create PDF
+</button>
+
+
+</div>
+
+
+
+
+
+<div class="tool-card">
+
+
+<h2>📄 PDF → Images</h2>
+
+<p>Convert PDF pages to images</p>
+
+
+<div class="drop-zone" id="pdfDrop">
+
+Click or Drop PDF
+
+<input
+type="file"
+id="pdfInput"
+accept="application/pdf">
+
+</div>
+
+
+<div class="file-list" id="pdfList"></div>
+
+
+<button id="convertPDF">
+
+Convert
+
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="tool-card">
+
+
+<h2>🔗 Merge PDF</h2>
+
+<p>Combine multiple PDF files</p>
+
+
+<div class="drop-zone" id="mergeDrop">
+
+Select PDF Files
+
+<input
+type="file"
+id="mergeInput"
+accept="application/pdf"
+multiple>
+
+</div>
+
+
+<div class="file-list" id="mergeList"></div>
+
+
+<button id="mergePDF">
+
+Merge PDF
+
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="tool-card">
+
+
+<h2>📦 Compress PDF</h2>
+
+<p>Reduce PDF file size</p>
+
+
+<div class="drop-zone" id="compressDrop">
+
+Select PDF
+
+<input
+type="file"
+id="compressInput"
+accept="application/pdf">
+
+</div>
+
+
+<div class="file-list" id="compressList"></div>
+
+
+<button id="compressPDF">
+
+Compress
+
+</button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+<div class="result" id="result"></div>
+
+
+</div>
+
+
+
+
+<footer>
+
+© 2026 Tone.pics
+
+</footer>
+
+<!-- PDF Libraries -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+
+
+<script>
+
+
+// ==========================
+// General Helpers
+// ==========================
+
+
+function setupDrop(id, inputId, callback){
+
+const zone=document.getElementById(id);
+const input=document.getElementById(inputId);
+
+
+zone.addEventListener("click",()=>input.click());
+
+
+input.addEventListener("change",e=>{
+
+callback(e.target.files);
+
+});
+
+
+
+zone.addEventListener("dragover",e=>{
+
+e.preventDefault();
+
+zone.style.borderColor="#6366f1";
+
+});
+
+
+
+zone.addEventListener("dragleave",()=>{
+
+zone.style.borderColor="#555";
+
+});
+
+
+
+zone.addEventListener("drop",e=>{
+
+e.preventDefault();
+
+callback(e.dataTransfer.files);
+
+});
+
+
+}
+
+
+
+
+function showFiles(element,files){
+
+element.innerHTML="";
+
+
+[...files].forEach(file=>{
+
+
+let p=document.createElement("p");
+
+p.textContent="📄 "+file.name;
+
+
+element.appendChild(p);
+
+
+});
+
+
+}
+
+
+
+
+// ==========================
+// Images To PDF
+// ==========================
+
+
+let images=[];
+
+
+setupDrop(
+"imageDrop",
+"imageInput",
+(files)=>{
+
+
+images=[...files];
+
+showFiles(
+document.getElementById("imageList"),
+images
+);
+
+
+});
+
+
+
+
+
+document.getElementById("createPDF").onclick=async()=>{
+
+
+if(images.length===0){
+
+alert("Please select images first");
+
+return;
+
+}
+
+
+
+const {jsPDF}=window.jspdf;
+
+
+let pdf;
+
+
+for(let i=0;i<images.length;i++){
+
+
+let imgFile=images[i];
+
+
+let url=URL.createObjectURL(imgFile);
+
+
+let img=new Image();
+
+
+img.src=url;
+
+
+await new Promise(resolve=>{
+
+img.onload=resolve;
+
+});
+
+
+
+if(i===0){
+
+pdf=new jsPDF(
+{
+orientation:img.width>img.height?"landscape":"portrait",
+unit:"px",
+format:[img.width,img.height]
+}
+);
+
+}else{
+
+
+pdf.addPage(
+[img.width,img.height]
+);
+
+
+}
+
+
+
+pdf.addImage(
+img,
+"JPEG",
+0,
+0,
+img.width,
+img.height
+);
+
+
+
+}
+
+
+
+pdf.save("images-to-pdf.pdf");
+
+
+};
+
+
+
+
+
+// ==========================
+// PDF To Images
+// ==========================
+
+
+
+let pdfFile=null;
+
+
+
+setupDrop(
+"pdfDrop",
+"pdfInput",
+(files)=>{
+
+
+pdfFile=files[0];
+
+
+showFiles(
+document.getElementById("pdfList"),
+files
+);
+
+
+});
+
+
+
+
+
+document.getElementById("convertPDF").onclick=async()=>{
+
+
+if(!pdfFile){
+
+alert("Select PDF first");
+
+return;
+
+}
+
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+
+let data=await pdfFile.arrayBuffer();
+
+
+let pdf=await pdfjsLib.getDocument(data).promise;
+
+
+
+for(let i=1;i<=pdf.numPages;i++){
+
+
+let page=await pdf.getPage(i);
+
+
+let viewport=page.getViewport({
+scale:2
+});
+
+
+let canvas=document.createElement("canvas");
+
+
+let ctx=canvas.getContext("2d");
+
+
+canvas.width=viewport.width;
+
+canvas.height=viewport.height;
+
+
+
+await page.render({
+
+canvasContext:ctx,
+
+viewport:viewport
+
+}).promise;
+
+
+
+let link=document.createElement("a");
+
+
+link.download=`page-${i}.png`;
+
+link.href=canvas.toDataURL();
+
+
+link.click();
+
+
+
+}
+
+
+
+};
+
+
+
+
+
+
+
+// ==========================
+// Merge PDF
+// ==========================
+
+
+let mergeFiles=[];
+
+
+
+setupDrop(
+"mergeDrop",
+"mergeInput",
+(files)=>{
+
+
+mergeFiles=[...files];
+
+
+showFiles(
+document.getElementById("mergeList"),
+mergeFiles
+);
+
+
+});
+
+
+
+
+
+
+document.getElementById("mergePDF").onclick=async()=>{
+
+
+if(mergeFiles.length<2){
+
+alert("Select at least 2 PDF files");
+
+return;
+
+}
+
+
+
+const mergedPdf =
+await PDFLib.PDFDocument.create();
+
+
+
+for(let file of mergeFiles){
+
+
+let bytes=await file.arrayBuffer();
+
+
+let pdf=
+await PDFLib.PDFDocument.load(bytes);
+
+
+
+let pages=
+await mergedPdf.copyPages(
+pdf,
+pdf.getPageIndices()
+);
+
+
+
+pages.forEach(page=>
+
+mergedPdf.addPage(page)
+
+);
+
+
+}
+
+
+
+let result=
+await mergedPdf.save();
+
+
+
+downloadFile(
+result,
+"merged.pdf",
+"application/pdf"
+);
+
+
+
+};
+
+
+
+
+
+
+
+// ==========================
+// Compress PDF
+// ==========================
+
+
+let compressFile=null;
+
+
+
+setupDrop(
+"compressDrop",
+"compressInput",
+(files)=>{
+
+
+compressFile=files[0];
+
+
+showFiles(
+document.getElementById("compressList"),
+files
+);
+
+
+});
+
+
+
+
+
+document.getElementById("compressPDF").onclick=async()=>{
+
+
+if(!compressFile){
+
+alert("Select PDF first");
+
+return;
+
+}
+
+
+
+let bytes=
+await compressFile.arrayBuffer();
+
+
+
+let pdf=
+await PDFLib.PDFDocument.load(bytes);
+
+
+
+let output=
+await pdf.save(
+{
+useObjectStreams:true
+}
+);
+
+
+
+downloadFile(
+output,
+"compressed.pdf",
+"application/pdf"
+);
+
+
+
+};
+
+
+
+
+
+
+
+// ==========================
+// Download Helper
+// ==========================
+
+
+function downloadFile(
+data,
+name,
+type
+){
+
+
+let blob=
+new Blob(
+[data],
+{
+type:type
+}
+);
+
+
+
+let link=
+document.createElement("a");
+
+link.href=
+URL.createObjectURL(blob);
+
+
+link.download=name;
+
+
+link.click();
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
