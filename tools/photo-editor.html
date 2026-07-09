@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Photo Editor Online | Tone.pics Style</title>
+    <!-- Google Fonts for professional typography rendering -->
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Dancing+Script&family=Inter:wght@400;600;700&family=Montserrat:wght@700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -31,11 +32,11 @@
             flex-direction: column;
         }
 
-        /* Navbar Style */
+        /* Navbar Style - More Compact */
         header {
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border);
-            padding: 15px 30px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -44,10 +45,10 @@
         .btn-home {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             transition: color 0.2s;
         }
 
@@ -55,16 +56,16 @@
             color: var(--text-main);
         }
 
-        /* Hero Section (Tone.pics style) */
+        /* Hero Section - Shrunk */
         .hero-section {
             text-align: center;
-            padding: 40px 20px 20px 20px;
+            padding: 20px 20px 10px 20px;
         }
 
         .hero-section h1 {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             background: linear-gradient(to right, #fff, #9ca3af);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -72,8 +73,8 @@
 
         .hero-section p {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            max-width: 600px;
+            font-size: 0.9rem;
+            max-width: 500px;
             margin: 0 auto;
         }
 
@@ -81,30 +82,41 @@
         .editor-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 25px;
-            max-width: 1400px;
-            margin: 20px auto;
-            padding: 0 20px;
+            gap: 15px;
+            max-width: 1200px;
+            margin: 10px auto;
+            padding: 0 15px;
             width: 100%;
             flex: 1;
         }
 
-        /* Controls Sidebar */
+        /* Controls Sidebar - Narrower & More Compact spacing */
         .controls-sidebar {
             background-color: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            width: 350px;
+            border-radius: 8px;
+            padding: 12px;
+            width: 280px; /* Reduced width from 350px */
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
             height: fit-content;
+            max-height: 80vh;
+            overflow-y: auto; /* Scroll inside sidebar if content overflows */
+        }
+
+        /* Custom small scrollbar for sidebar */
+        .controls-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .controls-sidebar::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 2px;
         }
 
         .control-group {
             border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
+            padding-bottom: 10px;
         }
 
         .control-group:last-child {
@@ -113,55 +125,55 @@
         }
 
         .control-group h3 {
-            font-size: 1rem;
+            font-size: 0.85rem; /* Smaller font */
             color: var(--text-main);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         /* Sliders and Range Wrappers */
         .range-wrapper {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .range-wrapper label {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.75rem; /* Smaller labels */
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .range-wrapper input[type="range"] {
             width: 100%;
             accent-color: var(--accent);
             background: #2d2d34;
-            height: 6px;
-            border-radius: 3px;
+            height: 4px; /* Thinner range bar */
+            border-radius: 2px;
             outline: none;
         }
 
         .btn-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 6px;
         }
 
         button {
             background-color: #252529;
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 6px 10px; /* Smaller padding */
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Smaller text */
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         button:hover {
@@ -175,40 +187,29 @@
         }
 
         /* Inputs & Select Elements */
-        .text-input-field {
+        .text-input-field, select {
             width: 100%;
             background-color: #0f0f11;
             border: 1px solid var(--border);
             color: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        select {
-            width: 100%;
-            background-color: #0f0f11;
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 10px;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
             outline: none;
         }
 
         .color-picker-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .color-picker-wrapper input[type="color"] {
             border: none;
-            width: 40px;
-            height: 30px;
+            width: 30px;
+            height: 22px;
             background: transparent;
             cursor: pointer;
         }
@@ -216,24 +217,25 @@
         .checkbox-wrapper {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 6px;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
-        /* Canvas Workspace Area */
+        /* Canvas Workspace Area - Auto Responsive scaling */
         .workspace {
             flex: 1;
-            min-width: 350px;
+            min-width: 300px;
             background-color: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 8px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            min-height: 500px;
+            height: 65vh; /* Maximum viewport restricted height */
+            padding: 10px;
         }
 
         /* Drag & Drop Upload Zone */
@@ -245,41 +247,37 @@
             align-items: center;
             justify-content: center;
             border: 2px dashed #3f3f46;
-            border-radius: 12px;
-            margin: 20px;
+            border-radius: 8px;
+            margin: 15px;
             background-color: rgba(24, 24, 28, 0.5);
             cursor: pointer;
             transition: border-color 0.2s, background-color 0.2s;
             z-index: 10;
         }
 
-        .dropzone.dragover {
-            border-color: var(--accent);
-            background-color: rgba(59, 130, 246, 0.05);
-        }
-
         .dropzone p {
             color: var(--text-muted);
-            margin-top: 10px;
-            font-size: 0.95rem;
+            margin-top: 8px;
+            font-size: 0.85rem;
         }
 
-        /* Canvas Editor Viewport */
+        /* Canvas Editor Viewport - Scales image properly */
         .canvas-container {
             display: none;
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             overflow: auto;
-            padding: 20px;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
 
         canvas {
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             transform-origin: center center;
             transition: transform 0.1s ease-out;
             max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Prevents raw huge layout overflow */
             cursor: default;
         }
         
@@ -290,14 +288,14 @@
         /* Floating Toolbar */
         .workspace-toolbar {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            bottom: 12px;
+            left: 12px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             z-index: 5;
             background: rgba(15, 15, 17, 0.8);
-            padding: 6px;
-            border-radius: 8px;
+            padding: 4px 8px;
+            border-radius: 6px;
             backdrop-filter: blur(8px);
             border: 1px solid var(--border);
         }
@@ -318,22 +316,27 @@
 </head>
 <body>
 
+    <!-- Header Navigation -->
     <header>
         <a href="/" class="btn-home">
             <span>←</span> Back Home
         </a>
-        <div class="logo" style="font-weight: bold; font-size: 1.2rem; color: #fff;">📸 PhotoEditor Pro</div>
+        <div class="logo" style="font-weight: bold; font-size: 1rem; color: #fff;">📸 PhotoEditor Pro</div>
     </header>
 
+    <!-- App Identity Hero -->
     <section class="hero-section">
         <h1>Edit Images Online Professionally</h1>
-        <p>A fast, browser-based image editor to easily apply filters, manipulate alignment, add text overlays, and export instantly without watermarks.</p>
+        <p>A fast, browser-based image editor to easily manipulate photos without watermarks.</p>
     </section>
 
+    <!-- Main Editor Interface -->
     <main class="editor-container">
         
+        <!-- Sidebar Controls Grid -->
         <aside class="controls-sidebar" id="sidebar">
             
+            <!-- Transform and Zoom -->
             <div class="control-group">
                 <h3>Transform & Zoom</h3>
                 <div class="range-wrapper">
@@ -351,6 +354,7 @@
                 </div>
             </div>
 
+            <!-- Essential Adjustment Filters -->
             <div class="control-group">
                 <h3>Adjustments & Filters</h3>
                 
@@ -385,11 +389,12 @@
                 </div>
             </div>
 
+            <!-- Typography & Text Overlay -->
             <div class="control-group">
                 <h3>Text Overlay</h3>
                 <input type="text" id="text-string" class="text-input-field" placeholder="Type text here...">
                 
-                <label style="font-size: 0.85rem; color: var(--text-muted);">Font Style</label>
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Font Style</label>
                 <select id="text-font">
                     <option value="'Inter', sans-serif">Modern</option>
                     <option value="'Playfair Display', serif">Classic</option>
@@ -404,7 +409,7 @@
                 </div>
 
                 <div class="color-picker-wrapper">
-                    <label style="font-size: 0.85rem; color: var(--text-muted); flex: 1;">Text Color:</label>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); flex: 1;">Text Color:</label>
                     <input type="color" id="text-color" value="#ffffff">
                 </div>
 
@@ -414,34 +419,39 @@
                 </div>
             </div>
 
+            <!-- Export Configurations -->
             <div class="control-group">
                 <h3>Export Image</h3>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 6px;">
                     <select id="export-format" style="flex: 1; margin-bottom:0;">
                         <option value="image/jpeg">JPG</option>
                         <option value="image/png">PNG</option>
                         <option value="image/webp">WebP</option>
                     </select>
-                    <button id="btn-download" class="btn-export">Save & Download</button>
+                    <button id="btn-download" class="btn-export">Save</button>
                 </div>
             </div>
 
         </aside>
 
+        <!-- Canvas Workspace Area -->
         <section class="workspace" id="workspace-area">
             
+            <!-- Drag & Drop Zone -->
             <div class="dropzone" id="drop-zone">
-                <span style="font-size: 3.5rem;">🖼️</span>
-                <p>Drag & drop your image here or click to browse</p>
+                <span style="font-size: 2rem;">🖼️</span>
+                <p>Drag & drop image here or click</p>
                 <input type="file" id="file-input" accept="image/*" style="display: none;">
             </div>
 
+            <!-- Dynamic Canvas Wrapper -->
             <div class="canvas-container" id="canvas-holder">
                 <canvas id="main-canvas"></canvas>
             </div>
 
+            <!-- Contextual Active Toolbars -->
             <div class="workspace-toolbar hidden" id="w-toolbar">
-                <button id="btn-change-img" style="font-size: 0.8rem;">Change Image 🔁</button>
+                <button id="btn-change-img" style="font-size: 0.75rem; padding:4px 8px;">Change Image 🔁</button>
             </div>
 
         </section>
@@ -499,7 +509,7 @@
         let historyStep = -1;
         let draggingText = false;
 
-        // Dynamic Extra Controls UI Generation
+        // Dynamic Extra Controls UI Generation (Compact Styles)
         const textControls = document.createElement("div");
         textControls.className = "control-group";
         textControls.innerHTML = `
@@ -528,7 +538,7 @@
                 <button id="btn-eraser">🧽 Eraser</button>
                 <button id="btn-undo">↩ Undo</button>
                 <button id="btn-redo">↪ Redo</button>
-                <button id="btn-crop-center">✂ Crop Center</button>
+                <button id="btn-crop-center" style="grid-column: span 2;">✂ Crop Center</button>
             </div>
         `;
         sidebar.insertBefore(extraButtons, btnDownload.closest('.control-group'));
@@ -565,13 +575,11 @@
                     canvasHolder.style.display = 'flex';
                     wToolbar.classList.remove('hidden');
                     
-                    // Match dimensions safely
                     canvas.width = originalImage.width;
                     canvas.height = originalImage.height;
                     
                     renderCanvas();
                     
-                    // Clear and save first clean history state
                     history = [];
                     historyStep = -1;
                     saveHistory();
@@ -602,7 +610,6 @@
             document.getElementById('font-size-val').innerText = textSize.value + 'px';
         }
 
-        // Core Unified Rendering Engine
         function renderCanvas() {
             if (!originalImage.src) return;
 
@@ -616,12 +623,10 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
 
-            // 1. Transform Layers
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate((rotation * Math.PI) / 180);
             ctx.scale(flipH, flipV);
 
-            // 2. Filters
             ctx.filter = `
                 brightness(${brightnessInput.value}%)
                 contrast(${contrastInput.value}%)
@@ -634,7 +639,6 @@
             ctx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
             ctx.restore(); 
 
-            // 3. Render Text Overlays
             if (textString.value.trim() !== "") {
                 ctx.save();
                 ctx.globalAlpha = textOpacity.value / 100;
@@ -658,7 +662,6 @@
             }
         }
 
-        // Event Listeners for Live Previews
         const liveInputs = [brightnessInput, contrastInput, saturationInput, grayscaleInput, sepiaInput, blurInput, textString, textFont, textSize, textColor, textShadow, textXInput, textYInput, textOpacity];
         liveInputs.forEach(input => {
             input.addEventListener('input', () => {
@@ -678,7 +681,6 @@
         btnFlipV.addEventListener('click', () => { flipV = flipV === 1 ? -1 : 1; renderCanvas(); });
         btnReset.addEventListener('click', () => { resetSettings(); renderCanvas(); });
 
-        // History Management
         function saveHistory() {
             if (!canvas.width || !canvas.height) return;
             if (historyStep < history.length - 1) {
@@ -695,13 +697,10 @@
         function loadHistoryState() {
             let imgHistory = new Image();
             imgHistory.onload = function() {
-                // Adjust sizes natively
                 canvas.width = imgHistory.width;
                 canvas.height = imgHistory.height;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(imgHistory, 0, 0);
-                
-                // Update underlying asset state to maintain destructive draw pipeline sync
                 originalImage = imgHistory;
             };
             imgHistory.src = history[historyStep];
@@ -710,7 +709,6 @@
         btnUndo.addEventListener('click', () => { if (historyStep > 0) { historyStep--; loadHistoryState(); } });
         btnRedo.addEventListener('click', () => { if (historyStep < history.length - 1) { historyStep++; loadHistoryState(); } });
 
-        // Drawing Utilities
         function disableDrawingModes() {
             brushMode = false;
             eraserMode = false;
@@ -739,10 +737,8 @@
             }
         });
 
-        // Precise Normalized Mouse Event Captures
         function getCanvasMousePos(e) {
             const rect = canvas.getBoundingClientRect();
-            // Factoring scale zoom structural metrics accurately
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             return {
@@ -756,13 +752,12 @@
                 drawing = true;
                 draw(e);
             } else if (textString.value.trim() !== "") {
-                // Text drag inspector
                 const pos = getCanvasMousePos(e);
                 const currentX = canvas.width * (textXInput.value / 100);
                 const currentY = canvas.height * (textYInput.value / 100);
                 const distance = Math.sqrt(Math.pow(pos.x - currentX, 2) + Math.pow(pos.y - currentY, 2));
                 
-                if (distance < 100) { // Click detection radius
+                if (distance < 60) { 
                     draggingText = true;
                 }
             }
@@ -782,7 +777,7 @@
         window.addEventListener("mouseup", function() {
             if (drawing) {
                 drawing = false;
-                saveHistory(); // Save layer changes securely on release
+                saveHistory(); 
             }
             draggingText = false;
         });
@@ -791,7 +786,7 @@
             const pos = getCanvasMousePos(e);
             ctx.save();
             ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+            ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
 
             if (eraserMode) {
                 ctx.globalCompositeOperation = "destination-out";
@@ -804,7 +799,6 @@
             ctx.restore();
         }
 
-        // Absolute Center Omission Crop Tool
         btnCropCenter.addEventListener('click', () => {
             if (!originalImage.src) return;
 
@@ -813,7 +807,6 @@
             const startX = (canvas.width - cropWidth) / 2;
             const startY = (canvas.height - cropHeight) / 2;
 
-            // Generate an isolated buffer canvas to bypass data corruption
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = cropWidth;
             tempCanvas.height = cropHeight;
@@ -832,7 +825,6 @@
             originalImage.src = tempCanvas.toDataURL();
         });
 
-        // Download Execution
         btnDownload.addEventListener('click', () => {
             if (!originalImage.src) return;
             const format = exportFormat.value; 
@@ -847,8 +839,9 @@
         // Append Footer
         const footer = document.createElement("footer");
         footer.style.textAlign = "center";
-        footer.style.padding = "20px";
+        footer.style.padding = "10px";
         footer.style.color = "#9ca3af";
+        footer.style.fontSize = "0.75rem";
         footer.innerHTML = "© 2026 Tone.pics";
         document.body.appendChild(footer);
     </script>
