@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title>AI Background Remover | Tone.pics</title>
+    <title>Background Remover | Tone.pics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -19,7 +19,6 @@
             --text-faint: #5c6469;
             --accent: #43e5c5;
             --accent-dim: #2b7a6c;
-            --mark: #ff4b5c;
             --radius: 14px;
             --radius-sm: 9px;
         }
@@ -32,7 +31,6 @@
         }
         .app { max-width: 1200px; margin: 0 auto; }
         
-        /* Topbar */
         .topbar {
             display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--line-soft); padding-bottom: 15px; margin-bottom: 30px;
@@ -46,24 +44,21 @@
         .brand h1 { font-size: 1.15rem; font-weight: 900; margin: 0; }
         .brand p { margin: 1px 0 0; font-size: .78rem; color: var(--text-dim); font-family: 'JetBrains Mono'; }
 
-        /* Workspace Layout */
         .workspace { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 768px) { .workspace { grid-template-columns: 1fr 1fr; } }
 
-        .card { background: var(--panel); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 24px; position: relative; }
+        .card { background: var(--panel); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 24px; }
         .subhead { font-size: .72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 15px; font-family: 'JetBrains Mono'; }
 
-        /* Dropzone */
         .dropzone {
-            border: 2px dashed var(--line); border-radius: var(--radius); padding: 60px 20px;
+            border: 2px dashed var(--line); border-radius: var(--radius); padding: 50px 20px;
             text-align: center; cursor: pointer; transition: .15s; background: var(--ink-2);
         }
         .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: #43e5c508; }
-        .dropzone svg { width: 48px; height: 48px; color: var(--text-faint); margin-bottom: 12px; }
+        .dropzone svg { width: 44px; height: 44px; color: var(--text-faint); margin-bottom: 12px; }
         .dropzone p { margin: 0; font-size: .9rem; color: var(--text-dim); }
         .dropzone span { color: var(--accent); font-weight: 700; }
 
-        /* Preview Box & Checkerboard */
         .preview-box {
             width: 100%; aspect-ratio: 4/3; background: var(--ink-2); border: 1px solid var(--line);
             border-radius: var(--radius-sm); display: grid; place-items: center; overflow: hidden; position: relative;
@@ -71,26 +66,17 @@
         .transparent-bg {
             background-color: #1a1d22;
             background-image: linear-gradient(45deg, #111215 25%, transparent 25%), linear-gradient(-45deg, #111215 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #111215 75%), linear-gradient(-45deg, transparent 75%, #111215 75%);
-            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-size: 16px 16px;
         }
-        .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; z-index: 2; }
+        .preview-box img, .preview-box canvas { max-width: 100%; max-height: 100%; object-fit: contain; z-index: 2; }
 
-        /* Loading Overlay */
-        .loader {
-            position: absolute; inset: 0; background: rgba(17, 18, 21, 0.85); display: none;
-            flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: var(--radius);
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid var(--line); border-top-color: var(--accent);
-            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loader p { margin: 0; font-size: .88rem; color: var(--accent); font-weight: 600; font-family: 'JetBrains Mono'; }
+        .field { margin-top: 15px; }
+        .field label { display: block; font-size: .8rem; color: var(--text-dim); margin-bottom: 8px; }
+        input[type=range] { width: 100%; accent-color: var(--accent); }
 
-        /* Buttons */
         .btn {
             width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: var(--accent); color: #06120f; font-weight: 700; padding: 14px;
+            background: var(--accent); color: #06120f; font-weight: 700; padding: 13px;
             border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: .9rem; transition: .15s; margin-top: 15px;
         }
         .btn:hover { filter: brightness(1.1); }
@@ -108,130 +94,136 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06120f" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             </div>
             <div>
-                <h1>AI Background Remover</h1>
-                <p>100% Local · Privacy First · Pure Vector</p>
+                <h1>Background Remover</h1>
+                <p>Instant Canvas Process · Tone.pics Style</p>
             </div>
         </div>
     </div>
 
     <div class="workspace">
-        <!-- Left: Input Card -->
-        <div class="card" id="inputCard">
+        <!-- Left Panel -->
+        <div class="card">
             <p class="subhead">Source Image</p>
             <div class="dropzone" id="dropzone">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <p>Drag & Drop original photo or <span>Browse</span></p>
+                <p>Drag & Drop photo or <span>Browse</span></p>
             </div>
             <input type="file" id="fileInput" accept="image/*" style="display:none;">
             
-            <div class="preview-box" id="origBox" style="display:none; margin-top:15px;">
+            <div class="preview-box" id="origBox" style="display:none;">
                 <img id="origImg" src="">
             </div>
-            <button class="btn" id="btnProcess" disabled>Remove Background</button>
+
+            <div class="field">
+                <label>Color Match Tolerance: <span id="tolVal">30</span></label>
+                <input type="range" id="tolerance" min="5" max="150" value="30">
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 5px;">* Click on the background color inside the left preview to select the color you want to erase.</p>
         </div>
 
-        <!-- Right: Output Card -->
-        <div class="card" id="outputCard">
-            <div class="loader" id="loader">
-                <div class="spinner"></div>
-                <p id="loaderText">Downloading AI Model (First time only)...</p>
-            </div>
-            
+        <!-- Right Panel -->
+        <div class="card">
             <p class="subhead">Result Preview</p>
-            <div class="preview-box transparent-bg" id="resultBox">
-                <span id="resultPlaceholder" style="color:var(--text-faint); font-size:.85rem;">Processed image will appear here</span>
-                <img id="resultImg" src="" style="display:none;">
+            <div class="preview-box transparent-bg">
+                <span id="resultPlaceholder" style="color:var(--text-faint); font-size:.85rem;">Transparent image preview</span>
+                <canvas id="resultCanvas" style="display:none;"></canvas>
             </div>
-            <button class="btn secondary" id="btnDownload" disabled>Download PNG</button>
+            <button class="btn" id="btnDownload" disabled>Download Transparent PNG</button>
         </div>
     </div>
 </div>
 
-<!-- تحميل حزمة معالجة الصور بالذكاء الاصطناعي محلياً -->
-<script type="importmap">
-  {
-    "imports": {
-      "@imgly/background-removal": "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm"
-    }
-  }
-</script>
+<script>
+    const $ = sel => document.querySelector(sel);
+    let imgElement = new Image();
+    let targetColor = { r: 255, g: 255, b: 255 }; // الافتراضي الأبيض
 
-<script type="module">
-    import imglyRemoveBackground from '@imgly/background-removal';
-
-    const $ = selector => document.querySelector(selector);
-    let selectedFile = null;
-
-    // دمج أحداث رفع الملفات
     $('#dropzone').addEventListener('click', () => $('#fileInput').click());
-    $('#dropzone').addEventListener('dragover', (e) => { e.preventDefault(); $('#dropzone').classList.add('drag'); });
-    $('#dropzone').addEventListener('dragleave', () => $('#dropzone').classList.remove('drag'));
-    $('#dropzone').addEventListener('drop', (e) => {
-        e.preventDefault();
-        $('#dropzone').classList.remove('drag');
-        if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    });
     $('#fileInput').addEventListener('change', (e) => {
         if(e.target.files.length) handleFile(e.target.files[0]);
     });
 
     function handleFile(file) {
-        if (!file.type.startsWith('image/')) return;
-        selectedFile = file;
-        
         const reader = new FileReader();
-        reader.onload = (e) => {
-            $('#origImg').src = e.target.result;
+        reader.onload = (event) => {
+            $('#origImg').src = event.target.result;
             $('#dropzone').style.display = 'none';
             $('#origBox').style.display = 'grid';
-            $('#btnProcess').disabled = false;
+            
+            imgElement.src = event.target.result;
+            imgElement.onload = () => {
+                // التقاط اللون من الزاوية العلوية اليسرى تلقائياً كخلفية مبدئية
+                processImage();
+            };
         };
         reader.readAsDataURL(file);
     }
 
-    // معالجة وإزالة الخلفية عبر الـ WASM بالكامل في المتصفح
-    $('#btnProcess').addEventListener('click', async () => {
-        if (!selectedFile) return;
+    // السماح للمستخدم بالضغط على الصورة لتحديد لون الخلفية المراد مسحه
+    $('#origImg').addEventListener('click', (e) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = imgElement.width;
+        canvas.height = imgElement.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgElement, 0, 0);
+        
+        const rect = e.target.getBoundingClientRect();
+        const x = Math.floor(((e.clientX - rect.left) / rect.width) * imgElement.width);
+        const y = Math.floor(((e.clientY - rect.top) / rect.height) * imgElement.height);
+        
+        const imgData = ctx.getImageData(x, y, 1, 1).data;
+        targetColor = { r: imgData[0], g: imgData[1], b: imgData[2] };
+        processImage();
+    });
 
-        $('#loader').style.display = 'flex';
-        $('#btnProcess').disabled = true;
+    $('#tolerance').addEventListener('input', (e) => {
+        $('#tolVal').textContent = e.target.value;
+        processImage();
+    });
 
-        try {
-            // استدعاء محرك الذكاء الاصطناعي لمعالجة الصورة
-            const blob = await imglyRemoveBackground(selectedFile, {
-                progress: (instance, progress) => {
-                    // تحديث نص التحميل للمستخدم بناءً على جلب النموذج أو المعالجة
-                    if(progress < 1) {
-                         $('#loaderText').textContent = `Processing Structure: ${Math.round(progress * 100)}%`;
-                    } else {
-                         $('#loaderText').textContent = `Finalizing Transparent Layers...`;
-                    }
-                }
-            });
+    function processImage() {
+        if (!imgElement.src) return;
+        
+        const canvas = $('#resultCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = imgElement.width;
+        canvas.height = imgElement.height;
+        ctx.drawImage(imgElement, 0, 0);
+        
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        const tol = parseInt($('#tolerance').value);
 
-            const resultUrl = URL.createObjectURL(blob);
-            $('#resultImg').src = resultUrl;
-            $('#resultImg').style.display = 'block';
-            $('#resultPlaceholder').style.display = 'none';
-            $('#btnDownload').disabled = false;
-
-            // تجهيز تصفح التحميل المباشر
-            $('#btnDownload').onclick = () => {
-                const a = document.createElement('a');
-                a.href = resultUrl;
-                a.download = `tone-pics-no-bg-${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-
-        } catch (error) {
-            alert("An error occurred while processing the image locally.");
-            console.error(error);
-        } finally {
-            $('#loader').style.display = 'none';
-            $('#btnProcess').disabled = false;
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i+1];
+            const b = data[i+2];
+            
+            // حساب الفارق بين لون البكسل الحالي واللون المستهدف مسحه
+            const diff = Math.sqrt(
+                Math.pow(r - targetColor.r, 2) +
+                Math.pow(g - targetColor.g, 2) +
+                Math.pow(b - targetColor.b, 2)
+            );
+            
+            if (diff < tol) {
+                data[i + 3] = 0; // جعل البكسل شفاف بالكامل
+            }
         }
+        
+        ctx.putImageData(imgData, 0, 0);
+        
+        canvas.style.display = 'block';
+        $('#resultPlaceholder').style.display = 'none';
+        $('#btnDownload').disabled = false;
+    }
+
+    $('#btnDownload').addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = $('#resultCanvas').toDataURL('image/png');
+        a.download = `tone-pics-nobg-${Date.now()}.png`;
+        a.click();
     });
 </script>
 
