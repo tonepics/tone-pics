@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tone.pics | Animated GIF Maker</title>
+
+<style>
+:root{
+ --bg:#0e0f12;
+ --panel:#15171c;
+ --panel2:#1b1e24;
+ --line:#2a2d34;
+ --text:#e9eaee;
+ --muted:#9a9ea8;
+ --accent:#ffd23f;
+ --danger:#ff5d5d;
+}
+
+*{
+ box-sizing:border-box;
+}
+
+body{
+ margin:0;
+ background:var(--bg);
+ color:var(--text);
+ font-family:
+ -apple-system,
+ BlinkMacSystemFont,
+ "Segoe UI",
+ Roboto,
+ Arial;
+ min-height:100vh;
+}
+
+
+.header{
+ height:60px;
+ background:var(--panel);
+ border-bottom:1px solid var(--line);
+ display:flex;
+ align-items:center;
+ padding:0 20px;
+ gap:15px;
+}
+
+.back-btn{
+ background:var(--panel2);
+ color:var(--text);
+ border:1px solid var(--line);
+ padding:8px 15px;
+ border-radius:8px;
+ cursor:pointer;
+ text-decoration:none;
+ font-size:14px;
+}
+
+.back-btn:hover{
+ border-color:var(--accent);
+ color:var(--accent);
+}
+
+
+.logo{
+ font-size:20px;
+ font-weight:800;
+}
+
+.logo span{
+ background:var(--accent);
+ color:#111;
+ padding:3px 7px;
+ border-radius:5px;
+ font-size:12px;
+}
+
+
+.container{
+ max-width:1100px;
+ margin:auto;
+ padding:25px;
+ display:grid;
+ grid-template-columns:350px 1fr;
+ gap:20px;
+}
+
+
+.panel{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:14px;
+ padding:20px;
+}
+
+
+h2{
+ margin-top:0;
+ font-size:18px;
+}
+
+
+.drop-zone{
+
+ border:2px dashed var(--line);
+ border-radius:12px;
+ padding:35px 20px;
+ text-align:center;
+ cursor:pointer;
+ color:var(--muted);
+}
+
+
+.drop-zone:hover{
+ border-color:var(--accent);
+ color:var(--accent);
+}
+
+
+input[type=file]{
+ display:none;
+}
+
+
+button{
+
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ padding:10px 15px;
+ border-radius:8px;
+ cursor:pointer;
+}
+
+
+button:hover{
+ border-color:var(--accent);
+ color:var(--accent);
+}
+
+
+.primary{
+
+ background:var(--accent);
+ color:#111;
+ font-weight:800;
+ border:none;
+}
+
+
+.primary:hover{
+ background:#ffe27a;
+ color:#111;
+}
+
+
+
+.images-list{
+
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ margin-top:20px;
+}
+
+
+.image-card{
+
+ width:110px;
+ background:var(--panel2);
+ border:1px solid var(--line);
+ border-radius:10px;
+ padding:8px;
+ position:relative;
+}
+
+
+.image-card img{
+
+ width:100%;
+ height:80px;
+ object-fit:cover;
+ border-radius:6px;
+}
+
+
+.remove{
+
+ position:absolute;
+ top:5px;
+ right:5px;
+ background:var(--danger);
+ color:white;
+ border:none;
+ width:22px;
+ height:22px;
+ border-radius:50%;
+ padding:0;
+}
+
+
+.control{
+
+ margin-top:15px;
+}
+
+
+label{
+
+ display:block;
+ color:var(--muted);
+ font-size:13px;
+ margin-bottom:6px;
+}
+
+
+input[type=range],
+select{
+
+ width:100%;
+ background:var(--panel2);
+ color:white;
+ padding:8px;
+ border:1px solid var(--line);
+ border-radius:8px;
+}
+
+
+.preview{
+
+ min-height:400px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#08090b;
+ border-radius:12px;
+ border:1px solid var(--line);
+}
+
+
+#previewImage{
+
+ max-width:100%;
+ max-height:380px;
+ border-radius:10px;
+}
+
+
+.actions{
+
+ margin-top:20px;
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+}
+
+
+.status{
+
+ margin-top:15px;
+ color:var(--muted);
+ font-size:14px;
+}
+
+
+@media(max-width:800px){
+
+.container{
+ grid-template-columns:1fr;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<header class="header">
+
+<a href="../index.html" class="back-btn">
+← Back
+</a>
+
+
+<div class="logo">
+Tone.pics <span>GIF MAKER</span>
+</div>
+
+</header>
+
+
+
+<div class="container">
+
+
+<div class="panel">
+
+
+<h2>
+🎬 Animated GIF Maker
+</h2>
+
+
+<label class="drop-zone" id="dropZone">
+
+Click or Drop Images Here
+
+<input 
+type="file"
+id="fileInput"
+accept="image/*"
+multiple>
+
+</label>
+
+
+<div class="images-list" id="imagesList"></div>
+
+
+
+<div class="control">
+
+<label>
+Frame Duration
+</label>
+
+<input 
+type="range"
+id="duration"
+min="100"
+max="2000"
+value="500">
+
+<p id="durationValue">
+500 ms
+</p>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+GIF Size
+</label>
+
+<select id="gifSize">
+
+<option value="512">
+512px
+</option>
+
+<option value="256" selected>
+256px
+</option>
+
+<option value="128">
+128px
+</option>
+
+</select>
+
+</div>
+
+
+
+<div class="control">
+
+<label>
+Loop
+</label>
+
+<select id="loop">
+
+<option value="0">
+Infinite
+</option>
+
+<option value="1">
+One Time
+</option>
+
+</select>
+
+</div>
+
+
+<div class="actions">
+
+<button 
+class="primary"
+id="createBtn">
+Create GIF
+</button>
+
+
+<button 
+id="clearBtn">
+Clear
+</button>
+
+
+</div>
+
+
+<div class="status" id="status">
+No images selected
+</div>
+
+
+</div>
+
+
+<div class="panel">
+
+<h2>
+Preview
+</h2>
+
+
+<div class="preview">
+
+<img id="previewImage">
+
+</div>
+
+
+</div>
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+
+<script>
+
+const fileInput = document.getElementById("fileInput");
+const dropZone = document.getElementById("dropZone");
+const imagesList = document.getElementById("imagesList");
+
+const duration = document.getElementById("duration");
+const durationValue = document.getElementById("durationValue");
+
+const previewImage = document.getElementById("previewImage");
+
+const createBtn = document.getElementById("createBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+const status = document.getElementById("status");
+
+const gifSize = document.getElementById("gifSize");
+const loop = document.getElementById("loop");
+
+
+let images = [];
+
+
+
+/* Upload */
+
+dropZone.onclick = () => {
+    fileInput.click();
+};
+
+
+
+fileInput.onchange = e => {
+
+    addFiles(e.target.files);
+
+};
+
+
+
+function addFiles(files){
+
+    [...files].forEach(file=>{
+
+        if(!file.type.startsWith("image/"))
+            return;
+
+
+        const reader = new FileReader();
+
+
+        reader.onload = e=>{
+
+
+            const img = new Image();
+
+            img.src = e.target.result;
+
+
+            img.onload = ()=>{
+
+                images.push(img);
+
+                renderImages();
+
+                updatePreview();
+
+            };
+
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+
+    });
+
+}
+
+
+
+
+
+/* Drag Drop */
+
+
+dropZone.addEventListener(
+"dragover",
+e=>{
+
+e.preventDefault();
+
+dropZone.style.borderColor="#ffd23f";
+
+});
+
+
+dropZone.addEventListener(
+"dragleave",
+()=>{
+
+dropZone.style.borderColor="";
+
+});
+
+
+
+dropZone.addEventListener(
+"drop",
+e=>{
+
+e.preventDefault();
+
+dropZone.style.borderColor="";
+
+addFiles(e.dataTransfer.files);
+
+});
+
+
+
+
+
+
+
+/* Show Images */
+
+
+function renderImages(){
+
+
+imagesList.innerHTML="";
+
+
+images.forEach((img,index)=>{
+
+
+const card=document.createElement("div");
+
+card.className="image-card";
+
+
+card.innerHTML=`
+
+<img src="${img.src}">
+
+<button class="remove">
+×
+</button>
+
+`;
+
+
+
+card.querySelector(".remove")
+.onclick=()=>{
+
+
+images.splice(index,1);
+
+renderImages();
+
+updatePreview();
+
+
+};
+
+
+
+imagesList.appendChild(card);
+
+
+});
+
+
+
+status.innerHTML =
+images.length+
+" image(s) loaded";
+
+
+}
+
+
+
+
+
+/* Preview Animation */
+
+
+let previewTimer;
+
+
+function updatePreview(){
+
+
+clearInterval(previewTimer);
+
+
+if(images.length===0){
+
+previewImage.src="";
+
+return;
+
+}
+
+
+
+let index=0;
+
+
+previewImage.src=
+images[0].src;
+
+
+
+previewTimer=setInterval(()=>{
+
+
+index++;
+
+
+if(index>=images.length)
+index=0;
+
+
+previewImage.src=
+images[index].src;
+
+
+},Number(duration.value));
+
+
+}
+
+
+
+
+
+
+duration.oninput=()=>{
+
+
+durationValue.innerHTML=
+duration.value+" ms";
+
+
+updatePreview();
+
+
+};
+
+
+
+
+
+
+
+/* Clear */
+
+
+clearBtn.onclick=()=>{
+
+
+images=[];
+
+imagesList.innerHTML="";
+
+previewImage.src="";
+
+status.innerHTML=
+"No images selected";
+
+
+};
+
+
+
+
+
+</script>
+
+  </body>
+</html>
