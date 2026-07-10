@@ -72,7 +72,7 @@
                 <option value="1">One Time</option>
             </select>
         </div>
-        <div class="actions">
+        <div class="actions" id="actionContainer">
             <button class="primary" id="createBtn">Create GIF</button>
             <button id="clearBtn">Clear</button>
         </div>
@@ -131,9 +131,11 @@
 
     createBtn.onclick = () => {
         if(images.length < 1) { alert("Please upload images first"); return; }
-        status.innerHTML = "Creating GIF... Please wait";
+        status.innerHTML = "Processing GIF... Please wait";
         const size = Number(gifSize.value);
-        const gif = new GIF({ workers: 2, quality: 10, width: size, height: size, repeat: Number(loop.value) === 0 ? 0 : -1, workerScript: 'https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.worker.js' });
+        
+        // Using direct constructor without external worker path to avoid CORS
+        const gif = new GIF({ workers: 2, quality: 10, width: size, height: size, repeat: Number(loop.value) === 0 ? 0 : -1 });
 
         images.forEach(img => {
             const canvas = document.createElement("canvas");
@@ -151,14 +153,12 @@
             previewImage.src = url;
             const download = document.createElement("a");
             download.href = url;
-            download.download = "tone-pics-animation.gif";
+            download.download = "animation.gif";
             download.innerHTML = "Download GIF";
             download.className = "primary";
-            download.style.display = "inline-block";
-            download.style.textDecoration = "none";
-            download.style.marginTop = "15px";
-            status.innerHTML = "GIF Created Successfully 🎉";
-            document.querySelector(".actions").appendChild(download);
+            download.style.cssText = "display:inline-block; text-decoration:none; padding:10px 15px; margin-top:15px; border-radius:8px;";
+            status.innerHTML = "GIF Created Successfully!";
+            document.getElementById("actionContainer").appendChild(download);
         });
         gif.render();
     };
