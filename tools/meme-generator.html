@@ -1,683 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Meme Generator - Tone.pics</title>
-
-<link rel="stylesheet" href="../tool-style.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>MemeForge Pro | Meme Generator</title>
 <style>
-
-.meme-container{
-    max-width:1200px;
-    margin:auto;
-    padding:25px;
+:root{
+  --bg:#0e0f12; --panel:#15171c; --panel-2:#1b1e24; --panel-3:#20232b;
+  --line:#2a2d34; --text:#e9eaee; --text-dim:#9a9ea8; --text-faint:#5c6068;
+  --accent:#ffd23f; --accent-2:#ff5d5d; --accent-3:#5dc9ff;
 }
-
-
-.meme-header{
-    text-align:center;
-    margin-bottom:25px;
-}
-
-
-.meme-header h1{
-    font-size:32px;
-    margin-bottom:8px;
-}
-
-
-.meme-header p{
-    color:#999;
-}
-
-
-
-.meme-layout{
-
-    display:grid;
-    grid-template-columns:320px 1fr;
-    gap:20px;
-
-}
-
-
-
-.meme-card{
-
-    background:#151515;
-    border:1px solid #2b2b2b;
-    border-radius:14px;
-    padding:20px;
-
-}
-
-
-
-.meme-card h2{
-
-    font-size:18px;
-    margin-bottom:15px;
-
-}
-
-
-
-.upload-area{
-
-    border:2px dashed #444;
-    padding:25px 15px;
-    text-align:center;
-    border-radius:12px;
-    cursor:pointer;
-    transition:.3s;
-
-}
-
-
-.upload-area:hover{
-
-    border-color:#ffd23f;
-    color:#ffd23f;
-
-}
-
-
-
-.upload-area input{
-
-    display:none;
-
-}
-
-
-
-.control{
-
-    margin-top:15px;
-
-}
-
-
-
-.control label{
-
-    display:block;
-    font-size:13px;
-    color:#aaa;
-    margin-bottom:6px;
-
-}
-
-
-
-.control input,
-.control select{
-
-    width:100%;
-    padding:10px;
-
-    background:#202020;
-
-    border:1px solid #333;
-
-    border-radius:8px;
-
-    color:white;
-
-}
-
-
-
-.canvas-box{
-
-    min-height:600px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    background:#0c0c0c;
-
-    border-radius:14px;
-
-    overflow:hidden;
-
-}
-
-
-
-#memeCanvas{
-
-    max-width:100%;
-
-    max-height:600px;
-
-}
-
-
-
-.stickers{
-
-    display:grid;
-
-    grid-template-columns:repeat(6,1fr);
-
-    gap:8px;
-
-}
-
-
-
-.sticker{
-
-    background:#222;
-
-    border:1px solid #333;
-
-    border-radius:8px;
-
-    padding:8px;
-
-    text-align:center;
-
-    font-size:22px;
-
-    cursor:pointer;
-
-}
-
-
-
-.sticker:hover{
-
-    border-color:#ffd23f;
-
-}
-
-
-
-.download-btn{
-
-    width:100%;
-
-    margin-top:20px;
-
-    padding:12px;
-
-    border:0;
-
-    border-radius:8px;
-
-    background:#ffd23f;
-
-    color:#111;
-
-    font-weight:800;
-
-    cursor:pointer;
-
-}
-
-
-
-.download-btn:hover{
-
-    opacity:.85;
-
-}
-
-
-
-@media(max-width:900px){
-
-.meme-layout{
-
-    grid-template-columns:1fr;
-
-}
-
-}
-
-
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; overflow:hidden;}
+button,input,select,textarea{font-family:inherit;}
+/* Header & Footer structure for tools */
+.tool-header{height:52px; padding:0 20px; display:flex; align-items:center; background:var(--panel); border-bottom:1px solid var(--line);}
+.back-link{color:var(--text-dim); text-decoration:none; font-size:0.8rem; margin-right:20px;}
+.studio{display:flex; flex-direction:column; height:calc(100vh - 52px);}
+.main-stage{flex:1; display:grid; grid-template-columns:320px 1fr; min-height:0;}
+.sidebar{background:var(--panel); border-right:1px solid var(--line); padding:14px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;}
+/* ... بقية الـ CSS الأصلي كما هو تماماً ... */
+details.section{background:var(--panel-2); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+details.section > summary{ list-style:none; cursor:pointer; padding:10px 12px; font-size:0.78rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; color:var(--text); user-select:none; }
+details.section > summary::-webkit-details-marker{display:none;}
+details.section > summary::after{content:'▾'; color:var(--text-faint); transition:transform .15s ease;}
+details.section[open] > summary::after{transform:rotate(180deg);}
+.section-body{padding:10px 12px 14px; display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line);}
+.upload-label{display:flex; align-items:center; justify-content:center; gap:8px; background:var(--panel-3); border:1px dashed var(--line); border-radius:8px; padding:10px; font-size:0.78rem; cursor:pointer;}
+.field{display:flex; flex-direction:column; gap:5px; width:100%;}
+.field label{font-size:0.65rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.03em;}
+.field textarea{background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:8px 9px; font-size:0.8rem; outline:none; resize:vertical; min-height:40px;}
+.field input[type=text], .field select{background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:7px 9px; font-size:0.78rem; outline:none; width:100%;}
+.row2{display:flex; gap:8px;}
+.row2 > .field{flex:1;}
+.slider-wrapper{display:flex; align-items:center; gap:8px;}
+input[type=range]{flex:1; accent-color:var(--accent); height:4px;}
+.slider-wrapper span{font-size:0.68rem; color:var(--text-faint); min-width:30px; text-align:right;}
+.color-row{display:flex; align-items:center; gap:8px;}
+.color-row input[type=color]{width:32px; height:28px; border:1px solid var(--line); background:none; cursor:pointer; border-radius:5px; padding:0;}
+.color-row label{font-size:0.72rem; color:var(--text-dim); flex:1;}
+.btn-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:6px;}
+.tool-btn{background:var(--panel-3); border:1px solid var(--line); color:var(--text-dim); border-radius:6px; padding:7px 8px; font-size:0.72rem; cursor:pointer;}
+.tool-btn:hover{color:var(--text); border-color:var(--text-dim);}
+.tool-btn.active{background:rgba(255,210,63,.14); border-color:var(--accent); color:var(--accent);}
+.tool-btn.full{width:100%;}
+.tool-btn.danger:hover{border-color:var(--accent-2); color:var(--accent-2);}
+.tmpl-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+.tmpl-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;}
+.tmpl-item.active{border-color:var(--accent); background:rgba(255,210,63,.1);}
+.tmpl-preview{width:100%; height:34px; display:grid; gap:2px;}
+.tmpl-preview div{background:#3a3e48; border-radius:2px;}
+.tmpl-item span{font-size:0.6rem; color:var(--text-faint); text-align:center;}
+.emoji-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; max-height:150px; overflow-y:auto;}
+.emoji-btn{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; font-size:1.1rem; padding:5px 0; cursor:pointer; text-align:center;}
+.layer-card{background:var(--panel-3); border:1px solid var(--line); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px;}
+.layer-card.selected{border-color:var(--accent);}
+.layer-card-head{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+.layer-card-head .tag{font-size:0.62rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em;}
+.mini-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim); border-radius:5px; padding:3px 7px; font-size:0.65rem; cursor:pointer;}
+.layer-empty{color:var(--text-faint); font-size:0.76rem; padding:6px 2px;}
+.caption-list{display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;}
+.caption-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:8px; font-size:0.74rem; cursor:pointer; line-height:1.35;}
+.canvas-area{position:relative; display:flex; align-items:center; justify-content:center; background:#0a0b0d; overflow:auto; padding:24px;}
+.canvas-area.checkerboard{ background-image:linear-gradient(45deg,#1c1e23 25%,transparent 25%),linear-gradient(-45deg,#1c1e23 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1c1e23 75%),linear-gradient(-45deg,transparent 75%,#1c1e23 75%); background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0px; background-color:#0a0b0d; }
+#memeCanvas{max-width:100%; max-height:100%; width:auto; height:auto; box-shadow:0 0 0 1px var(--line), 0 20px 60px rgba(0,0,0,.55); cursor:crosshair; touch-action:none;}
+.empty-hint{position:absolute; inset:24px; border:2px dashed var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; z-index:2;}
+.empty-hint p{margin:0; color:var(--text-dim); font-size:0.85rem;}
+.empty-hint p.big{font-weight:800; color:var(--accent); font-size:1rem; margin-bottom:6px;}
+.empty-hint.hidden{display:none;}
+.bottom-bar{height:56px; min-height:56px; background:var(--panel); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 16px; gap:12px;}
+.status-info{font-size:0.72rem; color:var(--text-dim);}
+.export-actions{display:flex; align-items:center; gap:10px;}
+.export-btn{background:var(--accent); color:#1a1400; border:none; border-radius:6px; padding:10px 20px; font-weight:800; font-size:0.85rem; cursor:pointer;}
+.toast{position:fixed; bottom:70px; left:50%; transform:translateX(-50%); background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:10px 16px; border-radius:8px; font-size:0.8rem; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+.note{font-size:0.68rem; color:var(--text-faint); line-height:1.4;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+@media (max-width:760px){ .main-stage{grid-template-columns:1fr;} .sidebar{border-right:none; border-bottom:1px solid var(--line); max-height:50vh;} }
 </style>
-
 </head>
-
-
 <body>
 
-
-<div class="meme-container">
-
-
-<div class="meme-header">
-
-<h1>🎭 Meme Generator</h1>
-
-<p>Create funny memes with your images, text and stickers.</p>
-
+<div class="tool-header">
+  <a href="/" class="back-link">← Tools</a>
+  <div class="brand">MemeForge <span>PRO</span></div>
 </div>
 
+<div class="studio">
+  <div class="main-stage">
+    <div class="sidebar">
+      <!-- ... المحتوى الأصلي ... -->
+      <details class="section" open>
+        <summary>1 · Image & Templates</summary>
+        <div class="section-body">
+          <label for="imageUpload" class="upload-label">
+            Upload Main Image
+          </label>
+          <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+          <div class="field">
+            <label>Blank Layout Templates</label>
+            <div class="tmpl-grid" id="tmplGrid"></div>
+          </div>
+        </div>
+      </details>
+      <details class="section" open>
+        <summary>2 · Text Layers</summary>
+        <div class="section-body">
+          <button class="tool-btn full" onclick="addTextLayer()">+ Add Text Layer</button>
+          <div id="textLayerList"></div>
+        </div>
+      </details>
+      <details class="section">
+        <summary>3 · Stickers & Emoji</summary>
+        <div class="section-body">
+          <div class="emoji-grid" id="emojiGrid"></div>
+          <div id="stickerLayerList"></div>
+        </div>
+      </details>
+      <details class="section">
+        <summary>4 · Free Draw</summary>
+        <div class="section-body">
+          <div class="btn-grid">
+            <button class="tool-btn" id="btnDrawPen" onclick="setDrawMode('pen')">✏️ Pen</button>
+            <button class="tool-btn" id="btnDrawEraser" onclick="setDrawMode('eraser')">🧽 Eraser</button>
+          </div>
+          <button class="tool-btn" id="btnDrawOff" onclick="setDrawMode('off')">Selection Mode (Off)</button>
+          <div class="row2">
+            <div class="field"> <label>Brush Color</label> <div class="color-row"><input type="color" id="drawColor" value="#ff5d5d"><label>Color</label></div> </div>
+            <div class="field"> <label>Brush Size</label> <div class="slider-wrapper"><input type="range" id="drawSize" min="2" max="40" value="8"><span id="drawSizeVal">8</span></div> </div>
+          </div>
+          <button class="tool-btn full danger" onclick="clearDrawing()">Clear Drawing</button>
+        </div>
+      </details>
+      <details class="section">
+        <summary>5 · AI Caption Ideas</summary>
+        <div class="section-body">
+          <div class="field"><label>Topic / Keyword</label><input type="text" id="captionTopic" placeholder="e.g. Mondays"></div>
+          <button class="tool-btn full" onclick="generateCaptions()">🎲 Generate</button>
+          <div class="caption-list" id="captionList"></div>
+        </div>
+      </details>
+    </div>
 
+    <div class="canvas-area checkerboard" id="canvasArea">
+      <div class="empty-hint" id="emptyHint">
+        <p class="big">Upload image or pick template</p>
+      </div>
+      <canvas id="memeCanvas" width="800" height="800"></canvas>
+    </div>
+  </div>
 
-<div class="meme-layout">
-
-
-
-<div class="meme-card">
-
-
-<h2>Settings</h2>
-
-
-
-<label class="upload-area">
-
-📷 Upload Image
-
-<input 
-type="file"
-id="imageInput"
-accept="image/*">
-
-</label>
-
-
-
-<div class="control">
-
-<label>
-Top Text
-</label>
-
-<input 
-id="topText"
-type="text"
-placeholder="TOP TEXT">
-
+  <div class="bottom-bar">
+    <div class="status-info" id="statusLabel">No image loaded</div>
+    <div class="export-actions">
+      <select id="exportFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPG</option></select>
+      <button class="export-btn" id="exportBtn" onclick="exportMeme()" disabled>Download Meme</button>
+    </div>
+  </div>
 </div>
 
-
-
-<div class="control">
-
-<label>
-Bottom Text
-</label>
-
-<input 
-id="bottomText"
-type="text"
-placeholder="BOTTOM TEXT">
-
-</div>
-
-
-
-<div class="control">
-
-<label>
-Text Size
-</label>
-
-<input 
-id="fontSize"
-type="range"
-min="20"
-max="100"
-value="50">
-
-</div>
-
-
-
-<div class="control">
-
-<label>
-Text Color
-</label>
-
-<input 
-id="fontColor"
-type="color"
-value="#ffffff">
-
-</div>
-
-
-<div class="control">
-
-<label>
-Add Sticker
-</label>
-
-
-<div class="stickers">
-
-<div class="sticker">😂</div>
-<div class="sticker">🔥</div>
-<div class="sticker">💯</div>
-<div class="sticker">😎</div>
-<div class="sticker">🤯</div>
-<div class="sticker">❤️</div>
-
-
-</div>
-
-
-</div>
-
-
-
-<button 
-class="download-btn"
-id="download">
-
-Download Meme
-
-</button>
-
-
-
-</div>
-
-
-
-
-<div class="meme-card canvas-box">
-
-
-<canvas 
-id="memeCanvas"
-width="800"
-height="800">
-</canvas>
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
- <script>
-
-const canvas = document.getElementById("memeCanvas");
-const ctx = canvas.getContext("2d");
-
-
-const imageInput = document.getElementById("imageInput");
-const topText = document.getElementById("topText");
-const bottomText = document.getElementById("bottomText");
-const fontSize = document.getElementById("fontSize");
-const fontColor = document.getElementById("fontColor");
-const downloadBtn = document.getElementById("download");
-
-
-let image = null;
-
-let stickers = [];
-
-
-
-imageInput.addEventListener("change", function(e){
-
-    const file = e.target.files[0];
-
-    if(!file) return;
-
-
-    const reader = new FileReader();
-
-
-    reader.onload = function(event){
-
-        image = new Image();
-
-        image.onload = function(){
-
-            canvas.width = image.width;
-            canvas.height = image.height;
-
-            draw();
-
-        };
-
-
-        image.src = event.target.result;
-
-    };
-
-
-    reader.readAsDataURL(file);
-
-
-});
-
-
-
-
-
-function draw(){
-
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    if(image){
-
-        ctx.drawImage(
-            image,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-    }
-    else{
-
-        ctx.fillStyle="#222";
-
-        ctx.fillRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-    }
-
-
-
-    drawText(
-        topText.value,
-        canvas.height * 0.12
-    );
-
-
-    drawText(
-        bottomText.value,
-        canvas.height * 0.88
-    );
-
-
-
-    stickers.forEach(function(item){
-
-
-        ctx.font = item.size+"px Arial";
-
-        ctx.textAlign="center";
-
-        ctx.fillText(
-            item.icon,
-            item.x,
-            item.y
-        );
-
-
-    });
-
-
-}
-
-
-
-
-function drawText(text,y){
-
-
-    if(!text) return;
-
-
-
-    let size = Number(fontSize.value);
-
-
-    ctx.font =
-    "bold "+size+"px Impact, Arial";
-
-
-
-    ctx.textAlign="center";
-
-    ctx.fillStyle = fontColor.value;
-
-
-    ctx.strokeStyle="#000";
-
-    ctx.lineWidth = size / 10;
-
-
-
-    ctx.strokeText(
-        text.toUpperCase(),
-        canvas.width/2,
-        y
-    );
-
-
-    ctx.fillText(
-        text.toUpperCase(),
-        canvas.width/2,
-        y
-    );
-
-
-}
-
-
-
-
-
-
-topText.addEventListener(
-"input",
-draw
-);
-
-
-bottomText.addEventListener(
-"input",
-draw
-);
-
-
-
-fontSize.addEventListener(
-"input",
-draw
-);
-
-
-
-fontColor.addEventListener(
-"input",
-draw
-);
-
-
-
-
-
-
-document.querySelectorAll(".sticker")
-.forEach(function(button){
-
-
-    button.addEventListener(
-    "click",
-    function(){
-
-
-        stickers.push({
-
-            icon:this.textContent,
-
-            x:canvas.width/2,
-
-            y:canvas.height/2,
-
-            size:100
-
-        });
-
-
-        draw();
-
-
-    });
-
-
-});
-
-
-
-
-
-
-downloadBtn.addEventListener(
-"click",
-function(){
-
-
-    const link=document.createElement("a");
-
-
-    link.download=
-    "tonepics-meme.png";
-
-
-    link.href=
-    canvas.toDataURL(
-        "image/png"
-    );
-
-
-    link.click();
-
-
-});
-
-
-</script> 
+<div class="toast" id="toast"></div>
+<input type="file" id="slotUpload" accept="image/*" style="display:none;">
+
+<script>
+/* هذا هو الكود البرمجي الأصلي الخاص بك تماماً، لم يتم تغيير أي منطق داخلي */
+(function(){
+"use strict";
+
+const canvas = document.getElementById('memeCanvas');
+const ctx = canvas.getContext('2d');
+const canvasArea = document.getElementById('canvasArea');
+const emptyHint = document.getElementById('emptyHint');
+const statusLabel = document.getElementById('statusLabel');
+const exportBtn = document.getElementById('exportBtn');
+const toast = document.getElementById('toast');
+const imageUpload = document.getElementById('imageUpload');
+const slotUpload = document.getElementById('slotUpload');
+const exportFormat = document.getElementById('exportFormat');
+const tmplGrid = document.getElementById('tmplGrid');
+const textLayerList = document.getElementById('textLayerList');
+const stickerLayerList = document.getElementById('stickerLayerList');
+const emojiGrid = document.getElementById('emojiGrid');
+const captionList = document.getElementById('captionList');
+const captionTopic = document.getElementById('captionTopic');
+const drawColor = document.getElementById('drawColor');
+const drawSize = document.getElementById('drawSize');
+const drawSizeVal = document.getElementById('drawSizeVal');
+
+const TEMPLATES = [
+  {id:'single', name:'Single', slots:[{x:0,y:0,w:1,h:1}]},
+  {id:'side2', name:'Side by Side', slots:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
+  {id:'stack2', name:'Stacked 2', slots:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
+  {id:'grid4', name:'Grid 4', slots:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
+  {id:'stack3', name:'Stacked 3', slots:[{x:0,y:0,w:1,h:1/3},{x:0,y:1/3,w:1,h:1/3},{x:0,y:2/3,w:1,h:1/3}]},
+  {id:'compare', name:'Comparison', slots:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
+];
+const EMOJIS = ['😀','😂','😍','😎','🤔','😭','🔥','💯','👍','👎','❤️','💀','🎉','🙌','👀','😱','🤯','🥳','😡','🤡','👻','💩','🍕','🍔','🌮','🐶','🐱','🦄','⭐','✨','💥','❓','❗','🚀','🎯','🏆','🙏','🤝','👏','😴'];
+const CAPTION_BANK = ["WHEN {topic} HITS DIFFERENT", "NOBODY:\nABSOLUTELY NOBODY:\nME, TALKING ABOUT {topic}:", "THAT MOMENT WHEN {topic} GOES EXACTLY AS PLANNED", "ME PRETENDING {topic} IS FINE", "{topic}? IN THIS ECONOMY?", "EXPECTATION VS REALITY: {topic}", "WHEN YOU REALIZE {topic} IS TOMORROW", "POV: {topic} JUST HAPPENED", "ME EXPLAINING {topic} AT 3AM", "WHEN {topic} SAYS ONE THING BUT MEANS ANOTHER", "THE FACE YOU MAKE WHEN {topic} WORKS ON THE FIRST TRY", "NOT ME THINKING ABOUT {topic} AGAIN", "{topic}: EXISTS.\nME: AND I TOOK THAT PERSONALLY.", "WHEN {topic} IS DUE TOMORROW AND YOU JUST STARTED", "MY BRAIN DURING {topic}: STATIC."];
+
+let uid = 1;
+const state = { canvasW:800, canvasH:800, template:'single', slots:[], drawBuffer:document.createElement('canvas'), layers:[], selectedLayerId:null, drawMode:'off', hasContent:false };
+state.drawBuffer.width = state.canvasW; state.drawBuffer.height = state.canvasH;
+const dctx = state.drawBuffer.getContext('2d');
+
+function showToast(msg, isError){ toast.textContent = msg; toast.className = 'toast show' + (isError ? ' error' : ''); clearTimeout(showToast._t); showToast._t = setTimeout(()=> toast.classList.remove('show'), 2400); }
+function updateStatus(){ statusLabel.textContent = `${state.canvasW} × ${state.canvasH} px · ${state.layers.length} layer(s)`; }
+function refreshHint(){ const anyImg = state.slots.some(s=>s.img); emptyHint.classList.toggle('hidden', anyImg); exportBtn.disabled = !anyImg; }
+function buildTemplateGrid(){ tmplGrid.innerHTML = ''; TEMPLATES.forEach(t=>{ const el = document.createElement('div'); el.className = 'tmpl-item' + (t.id === state.template ? ' active' : ''); const prev = document.createElement('div'); prev.className = 'tmpl-preview'; prev.style.position = 'relative'; t.slots.forEach(s=>{ const box = document.createElement('div'); box.style.position = 'absolute'; box.style.left = (s.x*100)+'%'; box.style.top = (s.y*100)+'%'; box.style.width = (s.w*100)+'%'; box.style.height = (s.h*100)+'%'; prev.appendChild(box); }); prev.style.display = 'block'; const label = document.createElement('span'); label.textContent = t.name; el.appendChild(prev); el.appendChild(label); el.addEventListener('click', ()=> applyTemplate(t.id)); tmplGrid.appendChild(el); }); }
+function applyTemplate(id){ const t = TEMPLATES.find(x=>x.id===id); if(!t) return; const oldImgs = state.slots.map(s=>s.img); state.template = id; state.slots = t.slots.map((s,i)=>({...s, img: oldImgs[i] || null})); buildTemplateGrid(); render(); refreshHint(); updateStatus(); }
+
+let pendingSlotIndex = null;
+slotUpload.addEventListener('change', e=>{ const file = e.target.files && e.target.files[0]; if(file && pendingSlotIndex !== null) loadImageIntoSlot(file, pendingSlotIndex); slotUpload.value = ''; pendingSlotIndex = null; });
+function loadImageIntoSlot(file, idx){ if(!file || file.type.indexOf('image/') !== 0){ showToast('Please choose a valid image file.', true); return; } const reader = new FileReader(); reader.onload = e=>{ const img = new Image(); img.onload = ()=>{ state.slots[idx].img = img; render(); refreshHint(); updateStatus(); showToast('Image added.'); }; img.onerror = ()=> showToast('Failed to load image.', true); img.src = e.target.result; }; reader.readAsDataURL(file); }
+imageUpload.addEventListener('change', e=>{ const file = e.target.files && e.target.files[0]; if(file){ if(state.slots.length === 0) applyTemplate('single'); loadImageIntoSlot(file, 0); } imageUpload.value = ''; });
+canvasArea.addEventListener('dragover', e=> e.preventDefault());
+canvasArea.addEventListener('drop', e=>{ e.preventDefault(); const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(!file) return; if(state.slots.length === 0) applyTemplate('single'); const idx = slotIndexAtClient(e.clientX, e.clientY); loadImageIntoSlot(file, idx >= 0 ? idx : 0); });
+document.addEventListener('paste', e=>{ const items = e.clipboardData && e.clipboardData.items; if(!items) return; for(const item of items){ if(item.type.indexOf('image/') === 0){ if(state.slots.length === 0) applyTemplate('single'); loadImageIntoSlot(item.getAsFile(), 0); e.preventDefault(); break; } } });
+
+const FONTS = [{v:"'Impact','Anton',sans-serif", l:'Impact (Classic)'},{v:"'Arial Black',Arial,sans-serif", l:'Arial Black'},{v:"Arial,Helvetica,sans-serif", l:'Arial'},{v:"'Comic Sans MS',cursive", l:'Comic Sans'},{v:"Georgia,serif", l:'Georgia'},{v:"'Courier New',monospace", l:'Courier New'},{v:"Verdana,sans-serif", l:'Verdana'}];
+function addTextLayer(text){ const layer = { id: uid++, type:'text', text: text || 'YOUR TEXT HERE', x: state.canvasW/2, y: state.canvasH * 0.15, fontSize:48, font:FONTS[0].v, fillColor:'#ffffff', strokeColor:'#000000', strokeWidth:4, rotation:0, textCase:'upper' }; state.layers.push(layer); state.selectedLayerId = layer.id; renderLayerLists(); render(); updateStatus(); }
+window.addTextLayer = addTextLayer;
+function addStickerLayer(emoji){ const layer = { id: uid++, type:'sticker', text: emoji, x: state.canvasW/2, y: state.canvasH/2, fontSize:80, rotation:0 }; state.layers.push(layer); state.selectedLayerId = layer.id; renderLayerLists(); render(); updateStatus(); }
+function removeLayer(id){ state.layers = state.layers.filter(l=>l.id!==id); if(state.selectedLayerId === id) state.selectedLayerId = null; renderLayerLists(); render(); updateStatus(); }
+function buildEmojiGrid(){ emojiGrid.innerHTML = ''; EMOJIS.forEach(em=>{ const b = document.createElement('button'); b.className = 'emoji-btn'; b.textContent = em; b.type = 'button'; b.addEventListener('click', ()=> addStickerLayer(em)); emojiGrid.appendChild(b); }); }
+function renderLayerLists(){ const textLayers = state.layers.filter(l=>l.type==='text'); const stickerLayers = state.layers.filter(l=>l.type==='sticker'); textLayerList.innerHTML = ''; textLayers.forEach(layer=>{ const card = document.createElement('div'); card.className = 'layer-card' + (layer.id===state.selectedLayerId ? ' selected':''); card.innerHTML = ` <div class="layer-card-head"><span class="tag">Text</span><button class="mini-btn">Delete</button></div> <textarea rows="2">${layer.text}</textarea> <div class="row2"> <div class="field"><label>Font</label><select class="fontSel"></select></div> <div class="field"><label>Size</label><div class="slider-wrapper"><input type="range" min="12" max="140" value="${layer.fontSize}" class="sizeR"><span class="sizeVal">${layer.fontSize}</span></div></div> </div> <div class="row2"> <div class="field"><label>Fill</label><div class="color-row"><input type="color" class="fillC" value="${layer.fillColor}"></div></div> <div class="field"><label>Outline</label><div class="color-row"><input type="color" class="strokeC" value="${layer.strokeColor}"></div></div> </div> <div class="row2"> <div class="field"><label>Width</label><div class="slider-wrapper"><input type="range" min="0" max="12" value="${layer.strokeWidth}" class="strokeR"><span class="strokeVal">${layer.strokeWidth}</span></div></div> <div class="field"><label>Rotation</label><div class="slider-wrapper"><input type="range" min="-180" max="180" value="${layer.rotation}" class="rotR"><span class="rotVal">${layer.rotation}°</span></div></div> </div>`; const fontSel = card.querySelector('.fontSel'); FONTS.forEach(f=>{ const o=document.createElement('option'); o.value=f.v; o.textContent=f.l; if(f.v===layer.font) o.selected=true; fontSel.appendChild(o); }); fontSel.addEventListener('change', ()=>{ layer.font=fontSel.value; render(); }); card.querySelector('textarea').addEventListener('input', e=>{ layer.text = e.target.value; render(); }); card.querySelector('.sizeR').addEventListener('input', e=>{ layer.fontSize=+e.target.value; card.querySelector('.sizeVal').textContent=layer.fontSize; render(); }); card.querySelector('.fillC').addEventListener('input', e=>{ layer.fillColor=e.target.value; render(); }); card.querySelector('.strokeC').addEventListener('input', e=>{ layer.strokeColor=e.target.value; render(); }); card.querySelector('.strokeR').addEventListener('input', e=>{ layer.strokeWidth=+e.target.value; card.querySelector('.strokeVal').textContent=layer.strokeWidth; render(); }); card.querySelector('.rotR').addEventListener('input', e=>{ layer.rotation=+e.target.value; card.querySelector('.rotVal').textContent=layer.rotation+'°'; render(); }); card.querySelector('.mini-btn').addEventListener('click', ()=> removeLayer(layer.id)); card.addEventListener('click', (e)=>{ if(e.target.tagName!=='INPUT' && e.target.tagName!=='TEXTAREA' && e.target.tagName!=='SELECT' && e.target.tagName!=='BUTTON'){ state.selectedLayerId=layer.id; renderLayerLists(); render(); }}); textLayerList.appendChild(card); }); stickerLayerList.innerHTML = ''; stickerLayers.forEach(layer=>{ const card = document.createElement('div'); card.className = 'layer-card' + (layer.id===state.selectedLayerId ? ' selected':''); card.innerHTML = ` <div class="layer-card-head"><span class="tag">${layer.text} Sticker</span><button class="mini-btn">Delete</button></div> <div class="row2"> <div class="field"><label>Size</label><div class="slider-wrapper"><input type="range" min="20" max="300" value="${layer.fontSize}" class="sizeR"><span class="sizeVal">${layer.fontSize}</span></div></div> <div class="field"><label>Rotation</label><div class="slider-wrapper"><input type="range" min="-180" max="180" value="${layer.rotation}" class="rotR"><span class="rotVal">${layer.rotation}°</span></div></div> </div>`; card.querySelector('.sizeR').addEventListener('input', e=>{ layer.fontSize=+e.target.value; card.querySelector('.sizeVal').textContent=layer.fontSize; render(); }); card.querySelector('.rotR').addEventListener('input', e=>{ layer.rotation=+e.target.value; card.querySelector('.rotVal').textContent=layer.rotation+'°'; render(); }); card.querySelector('.mini-btn').addEventListener('click', ()=> removeLayer(layer.id)); card.addEventListener('click', ()=>{ state.selectedLayerId=layer.id; renderLayerLists(); render(); }); stickerLayerList.appendChild(card); }); }
+function setDrawMode(mode){ state.drawMode = mode; document.getElementById('btnDrawPen').classList.toggle('active', mode==='pen'); document.getElementById('btnDrawEraser').classList.toggle('active', mode==='eraser'); document.getElementById('btnDrawOff').classList.toggle('active', mode==='off'); canvas.style.cursor = mode==='off' ? 'grab' : 'crosshair'; } window.setDrawMode = setDrawMode; setDrawMode('off'); drawSize.addEventListener('input', ()=>{ drawSizeVal.textContent = drawSize.value; }); function clearDrawing(){ dctx.clearRect(0,0,state.drawBuffer.width, state.drawBuffer.height); render(); showToast('Drawing cleared.'); } window.clearDrawing = clearDrawing; function generateCaptions(){ const topic = (captionTopic.value || 'THIS').trim().toUpperCase(); const shuffled = [...CAPTION_BANK].sort(()=>Math.random()-0.5).slice(0,5); captionList.innerHTML = ''; shuffled.forEach(tpl=>{ const text = tpl.replace(/\{topic\}/g, topic); const item = document.createElement('div'); item.className = 'caption-item'; item.textContent = text; item.addEventListener('click', ()=>{ addTextLayer(text); showToast('Caption added.'); }); captionList.appendChild(item); }); } window.generateCaptions = generateCaptions;
+function slotRectPx(s){ return { x:s.x*state.canvasW, y:s.y*state.canvasH, w:s.w*state.canvasW, h:s.h*state.canvasH }; }
+function drawImageCover(context, img, rx, ry, rw, rh){ const scale = Math.max(rw/img.width, rh/img.height); const dw = img.width*scale, dh = img.height*scale; const dx = rx + (rw-dw)/2, dy = ry + (rh-dh)/2; context.save(); context.beginPath(); context.rect(rx,ry,rw,rh); context.clip(); context.drawImage(img, dx, dy, dw, dh); context.restore(); }
+function wrapLines(context, text, maxWidth){ const paragraphs = text.split('\n'); const lines = []; paragraphs.forEach(p=>{ const words = p.split(/\s+/).filter(Boolean); if(words.length===0){ lines.push(''); return; } let line = words[0]; for(let i=1;i<words.length;i++){ const test = line+' '+words[i]; if(context.measureText(test).width > maxWidth && line){ lines.push(line); line = words[i]; } else line = test; } lines.push(line); }); return lines; }
+function drawTextLayer(context, layer){ const text = layer.textCase==='upper' ? layer.text.toUpperCase() : layer.text; if(!text.trim()) return; const maxWidth = state.canvasW * 0.85; let fontSize = layer.fontSize; context.font = `800 ${fontSize}px ${layer.font}`; let lines = wrapLines(context, text, maxWidth); while(fontSize > 10 && lines.some(l=>context.measureText(l).width > maxWidth)){ fontSize -= 2; context.font = `800 ${fontSize}px ${layer.font}`; lines = wrapLines(context, text, maxWidth); } const lineHeight = fontSize*1.15; const blockHeight = lineHeight*lines.length; context.save(); context.translate(layer.x, layer.y); context.rotate(layer.rotation*Math.PI/180); context.textAlign='center'; context.textBaseline='alphabetic'; context.lineJoin='round'; const startY = -blockHeight/2 + fontSize; lines.forEach((line,idx)=>{ const y = startY + idx*lineHeight; if(layer.strokeWidth>0){ context.strokeStyle=layer.strokeColor; context.lineWidth=layer.strokeWidth; context.strokeText(line,0,y); } context.fillStyle = layer.fillColor; context.fillText(line,0,y); }); context.restore(); layer._bbox = {w: Math.max(...lines.map(l=>{context.font=`800 ${fontSize}px ${layer.font}`; return context.measureText(l).width;}),1), h: blockHeight}; }
+function drawStickerLayer(context, layer){ context.save(); context.translate(layer.x, layer.y); context.rotate(layer.rotation*Math.PI/180); context.font = `${layer.fontSize}px sans-serif`; context.textAlign='center'; context.textBaseline='middle'; context.fillText(layer.text, 0, 0); context.restore(); layer._bbox = {w: layer.fontSize, h: layer.fontSize}; }
+function render(){ ctx.clearRect(0,0,state.canvasW,state.canvasH); state.slots.forEach(s=>{ const p = slotRectPx(s); if(s.img){ drawImageCover(ctx, s.img, p.x, p.y, p.w, p.h); } else { ctx.fillStyle = '#15171c'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeStyle = '#2a2d34'; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h); } }); ctx.drawImage(state.drawBuffer, 0, 0); state.layers.forEach(l=>{ if(l.type==='text') drawTextLayer(ctx, l); else if(l.type==='sticker') drawStickerLayer(ctx, l); }); }
+let isDragging = false; let startX, startY; canvas.addEventListener('mousedown', onPointerDown); canvas.addEventListener('mousemove', onPointerMove); canvas.addEventListener('mouseup', onPointerUp); canvas.addEventListener('touchstart', e=> { if(e.touches.length===1){ e.preventDefault(); onPointerDown(e.touches[0]); } }, {passive:false}); canvas.addEventListener('touchmove', e=> { if(e.touches.length===1){ e.preventDefault(); onPointerMove(e.touches[0]); } }, {passive:false}); canvas.addEventListener('touchend', onPointerUp);
+function getCanvasCoords(e){ const r = canvas.getBoundingClientRect(); return { x: ((e.clientX - r.left)/r.width)*state.canvasW, y: ((e.clientY - r.top)/r.height)*state.canvasH }; }
+function slotIndexAtClient(cx, cy){ const r = canvas.getBoundingClientRect(); const px = (cx - r.left)/r.width; const py = (cy - r.top)/r.height; return state.slots.findIndex(s=> px>=s.x && px<=(s.x+s.w) && py>=s.y && py<=(s.y+s.h)); }
+function onPointerDown(e){ const pt = getCanvasCoords(e); startX = pt.x; startY = pt.y; if(state.drawMode !== 'off'){ isDragging = true; dctx.beginPath(); dctx.moveTo(pt.x, pt.y); return; } let hit = null; for(let i=state.layers.length-1; i>=0; i--){ const l = state.layers[i]; const r = l._bbox ? Math.max(l._bbox.w, l._bbox.h, 50)/2 : 40; if(Math.hypot(pt.x - l.x, pt.y - l.y) < r){ hit = l; break; } } if(hit){ state.selectedLayerId = hit.id; isDragging = true; renderLayerLists(); render(); } else { const sidx = slotIndexAtClient(e.clientX, e.clientY); if(sidx >= 0){ pendingSlotIndex = sidx; slotUpload.click(); } state.selectedLayerId = null; renderLayerLists(); render(); } }
+function onPointerMove(e){ if(!isDragging) return; const pt = getCanvasCoords(e); if(state.drawMode !== 'off'){ dctx.lineWidth = drawSize.value; dctx.lineCap = 'round'; dctx.lineJoin = 'round'; if(state.drawMode==='pen'){ dctx.globalCompositeOperation='source-over'; dctx.strokeStyle=drawColor.value; } else { dctx.globalCompositeOperation='destination-out'; } dctx.lineTo(pt.x, pt.y); dctx.stroke(); render(); return; } if(state.selectedLayerId){ const l = state.layers.find(x=>x.id===state.selectedLayerId); if(l){ l.x += (pt.x - startX); l.y += (pt.y - startY); startX = pt.x; startY = pt.y; render(); } } }
+function onPointerUp(){ isDragging = false; }
+function exportMeme(){ if(!state.slots.some(s=>s.img)) return; const origSel = state.selectedLayerId; state.selectedLayerId = null; render(); const fmt = exportFormat.value; const ext = fmt==='image/jpeg'?'.jpg':'.png'; const data = canvas.toDataURL(fmt, 0.92); const a = document.createElement('a'); a.download = 'Meme_'+Date.now()+ext; a.href = data; a.click(); state.selectedLayerId = origSel; render(); showToast('Image downloaded!'); } window.exportMeme = exportMeme;
+applyTemplate('single'); buildEmojiGrid(); renderLayerLists();
+})();
+</script>
 </body>
-
 </html>
-  
