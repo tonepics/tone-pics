@@ -2,111 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tone.pics | Pro GIF Studio</title>
+    <title>Tone.pics | Ultimate GIF Pro Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
     <style>
-        body { margin:0; background:#111; color:#fff; font-family:sans-serif; display:flex; height:100vh; overflow:hidden; }
-        #toolbar { width:280px; background:#1a1d23; padding:15px; display:flex; flex-direction:column; gap:10px; border-right:1px solid #333; }
-        #canvas-area { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        #timeline { height:120px; width:100%; background:#000; display:flex; gap:5px; padding:10px; overflow-x:auto; }
-        .frame-box { min-width:80px; height:80px; border:2px solid #555; background-size:cover; cursor:pointer; }
-        .btn { background:#ffd23f; border:none; padding:10px; cursor:pointer; font-weight:bold; border-radius:4px; }
+        :root { --bg:#0e0f12; --panel:#15171c; --accent:#ffd23f; --line:#2a2d34; --text:#e9eaee; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; display: flex; height: 100vh; overflow: hidden; }
+        
+        #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        #main { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; }
+        #canvas-wrap { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; border: 1px solid var(--line); }
+        #timeline { height: 140px; background: var(--panel); margin-top: 15px; display: flex; gap: 10px; padding: 10px; overflow-x: auto; border-radius: 8px; border: 1px solid var(--line); }
+        
+        .frame { width: 100px; height: 100px; background: #333; cursor: grab; border: 2px solid #555; position: relative; background-size: cover; background-position: center; flex-shrink: 0; }
+        .del { position: absolute; top: 0; right: 0; background: red; color: white; cursor: pointer; padding: 2px 5px; font-size: 10px; }
+        
+        button { background: var(--accent); border: none; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 6px; width: 100%; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
+        input { background: var(--line); border: 1px solid #444; color: white; padding: 10px; width: 100%; border-radius: 6px; box-sizing: border-box; }
+        label { font-size: 12px; color: #9a9ea8; margin-top: 5px; }
     </style>
 </head>
 <body>
-<div id="toolbar">
-    <h3>Pro GIF Maker</h3>
+
+<aside id="sidebar">
+    <h2 style="margin-top:0">GIF Pro Studio</h2>
     <input type="file" id="upload" multiple accept="image/*">
-    <button class="btn" onclick="addText()">Add Text</button>
-    <button class="btn" onclick="applyFilter()">Grayscale Filter</button>
-    <button class="btn" style="background:#28a745; color:#fff" onclick="generate()">Generate GIF</button>
-    <div id="msg"></div>
-</div>
-<div id="canvas-area">
-    <canvas id="c" width="512" height="512"></canvas>
-    <div id="timeline"></div>
-</div>
+    <button onclick="addText()">+ Add Text Overlay</button>
+    <button onclick="applyGrayscale()">Apply Grayscale</button>
+    <hr style="width:100%; border:0; border-top:1px solid #333">
+    <label>Global Delay (ms):</label>
+    <input type="number" id="globalDelay" value="500">
+    <button id="generate" style="background:#28a745; color:white; margin-top:10px;">Generate GIF</button>
+    <div id="status" style="font-size: 13px; margin-top: 10px; color: var(--accent);"></div>
+</aside>
+
+<main id="main">
+    <div id="canvas-wrap"><canvas id="canvas" width="512" height="512"></canvas></div>
+    <div id="timeline" id="sortable-timeline"></div>
+</main>
+
 <script>
-    const canvas = new fabric.Canvas('c');
+    const canvas = new fabric.Canvas('canvas');
+    const timeline = document.getElementById('timeline');
     let frames = [];
 
+    // 1. رفع الصور
     document.getElementById('upload').onchange = (e) => {
         Array.from(e.target.files).forEach(file => {
             const reader = new FileReader();
             reader.onload = (ev) => {
-                const f = { src: ev.target.result, filter: false };
-                frames.push(f);
-                const div = document.createElement('div');
-                div.className = 'frame-box';
-                div.style.backgroundImage = `url(${f.src})`;
-                div.onclick = () => loadFrame(f);
-                document.getElementById('timeline').appendChild(div);
+                frames.push({ src: ev.target.result });
+                renderTimeline();
             };
             reader.readAsDataURL(file);
         });
     };
 
-    function loadFrame(f) {
+    // 2. تحديث الـ Timeline
+    function renderTimeline() {
+        timeline.innerHTML = '';
+        frames.forEach((f, idx) => {
+            const div = document.createElement('div');
+            div.className = 'frame';
+            div.style.backgroundImage = `url(${f.src})`;
+            div.onclick = () => loadFrame(idx);
+            
+            const del = document.createElement('div');
+            del.innerHTML = 'X'; del.className = 'del';
+            del.onclick = (e) => { e.stopPropagation(); frames.splice(idx,1); renderTimeline(); };
+            div.appendChild(del);
+            timeline.appendChild(div);
+        });
+    }
+
+    // 3. عرض في الكانفاس
+    function loadFrame(idx) {
         canvas.clear();
-        fabric.Image.fromURL(f.src, (img) => {
-            if (f.filter) img.filters.push(new fabric.Image.filters.Grayscale());
-            img.applyFilters();
+        fabric.Image.fromURL(frames[idx].src, (img) => {
             canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
         });
     }
 
-    function addText() {
-        canvas.add(new fabric.IText('Tone.pics', { left: 50, top: 50, fill: '#ffd23f' }));
-    }
-
-    function applyFilter() {
+    function addText() { canvas.add(new fabric.IText('Tone.pics', { left: 50, top: 50, fill: 'yellow' })); }
+    
+    function applyGrayscale() {
         const bg = canvas.backgroundImage;
-        if (bg) {
-            bg.filters.push(new fabric.Image.filters.Grayscale());
-            bg.applyFilters();
-            canvas.renderAll();
-        }
+        if(bg) { bg.filters.push(new fabric.Image.filters.Grayscale()); bg.applyFilters(); canvas.renderAll(); }
     }
 
-    async function generate() {
-        if (frames.length === 0) {
-            document.getElementById('msg').innerText = "أضف صور أولاً!";
-            return;
+    // 4. التصدير النهائي
+    document.getElementById('generate').onclick = async () => {
+        document.getElementById('status').innerText = "Processing frames...";
+        const gif = new GIF({ workers: 2, quality: 10, width: 512, height: 512 });
+        
+        for(let f of frames) {
+            await new Promise(r => fabric.Image.fromURL(f.src, (img) => {
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), { onComplete: () => {
+                    gif.addFrame(canvas.getElement(), { delay: parseInt(document.getElementById('globalDelay').value) });
+                    r();
+                }});
+            }));
         }
-
-        document.getElementById('msg').innerText = "جاري الرندر...";
-
-        const gif = new GIF({
-            workers: 2,
-            quality: 10,
-            width: 512,
-            height: 512,
-            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+        gif.on('finished', (b) => {
+            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pro-animation.gif'; a.click();
+            document.getElementById('status').innerText = "Done!";
         });
-
-        for (let f of frames) {
-            await new Promise((resolve) => {
-                fabric.Image.fromURL(f.src, (img) => {
-                    canvas.setBackgroundImage(img, () => {
-                        canvas.renderAll();
-                        gif.addFrame(canvas.getElement(), { delay: 500, copy: true });
-                        resolve();
-                    });
-                });
-            });
-        }
-
-        gif.on('finished', (blob) => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'pro.gif';
-            a.click();
-            document.getElementById('msg').innerText = "تم!";
-        });
-
         gif.render();
-    }
+    };
+
+    new Sortable(timeline, { animation: 150 });
 </script>
 </body>
 </html>
