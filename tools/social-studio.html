@@ -208,6 +208,17 @@ input[type=range]{
 .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
 .toast.error{border-color:var(--danger); color:var(--danger);}
 
+/* Before After Trigger Styling */
+.preview-trigger-btn {
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text-dim);
+  padding: 8px 12px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; font-weight: 600;
+  user-select: none; -webkit-user-select: none; transition: all 0.1s ease; white-space: nowrap;
+}
+.preview-trigger-btn:not(:disabled):active {
+  background: var(--accent); color: #000; border-color: var(--accent);
+}
+.preview-trigger-btn:disabled { opacity:.35; cursor:not-allowed; }
+
 ::-webkit-scrollbar{width:8px; height:8px;}
 ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -342,10 +353,11 @@ input[type=range]{
 
     <div class="bottom-bar">
         <div class="status-info" id="statusLabel">Canvas Frame: 1080 × 1080 px (1:1)</div>
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; align-items: center;">
+            <button class="preview-trigger-btn" id="btnBeforeAfter" disabled>Hold to Compare (Before)</button>
             <button class="tool-btn" id="btnUndo" disabled style="border-color:var(--line);" onclick="triggerUndo()">Undo (Ctrl+Z)</button>
             <button class="tool-btn" id="btnRedo" disabled style="border-color:var(--line);" onclick="triggerRedo()">Redo (Ctrl+Y)</button>
-            <button class="export-btn" id="btnExport" onclick="exportFinalImage()">Export HD Render</button>
+            <button class="export-btn" id="btnExport" disabled onclick="exportFinalImage()">Export HD Render</button>
         </div>
     </div>
 </div>
@@ -393,8 +405,7 @@ const state = {
 let history = [];
 let historyIndex = -1;
 let historyTimer = null;
-
-let blurBmp = null; // cached blurred background bitmap key
+let isOriginalPreviewActive = false; 
 
 /* ===================== DOM ===================== */
 const canvas = document.getElementById('liveCanvas');
@@ -405,6 +416,7 @@ const statusLabel = document.getElementById('statusLabel');
 const btnUndo = document.getElementById('btnUndo');
 const btnRedo = document.getElementById('btnRedo');
 const btnExport = document.getElementById('btnExport');
+const btnBeforeAfter = document.getElementById('btnBeforeAfter');
 const toast = document.getElementById('toast');
 const presetsContainer = document.getElementById('presetsContainer');
 const presetSearch = document.getElementById('presetSearch');
@@ -437,7 +449,7 @@ function updateStatus(){
 }
 
 /* ===================== PRESETS UI ===================== */
-function renderPresets(filter){
+window.renderPresets = function(filter){
   const f = (filter||'').trim().toLowerCase();
   const groups = {};
   PRESETS.forEach(p=>{
@@ -470,7 +482,7 @@ function renderPresets(filter){
       presetsContainer.appendChild(el);
     });
   });
-}
+};
 
 presetSearch.addEventListener('input', ()=> renderPresets(presetSearch.value));
 
@@ -508,9 +520,9 @@ function loadImageFromSrc(src){
     state.zoom = 1; zoomSlider.value = 1;
     state.offsetX = 0; state.offsetY = 0;
     state.rotation = 0; state.flipH = false; state.flipV = false;
-    blurBmp = null;
     dropOverlay.classList.remove('show','empty-state');
     btnExport.disabled = false;
+    btnBeforeAfter.disabled = false;
     redraw();
     pushHistory(true);
     showToast('Image loaded successfully.');
@@ -558,57 +570,60 @@ document.addEventListener('paste', e=>{
 });
 
 /* ===================== CROP / ZOOM / TRANSFORM CONTROLS ===================== */
-function setCropMode(mode){
+window.setCropMode = function(mode){
   state.cropMode = mode;
   ['fit','cover','contain'].forEach(m=>{
-    document.getElementById('btn-crop-' + m).classList.toggle('active', m === mode);
+    const el = document.getElementById('btn-crop-' + m);
+    if(el) el.classList.toggle('active', m === mode);
   });
   state.offsetX = 0; state.offsetY = 0;
   redraw();
   pushHistory();
-}
+};
 
-function resetTransforms(){
+window.resetTransforms = function(){
   state.cropMode = 'fit';
   state.zoom = 1; zoomSlider.value = 1;
   state.offsetX = 0; state.offsetY = 0;
   state.rotation = 0; state.flipH = false; state.flipV = false;
   ['fit','cover','contain'].forEach(m=>{
-    document.getElementById('btn-crop-' + m).classList.toggle('active', m === 'fit');
+    const el = document.getElementById('btn-crop-' + m);
+    if(el) el.classList.toggle('active', m === 'fit');
   });
   redraw();
   pushHistory();
   showToast('Transforms reset.');
-}
+};
 
-function adjustZoom(delta){
+window.adjustZoom = function(delta){
   let z = parseFloat(zoomSlider.value) + delta;
   z = Math.max(0.1, Math.min(5, +z.toFixed(2)));
   zoomSlider.value = z;
   state.zoom = z;
   redraw();
   pushHistory();
-}
+};
 zoomSlider.addEventListener('input', ()=>{
   state.zoom = parseFloat(zoomSlider.value);
   redraw();
 });
 zoomSlider.addEventListener('change', ()=> pushHistory());
 
-function rotateImage(deg){
+window.rotateImage = function(deg){
   state.rotation = ((state.rotation + deg) % 360 + 360) % 360;
   redraw();
   pushHistory();
-}
-function flipImage(axis){
+};
+
+window.flipImage = function(axis){
   if(axis === 'h') state.flipH = !state.flipH;
   else state.flipV = !state.flipV;
   redraw();
   pushHistory();
-}
+};
 
 /* ===================== BACKGROUND ===================== */
-function setBg(mode){
+window.setBg = function(mode){
   state.bgMode = mode;
   ['transparent','white','black','blur','solid'].forEach(m=>{
     const el = document.getElementById('btn-bg-' + m);
@@ -616,7 +631,7 @@ function setBg(mode){
   });
   redraw();
   pushHistory();
-}
+};
 bgColorPicker.addEventListener('input', ()=>{
   state.bgColor = bgColorPicker.value;
   if(state.bgMode === 'solid') redraw();
@@ -624,16 +639,16 @@ bgColorPicker.addEventListener('input', ()=>{
 bgColorPicker.addEventListener('change', ()=> pushHistory());
 
 /* ===================== OVERLAYS ===================== */
-function toggleGrid(){
+window.toggleGrid = function(){
   state.showGrid = !state.showGrid;
   document.getElementById('btnRuleThirds').classList.toggle('active', state.showGrid);
   redraw();
-}
-function toggleSafeLines(){
+};
+window.toggleSafeLines = function(){
   state.showSafe = !state.showSafe;
   document.getElementById('btnSafeLines').classList.toggle('active', state.showSafe);
   redraw();
-}
+};
 
 /* ===================== CANVAS SIZE ===================== */
 function resizeCanvasElement(){
@@ -643,14 +658,12 @@ function resizeCanvasElement(){
 
 /* ===================== DRAW ENGINE ===================== */
 function computeBaseScale(w, h, imgW, imgH, mode){
-  // effective image size after 90/270 rotation swap
   if(mode === 'cover'){
     return Math.max(w / imgW, h / imgH);
   }
   if(mode === 'contain'){
     return Math.min(1, Math.min(w / imgW, h / imgH));
   }
-  // fit (default)
   return Math.min(w / imgW, h / imgH);
 }
 
@@ -661,7 +674,7 @@ function drawBlurBackdrop(context, w, h, img){
   const dw = img.width * scale, dh = img.height * scale;
   context.drawImage(img, (w - dw)/2, (h - dh)/2, dw, dh);
   context.restore();
-  // slight dark overlay for legibility
+
   context.save();
   context.fillStyle = 'rgba(0,0,0,0.15)';
   context.fillRect(0,0,w,h);
@@ -674,7 +687,16 @@ function renderScene(context, w, h, opts){
 
   context.clearRect(0,0,w,h);
 
-  // background
+  if (state.img && isOriginalPreviewActive) {
+    const baseScale = computeBaseScale(w, h, state.img.width, state.img.height, 'fit');
+    context.save();
+    context.translate(w/2, h/2);
+    context.scale(baseScale, baseScale);
+    context.drawImage(state.img, -state.img.width/2, -state.img.height/2);
+    context.restore();
+    return;
+  }
+
   if(state.img && state.bgMode === 'blur'){
     drawBlurBackdrop(context, w, h, state.img);
   } else if(state.bgMode === 'white'){
@@ -687,7 +709,6 @@ function renderScene(context, w, h, opts){
     context.fillStyle = state.bgColor;
     context.fillRect(0,0,w,h);
   }
-  // transparent: leave canvas as-is (alpha 0)
 
   if(state.img){
     const img = state.img;
@@ -735,16 +756,17 @@ function redraw(){
   renderScene(ctx, state.canvasW, state.canvasH, {overlays:true});
 }
 
-/* Initial paint (empty state placeholder) */
+/* Initial paint */
 resizeCanvasElement();
 redraw();
 updateStatus();
+renderPresets();
 
 /* ===================== PAN (drag image) ===================== */
 let dragging = false, dragStartX=0, dragStartY=0, startOffX=0, startOffY=0;
 
 canvas.addEventListener('pointerdown', e=>{
-  if(!state.img) return;
+  if(!state.img || isOriginalPreviewActive) return;
   dragging = true;
   canvas.setPointerCapture(e.pointerId);
   dragStartX = e.clientX; dragStartY = e.clientY;
@@ -768,9 +790,9 @@ canvas.addEventListener('pointerup', endDrag);
 canvas.addEventListener('pointercancel', endDrag);
 canvas.addEventListener('pointerleave', ()=>{ if(dragging){ dragging = false; pushHistory(); }});
 
-/* mouse wheel to zoom while hovering canvas */
+/* mouse wheel to zoom */
 canvas.addEventListener('wheel', e=>{
-  if(!state.img) return;
+  if(!state.img || isOriginalPreviewActive) return;
   e.preventDefault();
   const delta = e.deltaY > 0 ? -0.05 : 0.05;
   let z = Math.max(0.1, Math.min(5, +(state.zoom + delta).toFixed(2)));
@@ -782,14 +804,13 @@ canvas.addEventListener('wheel', e=>{
 
 /* ===================== HISTORY (Undo / Redo) ===================== */
 function snapshot(){
-  return JSON.parse(JSON.stringify({
+  return JSON.stringify({
     canvasW:state.canvasW, canvasH:state.canvasH,
     cropMode:state.cropMode, zoom:state.zoom,
     offsetX:state.offsetX, offsetY:state.offsetY,
     rotation:state.rotation, flipH:state.flipH, flipV:state.flipV,
-    bgMode:state.bgMode, bgColor:state.bgColor,
-    hasImg: !!state.img,
-  }));
+    bgMode:state.bgMode, bgColor:state.bgColor
+  });
 }
 
 function pushHistory(reset){
@@ -797,8 +818,7 @@ function pushHistory(reset){
   historyTimer = setTimeout(()=>{
     if(reset){ history = []; historyIndex = -1; }
     const snap = snapshot();
-    // avoid pushing duplicate consecutive states
-    if(historyIndex >= 0 && JSON.stringify(history[historyIndex]) === JSON.stringify(snap)) return;
+    if(historyIndex >= 0 && history[historyIndex] === snap) return;
     history = history.slice(0, historyIndex+1);
     history.push(snap);
     historyIndex = history.length - 1;
@@ -806,7 +826,8 @@ function pushHistory(reset){
   }, 30);
 }
 
-function applySnapshot(snap){
+function applySnapshot(snapStr){
+  const snap = JSON.parse(snapStr);
   state.canvasW = snap.canvasW; state.canvasH = snap.canvasH;
   state.cropMode = snap.cropMode; state.zoom = snap.zoom;
   state.offsetX = snap.offsetX; state.offsetY = snap.offsetY;
@@ -816,7 +837,11 @@ function applySnapshot(snap){
   customW.value = state.canvasW; customH.value = state.canvasH;
   zoomSlider.value = state.zoom;
   bgColorPicker.value = state.bgColor;
-  ['fit','cover','contain'].forEach(m=> document.getElementById('btn-crop-'+m).classList.toggle('active', m===state.cropMode));
+  
+  ['fit','cover','contain'].forEach(m=> {
+    const el = document.getElementById('btn-crop-'+m);
+    if(el) el.classList.toggle('active', m===state.cropMode);
+  });
   ['transparent','white','black','blur','solid'].forEach(m=>{
     const el = document.getElementById('btn-bg-'+m);
     if(el) el.classList.toggle('active', m===state.bgMode);
@@ -832,18 +857,18 @@ function updateUndoRedoButtons(){
   btnRedo.disabled = historyIndex >= history.length - 1;
 }
 
-function triggerUndo(){
+window.triggerUndo = function(){
   if(historyIndex <= 0) return;
   historyIndex--;
   applySnapshot(history[historyIndex]);
   updateUndoRedoButtons();
-}
-function triggerRedo(){
+};
+window.triggerRedo = function(){
   if(historyIndex >= history.length - 1) return;
   historyIndex++;
   applySnapshot(history[historyIndex]);
   updateUndoRedoButtons();
-}
+};
 
 document.addEventListener('keydown', e=>{
   const mod = e.ctrlKey || e.metaKey;
@@ -853,78 +878,45 @@ document.addEventListener('keydown', e=>{
   else if((key === 'y') || (key === 'z' && e.shiftKey)){ e.preventDefault(); triggerRedo(); }
 });
 
+/* ===================== BEFORE / AFTER COMPARE ===================== */
+btnBeforeAfter.addEventListener('pointerdown', ()=>{
+  if(!state.img) return;
+  isOriginalPreviewActive = true;
+  redraw();
+});
+const endPreview = ()=>{
+  if(!isOriginalPreviewActive) return;
+  isOriginalPreviewActive = false;
+  redraw();
+};
+btnBeforeAfter.addEventListener('pointerup', endPreview);
+btnBeforeAfter.addEventListener('pointerleave', endPreview);
+
 /* ===================== EXPORT ===================== */
-qualitySlider.addEventListener('input', ()=>{
+qualitySlider.addEventListener('input', () => {
   qualityVal.textContent = qualitySlider.value + '%';
 });
-exportFormat.addEventListener('change', ()=>{
-  const isPng = exportFormat.value === 'image/png';
-  qualitySlider.disabled = isPng;
-  qualitySlider.parentElement.style.opacity = isPng ? .45 : 1;
-});
-exportFormat.dispatchEvent(new Event('change'));
 
-const EXT_MAP = {
-  'image/png':'png', 'image/jpeg':'jpg', 'image/webp':'webp', 'image/avif':'avif'
-};
-
-function exportFinalImage(){
-  if(!state.img){
-    showToast('Upload an image before exporting.', true);
-    return;
-  }
-  const scaleMul = parseInt(exportScale.value) || 1;
-  const w = state.canvasW * scaleMul;
-  const h = state.canvasH * scaleMul;
-
-  const off = document.createElement('canvas');
-  off.width = w; off.height = h;
-  const octx = off.getContext('2d');
-  renderScene(octx, w, h, {overlays:false});
-
+window.exportFinalImage = function(){
+  if(!state.img) return;
+  const scale = parseInt(exportScale.value) || 1;
   const format = exportFormat.value;
-  const quality = Math.min(1, Math.max(0.1, parseInt(qualitySlider.value)/100));
+  const quality = parseInt(qualitySlider.value) / 100;
 
-  btnExport.disabled = true;
-  btnExport.textContent = 'Rendering...';
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = state.canvasW * scale;
+  outCanvas.height = state.canvasH * scale;
+  const outCtx = outCanvas.getContext('2d');
 
-  const finish = (blob, usedFormat)=>{
-    btnExport.disabled = false;
-    btnExport.textContent = 'Export HD Render';
-    if(!blob){
-      showToast('Export failed for this format in your browser — try PNG or JPEG.', true);
-      return;
-    }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const ext = EXT_MAP[usedFormat] || 'png';
-    a.href = url;
-    a.download = `tonepics-${state.canvasW}x${state.canvasH}-${scaleMul}x-${Date.now()}.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=> URL.revokeObjectURL(url), 4000);
-    showToast(`Exported ${w}×${h}px ${ext.toUpperCase()} successfully.`);
-  };
+  renderScene(outCtx, outCanvas.width, outCanvas.height, {overlays:false});
 
-  try{
-    off.toBlob(blob=>{
-      if(blob){ finish(blob, format); return; }
-      // fallback to png if requested format unsupported (e.g. avif in some browsers)
-      off.toBlob(pngBlob=> finish(pngBlob, 'image/png'), 'image/png');
-    }, format, quality);
-  }catch(err){
-    off.toBlob(pngBlob=> finish(pngBlob, 'image/png'), 'image/png');
-  }
-}
-
-/* ===================== INIT ===================== */
-renderPresets('');
-btnExport.disabled = true;
-pushHistory(true);
-
-/* Redraw crisply if the window resizes (canvas element itself keeps its pixel buffer, only CSS scaling changes) */
-window.addEventListener('resize', ()=>{ /* CSS handles scaling automatically */ });
+  const ext = format.split('/')[1];
+  const a = document.createElement('a');
+  a.href = outCanvas.toDataURL(format, quality);
+  a.download = `tone-pics-${outCanvas.width}x${outCanvas.height}.${ext}`;
+  a.click();
+  showToast('Image exported successfully.');
+};
 
 })();
 </script>
