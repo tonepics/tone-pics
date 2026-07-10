@@ -1,119 +1,446 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>Tone.pics | Ultimate GIF Pro Studio</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    
-    <style>
-        :root { --bg:#0e0f12; --panel:#15171c; --accent:#ffd23f; --line:#2a2d34; --text:#e9eaee; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto; display: flex; height: 100vh; overflow: hidden; }
-        
-        #sidebar { width: 300px; background: var(--panel); padding: 20px; border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        #main { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; }
-        #canvas-wrap { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; border: 1px solid var(--line); }
-        #timeline { height: 140px; background: var(--panel); margin-top: 15px; display: flex; gap: 10px; padding: 10px; overflow-x: auto; border-radius: 8px; border: 1px solid var(--line); }
-        
-        .frame { width: 100px; height: 100px; background: #333; cursor: grab; border: 2px solid #555; position: relative; background-size: cover; background-position: center; flex-shrink: 0; }
-        .del { position: absolute; top: 0; right: 0; background: red; color: white; cursor: pointer; padding: 2px 5px; font-size: 10px; }
-        
-        button { background: var(--accent); border: none; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 6px; width: 100%; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
-        input { background: var(--line); border: 1px solid #444; color: white; padding: 10px; width: 100%; border-radius: 6px; box-sizing: border-box; }
-        label { font-size: 12px; color: #9a9ea8; margin-top: 5px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tone.pics | Pro GIF Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:#0d0f13; color:#eee; font-family:'Segoe UI', sans-serif;
+    display:flex; height:100vh; overflow:hidden;
+  }
+  #toolbar {
+    width:300px; background:#171a21; padding:16px; display:flex; flex-direction:column;
+    gap:12px; border-left:1px solid #2a2e37; overflow-y:auto;
+  }
+  #toolbar h3 { margin:0 0 4px; color:#ffd23f; }
+  .section { background:#1e222b; padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+  .section label { font-size:12px; color:#9aa0ac; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .row > * { flex:1; }
+  input[type=file], select, input[type=range], input[type=number], input[type=color], input[type=text] {
+    background:#0d0f13; color:#fff; border:1px solid #333; border-radius:4px; padding:6px;
+  }
+  .btn {
+    background:#ffd23f; color:#111; border:none; padding:10px; cursor:pointer;
+    font-weight:bold; border-radius:6px; transition:.15s;
+  }
+  .btn:hover { filter:brightness(1.1); }
+  .btn.secondary { background:#2a2e37; color:#eee; }
+  .btn.danger { background:#e5484d; color:#fff; }
+  .btn.success { background:#28a745; color:#fff; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  #canvas-area {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    padding:10px;
+  }
+  #canvas-wrap { border:1px solid #2a2e37; background:#000; box-shadow:0 0 40px rgba(0,0,0,.5); }
+  #timeline {
+    height:110px; width:100%; max-width:900px; background:#000; display:flex; gap:6px;
+    padding:10px; overflow-x:auto; border-radius:8px; border:1px solid #2a2e37;
+  }
+  .frame-box {
+    position:relative; min-width:80px; height:80px; border:2px solid #444; background-size:cover;
+    background-position:center; cursor:grab; border-radius:4px; flex-shrink:0;
+  }
+  .frame-box.active { border-color:#ffd23f; }
+  .frame-box .del {
+    position:absolute; top:-6px; right:-6px; background:#e5484d; color:#fff; border-radius:50%;
+    width:18px; height:18px; font-size:12px; line-height:18px; text-align:center; cursor:pointer;
+  }
+  .frame-box .idx {
+    position:absolute; bottom:2px; left:2px; background:rgba(0,0,0,.6); font-size:10px; padding:1px 4px; border-radius:3px;
+  }
+  #msg { font-size:13px; color:#9aa0ac; min-height:18px; }
+  #progress-wrap { width:100%; height:6px; background:#0d0f13; border-radius:3px; overflow:hidden; display:none; }
+  #progress-bar { height:100%; width:0%; background:#ffd23f; transition:width .1s; }
+  #result { display:none; flex-direction:column; align-items:center; gap:6px; }
+  #result img { max-width:280px; border:1px solid #333; border-radius:6px; }
+</style>
 </head>
 <body>
 
-<aside id="sidebar">
-    <h2 style="margin-top:0">GIF Pro Studio</h2>
-    <input type="file" id="upload" multiple accept="image/*">
-    <button onclick="addText()">+ Add Text Overlay</button>
-    <button onclick="applyGrayscale()">Apply Grayscale</button>
-    <hr style="width:100%; border:0; border-top:1px solid #333">
-    <label>Global Delay (ms):</label>
-    <input type="number" id="globalDelay" value="500">
-    <button id="generate" style="background:#28a745; color:white; margin-top:10px;">Generate GIF</button>
-    <div id="status" style="font-size: 13px; margin-top: 10px; color: var(--accent);"></div>
-</aside>
+<div id="toolbar">
+  <h3>🎬 Pro GIF Maker</h3>
 
-<main id="main">
-    <div id="canvas-wrap"><canvas id="canvas" width="512" height="512"></canvas></div>
-    <div id="timeline" id="sortable-timeline"></div>
-</main>
+  <div class="section">
+    <label>حجم الكانفاس (يُقفل بعد أول رفع)</label>
+    <select id="canvasSize">
+      <option value="400">400 × 400</option>
+      <option value="512" selected>512 × 512</option>
+      <option value="640">640 × 480</option>
+    </select>
+    <label>إضافة صور كإطارات</label>
+    <input type="file" id="upload" multiple accept="image/*">
+    <button class="btn secondary" onclick="addBlankFrame()">+ إطار فارغ</button>
+  </div>
+
+  <div class="section">
+    <label>أدوات التحرير للإطار الحالي</label>
+    <div class="row">
+      <button class="btn secondary" onclick="addText()">+ نص</button>
+      <button class="btn secondary" onclick="addRect()">+ مربع</button>
+      <button class="btn secondary" onclick="addCircle()">+ دائرة</button>
+    </div>
+    <div class="row">
+      <button class="btn secondary" onclick="deleteSelected()">🗑 حذف العنصر المحدد</button>
+    </div>
+    <label>لون النص/الشكل المحدد</label>
+    <input type="color" id="colorPicker" value="#ffd23f" oninput="applyColor(this.value)">
+  </div>
+
+  <div class="section">
+    <label>فلتر الإطار الحالي</label>
+    <select id="filterType" onchange="applyFilters()">
+      <option value="none">بدون</option>
+      <option value="grayscale">تدرج رمادي</option>
+      <option value="sepia">سيبيا</option>
+      <option value="invert">عكس الألوان</option>
+    </select>
+    <label>السطوع</label>
+    <input type="range" id="brightness" min="-0.5" max="0.5" step="0.05" value="0" oninput="applyFilters()">
+  </div>
+
+  <div class="section">
+    <label>مدة عرض الإطار الحالي (ملي ثانية)</label>
+    <input type="number" id="frameDelay" min="50" step="50" value="500" onchange="updateDelay(this.value)">
+    <div class="row">
+      <button class="btn secondary" onclick="duplicateFrame()">⧉ تكرار الإطار</button>
+      <button class="btn danger" onclick="deleteFrame()">🗑 حذف الإطار</button>
+    </div>
+    <div class="row">
+      <button class="btn secondary" onclick="moveFrame(-1)">◀ تحريك يسار</button>
+      <button class="btn secondary" onclick="moveFrame(1)">تحريك يمين ▶</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <button class="btn secondary" onclick="playPreview()">▶ معاينة الحركة</button>
+    <button class="btn success" onclick="generate()">⬇ توليد GIF</button>
+    <div id="progress-wrap"><div id="progress-bar"></div></div>
+    <div id="msg"></div>
+    <div id="result">
+      <img id="resultImg">
+      <a class="btn" id="downloadLink" download="tone-pics.gif">تحميل GIF</a>
+    </div>
+  </div>
+</div>
+
+<div id="canvas-area">
+  <div id="canvas-wrap"><canvas id="c"></canvas></div>
+  <div id="timeline"></div>
+</div>
 
 <script>
-    const canvas = new fabric.Canvas('canvas');
-    const timeline = document.getElementById('timeline');
-    let frames = [];
+let CANVAS_SIZE = 512;
+let canvas;
+let frames = [];       // {id, thumb, json, delay}
+let activeIndex = -1;
+let dragSrcIndex = null;
+let workerBlobURLPromise = null;
 
-    // 1. رفع الصور
-    document.getElementById('upload').onchange = (e) => {
-        Array.from(e.target.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                frames.push({ src: ev.target.result });
-                renderTimeline();
-            };
-            reader.readAsDataURL(file);
-        });
+function initCanvas(size) {
+  CANVAS_SIZE = size;
+  canvas = new fabric.Canvas('c', { backgroundColor: '#000' });
+  canvas.setWidth(size === 640 ? 640 : size);
+  canvas.setHeight(size === 640 ? 480 : size);
+  canvas.on('selection:created', syncColorPicker);
+  canvas.on('selection:updated', syncColorPicker);
+}
+document.getElementById('canvasSize').addEventListener('change', (e) => {
+  initCanvas(parseInt(e.target.value, 10));
+});
+initCanvas(512);
+
+function syncColorPicker() {
+  const obj = canvas.getActiveObject();
+  if (obj && obj.fill) document.getElementById('colorPicker').value =
+    typeof obj.fill === 'string' && obj.fill.startsWith('#') ? obj.fill : '#ffd23f';
+}
+
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function saveActiveFrameState(cb) {
+  if (activeIndex < 0) { cb && cb(); return; }
+  frames[activeIndex].json = canvas.toJSON();
+  frames[activeIndex].thumb = canvas.toDataURL({ format: 'png', multiplier: 0.25 });
+  renderTimeline();
+  cb && cb();
+}
+
+function loadFrameIntoCanvas(index, cb) {
+  const f = frames[index];
+  canvas.loadFromJSON(f.json, () => {
+    canvas.renderAll();
+    activeIndex = index;
+    document.getElementById('frameDelay').value = f.delay;
+    document.getElementById('filterType').value = f.filterType || 'none';
+    document.getElementById('brightness').value = f.brightness || 0;
+    renderTimeline();
+    cb && cb();
+  });
+}
+
+function selectFrame(index) {
+  if (index === activeIndex) return;
+  saveActiveFrameState(() => loadFrameIntoCanvas(index));
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  frames.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'frame-box' + (i === activeIndex ? ' active' : '');
+    div.style.backgroundImage = `url(${f.thumb})`;
+    div.draggable = true;
+    div.onclick = () => selectFrame(i);
+    div.ondragstart = () => dragSrcIndex = i;
+    div.ondragover = (e) => e.preventDefault();
+    div.ondrop = (e) => {
+      e.preventDefault();
+      if (dragSrcIndex === null || dragSrcIndex === i) return;
+      const moved = frames.splice(dragSrcIndex, 1)[0];
+      frames.splice(i, 0, moved);
+      if (activeIndex === dragSrcIndex) activeIndex = i;
+      dragSrcIndex = null;
+      renderTimeline();
     };
+    const del = document.createElement('div');
+    del.className = 'del';
+    del.innerText = '×';
+    del.onclick = (e) => { e.stopPropagation(); removeFrameAt(i); };
+    const idx = document.createElement('div');
+    idx.className = 'idx';
+    idx.innerText = i + 1;
+    div.appendChild(del);
+    div.appendChild(idx);
+    tl.appendChild(div);
+  });
+}
 
-    // 2. تحديث الـ Timeline
-    function renderTimeline() {
-        timeline.innerHTML = '';
-        frames.forEach((f, idx) => {
-            const div = document.createElement('div');
-            div.className = 'frame';
-            div.style.backgroundImage = `url(${f.src})`;
-            div.onclick = () => loadFrame(idx);
-            
-            const del = document.createElement('div');
-            del.innerHTML = 'X'; del.className = 'del';
-            del.onclick = (e) => { e.stopPropagation(); frames.splice(idx,1); renderTimeline(); };
-            div.appendChild(del);
-            timeline.appendChild(div);
-        });
-    }
+function addFrameFromImage(dataUrl) {
+  fabric.Image.fromURL(dataUrl, (img) => {
+    img.scaleToWidth(canvas.getWidth());
+    if (img.getScaledHeight() < canvas.getHeight()) img.scaleToHeight(canvas.getHeight());
+    canvas.clear();
+    canvas.setBackgroundImage(img, () => {
+      canvas.renderAll();
+      const frame = {
+        id: uid(),
+        json: canvas.toJSON(),
+        thumb: canvas.toDataURL({ format: 'png', multiplier: 0.25 }),
+        delay: 500,
+        filterType: 'none',
+        brightness: 0
+      };
+      frames.push(frame);
+      activeIndex = frames.length - 1;
+      renderTimeline();
+      document.getElementById('frameDelay').value = frame.delay;
+    });
+  }, { crossOrigin: 'anonymous' });
+}
 
-    // 3. عرض في الكانفاس
-    function loadFrame(idx) {
-        canvas.clear();
-        fabric.Image.fromURL(frames[idx].src, (img) => {
-            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-        });
-    }
+document.getElementById('upload').onchange = (e) => {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => addFrameFromImage(ev.target.result);
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+};
 
-    function addText() { canvas.add(new fabric.IText('Tone.pics', { left: 50, top: 50, fill: 'yellow' })); }
-    
-    function applyGrayscale() {
-        const bg = canvas.backgroundImage;
-        if(bg) { bg.filters.push(new fabric.Image.filters.Grayscale()); bg.applyFilters(); canvas.renderAll(); }
-    }
-
-    // 4. التصدير النهائي
-    document.getElementById('generate').onclick = async () => {
-        document.getElementById('status').innerText = "Processing frames...";
-        const gif = new GIF({ workers: 2, quality: 10, width: 512, height: 512 });
-        
-        for(let f of frames) {
-            await new Promise(r => fabric.Image.fromURL(f.src, (img) => {
-                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), { onComplete: () => {
-                    gif.addFrame(canvas.getElement(), { delay: parseInt(document.getElementById('globalDelay').value) });
-                    r();
-                }});
-            }));
-        }
-        gif.on('finished', (b) => {
-            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pro-animation.gif'; a.click();
-            document.getElementById('status').innerText = "Done!";
-        });
-        gif.render();
+function addBlankFrame() {
+  canvas.clear();
+  canvas.setBackgroundColor('#000000', () => {
+    canvas.renderAll();
+    const frame = {
+      id: uid(),
+      json: canvas.toJSON(),
+      thumb: canvas.toDataURL({ format: 'png', multiplier: 0.25 }),
+      delay: 500,
+      filterType: 'none',
+      brightness: 0
     };
+    frames.push(frame);
+    activeIndex = frames.length - 1;
+    renderTimeline();
+  });
+}
 
-    new Sortable(timeline, { animation: 150 });
+// ---- Editing tools ----
+function addText() {
+  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
+  const t = new fabric.IText('اكتب هنا', { left: 40, top: 40, fill: '#ffd23f', fontSize: 32 });
+  canvas.add(t).setActiveObject(t);
+}
+function addRect() {
+  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
+  const r = new fabric.Rect({ left: 60, top: 60, width: 100, height: 80, fill: '#ffd23f' });
+  canvas.add(r).setActiveObject(r);
+}
+function addCircle() {
+  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
+  const c = new fabric.Circle({ left: 80, top: 80, radius: 50, fill: '#ffd23f' });
+  canvas.add(c).setActiveObject(c);
+}
+function deleteSelected() {
+  const obj = canvas.getActiveObject();
+  if (obj) canvas.remove(obj);
+}
+function applyColor(hex) {
+  const obj = canvas.getActiveObject();
+  if (obj) { obj.set('fill', hex); canvas.renderAll(); }
+}
+
+function buildFilterList() {
+  const type = document.getElementById('filterType').value;
+  const brightness = parseFloat(document.getElementById('brightness').value);
+  const list = [];
+  if (type === 'grayscale') list.push(new fabric.Image.filters.Grayscale());
+  if (type === 'sepia') list.push(new fabric.Image.filters.Sepia());
+  if (type === 'invert') list.push(new fabric.Image.filters.Invert());
+  if (brightness !== 0) list.push(new fabric.Image.filters.Brightness({ brightness }));
+  return { type, brightness, list };
+}
+function applyFilters() {
+  const bg = canvas.backgroundImage;
+  if (!bg) return;
+  const { type, brightness, list } = buildFilterList();
+  bg.filters = list;
+  bg.applyFilters();
+  canvas.renderAll();
+  if (activeIndex >= 0) {
+    frames[activeIndex].filterType = type;
+    frames[activeIndex].brightness = brightness;
+  }
+}
+
+function updateDelay(v) {
+  if (activeIndex >= 0) frames[activeIndex].delay = parseInt(v, 10) || 100;
+}
+
+// ---- Frame management ----
+function duplicateFrame() {
+  if (activeIndex < 0) return;
+  saveActiveFrameState(() => {
+    const src = frames[activeIndex];
+    const clone = JSON.parse(JSON.stringify(src.json));
+    const newFrame = { ...src, id: uid(), json: clone };
+    frames.splice(activeIndex + 1, 0, newFrame);
+    selectFrame(activeIndex + 1);
+  });
+}
+function deleteFrame() { removeFrameAt(activeIndex); }
+function removeFrameAt(i) {
+  if (i < 0 || i >= frames.length) return;
+  frames.splice(i, 1);
+  if (frames.length === 0) {
+    activeIndex = -1;
+    canvas.clear();
+    renderTimeline();
+    return;
+  }
+  const next = Math.min(i, frames.length - 1);
+  activeIndex = -1; // force reload
+  loadFrameIntoCanvas(next);
+}
+function moveFrame(dir) {
+  const j = activeIndex + dir;
+  if (j < 0 || j >= frames.length) return;
+  saveActiveFrameState(() => {
+    const tmp = frames[activeIndex];
+    frames[activeIndex] = frames[j];
+    frames[j] = tmp;
+    activeIndex = j;
+    renderTimeline();
+  });
+}
+
+// ---- Preview ----
+let previewTimer = null;
+function playPreview() {
+  if (frames.length === 0) return;
+  saveActiveFrameState(() => {
+    let i = 0;
+    clearTimeout(previewTimer);
+    const step = () => {
+      const f = frames[i % frames.length];
+      canvas.loadFromJSON(f.json, () => {
+        canvas.renderAll();
+        previewTimer = setTimeout(step, f.delay);
+      });
+      i++;
+      if (i > frames.length * 3) {
+        clearTimeout(previewTimer);
+        loadFrameIntoCanvas(activeIndex);
+      }
+    };
+    step();
+  });
+}
+
+// ---- GIF generation ----
+async function getWorkerBlobURL() {
+  if (!workerBlobURLPromise) {
+    workerBlobURLPromise = fetch('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js')
+      .then(r => r.text())
+      .then(text => URL.createObjectURL(new Blob([text], { type: 'application/javascript' })));
+  }
+  return workerBlobURLPromise;
+}
+
+async function generate() {
+  if (frames.length === 0) { alert('أضف إطارات أولاً'); return; }
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('msg').innerText = 'جاري تجهيز المُشغل...';
+
+  saveActiveFrameState(async () => {
+    const workerScript = await getWorkerBlobURL();
+    const gif = new GIF({
+      workers: 2,
+      quality: 10,
+      width: canvas.getWidth(),
+      height: canvas.getHeight(),
+      workerScript
+    });
+
+    document.getElementById('msg').innerText = 'جاري رسم الإطارات...';
+
+    for (const f of frames) {
+      await new Promise((resolve) => {
+        canvas.loadFromJSON(f.json, () => {
+          canvas.renderAll();
+          gif.addFrame(canvas.getElement(), { delay: f.delay, copy: true });
+          resolve();
+        });
+      });
+    }
+
+    gif.on('progress', (p) => {
+      document.getElementById('progress-bar').style.width = Math.round(p * 100) + '%';
+      document.getElementById('msg').innerText = 'جاري الترميز... ' + Math.round(p * 100) + '%';
+    });
+
+    gif.on('finished', (blob) => {
+      const url = URL.createObjectURL(blob);
+      document.getElementById('resultImg').src = url;
+      document.getElementById('downloadLink').href = url;
+      document.getElementById('result').style.display = 'flex';
+      document.getElementById('msg').innerText = 'تم بنجاح ✅';
+      document.getElementById('progress-wrap').style.display = 'none';
+      loadFrameIntoCanvas(activeIndex);
+    });
+
+    gif.render();
+  });
+}
 </script>
 </body>
 </html>
