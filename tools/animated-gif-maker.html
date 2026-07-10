@@ -2,72 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tone.pics | Animated GIF Maker</title>
+    <title>Animated GIF Maker | Tone.pics</title>
     <style>
-        :root{ --bg:#0e0f12; --panel:#15171c; --panel2:#1b1e24; --line:#2a2d34; --text:#e9eaee; --accent:#ffd23f; }
-        body{ background:var(--bg); color:var(--text); font-family: sans-serif; margin:0; padding:20px; }
-        .container{ max-width: 800px; margin: auto; background: var(--panel); padding: 30px; border-radius: 14px; border: 1px solid var(--line); }
-        h2{ color: var(--text); margin-top: 0; }
-        .drop-zone{ border: 2px dashed var(--line); padding: 30px; text-align: center; cursor: pointer; color: var(--accent); border-radius: 10px; margin-bottom: 20px; }
-        .controls{ display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
-        button{ background: var(--accent); color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        #previewImage{ max-width: 100%; border-radius: 8px; margin-top: 20px; display: none; }
-        #downloadBtn{ display: none; background: #28a745; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; }
+        :root{ --bg:#0e0f12; --panel:#15171c; --accent:#ffd23f; --text:#e9eaee; }
+        body{ background:var(--bg); color:var(--text); font-family:sans-serif; margin:0; display:flex; justify-content:center; padding:20px; }
+        .app-container{ background:var(--panel); padding:25px; border-radius:15px; width:100%; max-width:500px; border:1px solid #333; }
+        .drop-area{ border:2px dashed #444; padding:30px; text-align:center; cursor:pointer; margin-bottom:20px; transition:0.3s; }
+        .drop-area:hover{ border-color:var(--accent); }
+        .btn{ background:var(--accent); color:#000; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; width:100%; font-weight:bold; font-size:16px; }
+        #preview{ width:100%; margin-top:20px; border-radius:8px; display:none; }
+        #downloadLink{ display:none; background:#28a745; color:#fff; padding:12px; border-radius:8px; text-align:center; margin-top:10px; text-decoration:none; font-weight:bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="app-container">
     <h2>Animated GIF Maker</h2>
-    <div class="drop-zone" id="dropZone">Click to upload images</div>
-    <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-    
-    <div class="controls">
-        <button id="createBtn">Generate GIF</button>
-        <a id="downloadBtn">Download GIF</a>
+    <div class="drop-area" onclick="document.getElementById('fileInput').click()">
+        Click to Select Images
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
     </div>
-    
-    <p id="status"></p>
-    <img id="previewImage">
+    <button class="btn" id="generateBtn">Generate GIF</button>
+    <div id="status" style="margin:15px 0; color:#ffd23f;"></div>
+    <img id="preview">
+    <a id="downloadLink" href="#">Download GIF</a>
 </div>
 
+<!-- استخدام نسخة مستقرة من gifshot -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
 <script>
     const fileInput = document.getElementById('fileInput');
-    const dropZone = document.getElementById('dropZone');
-    const createBtn = document.getElementById('createBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const preview = document.getElementById('preview');
     const status = document.getElementById('status');
-    const preview = document.getElementById('previewImage');
+    const downloadLink = document.getElementById('downloadLink');
 
-    dropZone.onclick = () => fileInput.click();
-
-    createBtn.onclick = () => {
-        if(fileInput.files.length === 0) return alert("Please select images first!");
+    generateBtn.onclick = () => {
+        if(fileInput.files.length === 0) return alert("Please select images first.");
         status.innerText = "Processing... Please wait.";
         
         let images = [];
-        let files = Array.from(fileInput.files);
-        
-        files.forEach(file => {
-            let reader = new FileReader();
+        Array.from(fileInput.files).forEach((file, index) => {
+            const reader = new FileReader();
             reader.onload = (e) => {
                 images.push(e.target.result);
-                if(images.length === files.length) {
+                if(images.length === fileInput.files.length) {
                     gifshot.createGIF({
                         images: images,
                         gifWidth: 400,
                         gifHeight: 400,
-                        interval: 0.5
+                        interval: 0.5 // Delay between frames
                     }, (obj) => {
                         if(!obj.error) {
                             preview.src = obj.image;
                             preview.style.display = "block";
-                            downloadBtn.href = obj.image;
-                            downloadBtn.download = "animated.gif";
-                            downloadBtn.style.display = "inline-block";
-                            status.innerText = "Done!";
+                            downloadLink.href = obj.image;
+                            downloadLink.download = "tone-pics-animation.gif";
+                            downloadLink.style.display = "block";
+                            status.innerText = "Done! You can download your GIF.";
+                        } else {
+                            status.innerText = "Error creating GIF.";
                         }
                     });
                 }
