@@ -86,21 +86,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
 <script>
-    const fileInput = document.getElementById("fileInput");
-    const dropZone = document.getElementById("dropZone");
-    const imagesList = document.getElementById("imagesList");
-    const duration = document.getElementById("duration");
-    const durationValue = document.getElementById("durationValue");
-    const previewImage = document.getElementById("previewImage");
-    const createBtn = document.getElementById("createBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const status = document.getElementById("status");
-    const gifSize = document.getElementById("gifSize");
-    const loop = document.getElementById("loop");
-
+    const fileInput = document.getElementById("fileInput"), dropZone = document.getElementById("dropZone"), imagesList = document.getElementById("imagesList"), duration = document.getElementById("duration"), durationValue = document.getElementById("durationValue"), previewImage = document.getElementById("previewImage"), createBtn = document.getElementById("createBtn"), clearBtn = document.getElementById("clearBtn"), status = document.getElementById("status"), gifSize = document.getElementById("gifSize"), loop = document.getElementById("loop");
     let images = [];
 
-    // --- Upload ---
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = e => addFiles(e.target.files);
 
@@ -111,20 +99,11 @@
             reader.onload = e => {
                 const img = new Image();
                 img.src = e.target.result;
-                img.onload = () => {
-                    images.push(img);
-                    renderImages();
-                    updatePreview();
-                };
+                img.onload = () => { images.push(img); renderImages(); updatePreview(); };
             };
             reader.readAsDataURL(file);
         });
     }
-
-    // --- Drag & Drop ---
-    dropZone.ondragover = e => { e.preventDefault(); dropZone.style.borderColor="#ffd23f"; };
-    dropZone.ondragleave = () => dropZone.style.borderColor="";
-    dropZone.ondrop = e => { e.preventDefault(); dropZone.style.borderColor=""; addFiles(e.dataTransfer.files); };
 
     function renderImages(){
         imagesList.innerHTML="";
@@ -144,21 +123,17 @@
         if(images.length === 0){ previewImage.src = ""; return; }
         let index = 0;
         previewImage.src = images[0].src;
-        previewTimer = setInterval(() => {
-            index = (index + 1) % images.length;
-            previewImage.src = images[index].src;
-        }, Number(duration.value));
+        previewTimer = setInterval(() => { index = (index + 1) % images.length; previewImage.src = images[index].src; }, Number(duration.value));
     }
 
     duration.oninput = () => { durationValue.innerHTML = duration.value + " ms"; updatePreview(); };
     clearBtn.onclick = () => { images = []; imagesList.innerHTML = ""; previewImage.src = ""; status.innerHTML = "No images selected"; };
 
-    // --- Create GIF ---
     createBtn.onclick = () => {
         if(images.length < 1) { alert("Please upload images first"); return; }
         status.innerHTML = "Creating GIF... Please wait";
         const size = Number(gifSize.value);
-        const gif = new GIF({ workers: 2, quality: 10, width: size, height: size, repeat: Number(loop.value) === 0 ? 0 : -1 });
+        const gif = new GIF({ workers: 2, quality: 10, width: size, height: size, repeat: Number(loop.value) === 0 ? 0 : -1, workerScript: 'https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.worker.js' });
 
         images.forEach(img => {
             const canvas = document.createElement("canvas");
@@ -188,6 +163,5 @@
         gif.render();
     };
 </script>
-
 </body>
 </html>
