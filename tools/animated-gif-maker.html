@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Tone.pics | Pro GIF Studio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
     <style>
         body { margin:0; background:#111; color:#fff; font-family:sans-serif; display:flex; height:100vh; overflow:hidden; }
         #toolbar { width:280px; background:#1a1d23; padding:15px; display:flex; flex-direction:column; gap:10px; border-right:1px solid #333; }
@@ -15,7 +15,6 @@
     </style>
 </head>
 <body>
-
 <div id="toolbar">
     <h3>Pro GIF Maker</h3>
     <input type="file" id="upload" multiple accept="image/*">
@@ -24,12 +23,10 @@
     <button class="btn" style="background:#28a745; color:#fff" onclick="generate()">Generate GIF</button>
     <div id="msg"></div>
 </div>
-
 <div id="canvas-area">
     <canvas id="c" width="512" height="512"></canvas>
     <div id="timeline"></div>
 </div>
-
 <script>
     const canvas = new fabric.Canvas('c');
     let frames = [];
@@ -53,7 +50,7 @@
     function loadFrame(f) {
         canvas.clear();
         fabric.Image.fromURL(f.src, (img) => {
-            if(f.filter) img.filters.push(new fabric.Image.filters.Grayscale());
+            if (f.filter) img.filters.push(new fabric.Image.filters.Grayscale());
             img.applyFilters();
             canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
         });
@@ -65,7 +62,7 @@
 
     function applyFilter() {
         const bg = canvas.backgroundImage;
-        if(bg) {
+        if (bg) {
             bg.filters.push(new fabric.Image.filters.Grayscale());
             bg.applyFilters();
             canvas.renderAll();
@@ -73,20 +70,41 @@
     }
 
     async function generate() {
-        document.getElementById('msg').innerText = "Rendering...";
-        const gif = new GIF({ workers: 2, quality: 10, width: 512, height: 512 });
-        for(let f of frames) {
-            await new Promise(r => fabric.Image.fromURL(f.src, (img) => {
-                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), { onComplete: () => {
-                    gif.addFrame(canvas.getElement(), { delay: 500 });
-                    r();
-                }});
-            }));
+        if (frames.length === 0) {
+            document.getElementById('msg').innerText = "أضف صور أولاً!";
+            return;
         }
-        gif.on('finished', (b) => {
-            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'pro.gif'; a.click();
-            document.getElementById('msg').innerText = "Done!";
+
+        document.getElementById('msg').innerText = "جاري الرندر...";
+
+        const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width: 512,
+            height: 512,
+            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
         });
+
+        for (let f of frames) {
+            await new Promise((resolve) => {
+                fabric.Image.fromURL(f.src, (img) => {
+                    canvas.setBackgroundImage(img, () => {
+                        canvas.renderAll();
+                        gif.addFrame(canvas.getElement(), { delay: 500, copy: true });
+                        resolve();
+                    });
+                });
+            });
+        }
+
+        gif.on('finished', (blob) => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'pro.gif';
+            a.click();
+            document.getElementById('msg').innerText = "تم!";
+        });
+
         gif.render();
     }
 </script>
