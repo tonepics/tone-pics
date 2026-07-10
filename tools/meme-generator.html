@@ -1,269 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Meme Generator Pro | Production Engine v3.0</title>
-<style>
-/* تدرج الألوان المتوافق تماماً مع الهوية البصرية لبقية الأدوات في موقعك */
-:root {
-  --bg: #0f1319; 
-  --panel: #151d2a; 
-  --panel-2: #1e293b; 
-  --panel-3: #0f172a;
-  --line: #2e3d52; 
-  --text: #f8fafc; 
-  --text-dim: #94a3b8; 
-  --text-faint: #64748b;
-  --accent: #00f2fe; /* اللون الفيروزي المميز للتحكم وزر الـ Zoom */
-  --accent-2: #ef4444; 
-  --accent-3: #38bdf8;
-  --brand-yellow: #ffd23f; /* لون براند Meme Forge القديم والمميز */
-}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;height:100%;}
-body{background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; overflow:hidden;}
-button,input,select,textarea{font-family:inherit;}
-.studio{display:flex; flex-direction:column; height:100vh;}
-
-/* الـ Topbar الاحترافي الموحد */
-.topbar{display:flex; align-items:center; gap:16px; padding:0 16px; height:56px; min-height:56px; background:var(--panel); border-bottom:1px solid var(--line);}
-.back-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim); border-radius:6px; padding:6px 14px; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; transition:all 0.15s ease;}
-.back-btn:hover{color:var(--text); border-color:var(--text-dim); background:var(--panel-2);}
-.brand{font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:8px;}
-.brand svg{vertical-align:middle;}
-.brand span{font-weight:700; font-size:0.62rem; color:#1a1400; background:var(--brand-yellow); padding:2px 7px; border-radius:4px; text-transform:uppercase;}
-.tagline{font-size:0.75rem; color:var(--text-faint); margin-left:auto;}
-
-.main-stage{display:grid; grid-template-columns:340px 1fr; flex:1; min-height:0;}
-.sidebar{background:var(--panel); border-right:1px solid var(--line); padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;}
-
-/* تصميم الكروت والقوائم الجانبية المنسدلة الاحترافي */
-details.section{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
-details.section > summary{
-  list-style:none; cursor:pointer; padding:12px 14px; font-size:0.82rem; font-weight:700;
-  display:flex; align-items:center; justify-content:space-between; color:var(--text);
-  user-select:none;
-}
-details.section > summary::-webkit-details-marker{display:none;}
-details.section > summary::after{content:'▾'; color:var(--text-faint); transition:transform .15s ease;}
-details.section[open] > summary::after{transform:rotate(180deg);}
-.section-body{padding:12px 14px 16px; display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--line);}
-
-.upload-label{display:flex; align-items:center; justify-content:center; gap:8px; background:var(--panel-3); border:1px dashed var(--line); border-radius:8px; padding:12px; font-size:0.8rem; cursor:pointer; transition:all 0.15s;}
-.upload-label:hover{border-color:var(--accent); color:var(--accent); background:rgba(0,242,254,0.02);}
-
-.field{display:flex; flex-direction:column; gap:6px; width:100%;}
-.field label{font-size:0.68rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; font-weight:600;}
-.field textarea{background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:8px 10px; font-size:0.82rem; outline:none; resize:vertical; min-height:45px;}
-.field textarea:focus, .field input:focus, .field select:focus{border-color:var(--accent);}
-.field input[type=text], .field select{background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:8px 10px; font-size:0.82rem; outline:none; width:100%;}
-
-.row2{display:flex; gap:10px;}
-.row2 > .field{flex:1;}
-
-.slider-wrapper{display:flex; align-items:center; gap:8px;}
-input[type=range]{flex:1; accent-color:var(--accent); height:4px;}
-.slider-wrapper span{font-size:0.7rem; color:var(--text-faint); min-width:32px; text-align:right;}
-
-.color-row{display:flex; align-items:center; gap:8px;}
-.color-row input[type=color]{width:34px; height:30px; border:1px solid var(--line); background:none; cursor:pointer; border-radius:6px; padding:0;}
-.color-row label{font-size:0.76rem; color:var(--text-dim); flex:1;}
-
-.btn-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
-.tool-btn{background:var(--panel-3); border:1px solid var(--line); color:var(--text-dim); border-radius:6px; padding:8px 10px; font-size:0.76rem; cursor:pointer; text-align:center; font-weight:500; display:flex; align-items:center; justify-content:center; gap:6px;}
-.tool-btn:hover{color:var(--text); border-color:var(--text-dim);}
-.tool-btn.active{background:rgba(0,242,254,.12); border-color:var(--accent); color:var(--accent);}
-.tool-btn.full{width:100%;}
-.tool-btn.danger:hover{border-color:var(--accent-2); color:var(--accent-2); background:rgba(255,93,93,0.05);}
-
-/* شبكة القوالب المصغرة */
-.tmpl-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
-.tmpl-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;}
-.tmpl-item:hover{border-color:var(--accent);}
-.tmpl-item.active{border-color:var(--accent); background:rgba(0,242,254,.06);}
-.tmpl-preview{width:100%; height:36px; display:grid; gap:2px; position:relative;}
-.tmpl-preview div{background:#2a3a52; border-radius:2px;}
-.tmpl-item span{font-size:0.65rem; color:var(--text-faint); text-align:center;}
-
-/* الإيموجي */
-.emoji-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; max-height:140px; overflow-y:auto; padding-right:2px;}
-.emoji-btn{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; font-size:1.15rem; padding:6px 0; cursor:pointer; text-align:center; transition:transform 0.1s;}
-.emoji-btn:hover{border-color:var(--accent); transform:scale(1.05);}
-
-/* كروت طبقات النصوص والمستندات */
-.layer-card{background:var(--panel-3); border:1px solid var(--line); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px; margin-top:8px;}
-.layer-card.selected{border-color:var(--accent); background:rgba(0,242,254,0.01);}
-.layer-card-head{display:flex; align-items:center; justify-content:space-between; gap:6px;}
-.layer-card-head .tag{font-size:0.65rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; font-weight:700;}
-.mini-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim); border-radius:5px; padding:4px 8px; font-size:0.68rem; cursor:pointer;}
-.mini-btn:hover{color:var(--accent-2); border-color:var(--accent-2);}
-.layer-empty{color:var(--text-faint); font-size:0.78rem; padding:8px 2px; text-align:center;}
-
-.caption-list{display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;}
-.caption-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:10px; font-size:0.78rem; cursor:pointer; line-height:1.4;}
-.caption-item:hover{border-color:var(--accent-3); color:var(--accent-3);}
-
-/* منطقة الكانفاس التفاعلية ولوحة المعاينة الشفافة */
-.canvas-area{position:relative; display:flex; align-items:center; justify-content:center; background:#0b0f14; overflow:auto; padding:24px;}
-.canvas-area.checkerboard{
-  background-image:linear-gradient(45deg,#06090d 25%,transparent 25%),linear-gradient(-45deg,#06090d 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#06090d 75%),linear-gradient(-45deg,transparent 75%,#06090d 75%);
-  background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0px; background-color:#0b0f14;
-}
-#memeCanvas{max-width:100%; max-height:100%; width:auto; height:auto; box-shadow:0 0 0 1px var(--line), 0 20px 60px rgba(0,0,0,.6); cursor:grab; touch-action:none;}
-.empty-hint{position:absolute; inset:24px; border:2px dashed var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; z-index:2;}
-.empty-hint p{margin:0; color:var(--text-dim); font-size:0.88rem;}
-.empty-hint p.big{font-weight:800; color:var(--brand-yellow); font-size:1.1rem; margin-bottom:6px;}
-.empty-hint.hidden{display:none;}
-
-/* شريط التحكم السفلي وخيارات التحميل الاحترافية */
-.bottom-bar{height:60px; min-height:60px; background:var(--panel); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 16px; gap:12px;}
-.status-info{font-size:0.75rem; color:var(--text-dim);}
-.export-actions{display:flex; align-items:center; gap:10px;}
-.export-actions select{background:var(--panel-2); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:8px 12px; font-size:0.82rem;}
-.export-btn{background:var(--accent); color:#000000; border:none; border-radius:6px; padding:10px 22px; font-weight:800; font-size:0.88rem; cursor:pointer; transition:all 0.15s;}
-.export-btn:hover{background:#5df2ff; box-shadow: 0 0 15px rgba(0,242,254,0.4);}
-.export-btn:disabled{opacity:.3; cursor:not-allowed; box-shadow: none;}
-
-.toast{position:fixed; bottom:76px; left:50%; transform:translateX(-50%); background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:10px 18px; border-radius:8px; font-size:0.82rem; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;}
-.toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
-.toast.error{border-color:var(--accent-2); color:var(--accent-2);}
-.note{font-size:0.7rem; color:var(--text-faint); line-height:1.45; margin:4px 0 0 0;}
-
-::-webkit-scrollbar{width:8px; height:8px;}
-::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-@media (max-width:760px){ .main-stage{grid-template-columns:1fr;} .sidebar{border-right:none; border-bottom:1px solid var(--line); max-height:45vh;} }
-</style>
+<title>Meme Generator - Tone.pics</title>
+<meta name="description" content="Free online Meme Generator. Create memes with text, stickers, templates and drawing directly in your browser.">
+<meta name="keywords" content="meme generator, meme maker, online meme creator, image editor">
+<link rel="stylesheet" href="../tool-style.css">
 </head>
 <body>
 
-<div class="studio">
-  <div class="topbar">
-    <button class="back-btn" onclick="window.history.back();">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-      Back
-    </button>
-    <div class="brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M9 9H9.01" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 9H15.01" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      MemeForge <span>PRO</span>
-    </div>
-    <div class="tagline">Templates · Layers · Stickers · Draw · Caption Ideas</div>
-  </div>
+<div class="app-container">
+  <header class="tool-header">
+    <a href="../index.html" class="back-button">← Back to Tools</a>
+    <h1>Tone.pics <span>Meme Generator</span></h1>
+    <p>Create memes with text, stickers, templates and drawing.</p>
+  </header>
 
-  <div class="main-stage">
-    <div class="sidebar">
+  <div class="workspace-grid">
+    <div class="control-sidebar">
 
-      <details class="section" open>
-        <summary>1 · Image & Templates</summary>
-        <div class="section-body">
-          <label for="imageUpload" class="upload-label">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            Upload Main Image
+      <div class="tool-card">
+        <div class="tool-card-header">1 · Templates</div>
+        <div class="tool-card-body">
+          <label for="imgLoader" class="zone-upload">
+            <span>📂 Upload Image</span>
           </label>
-          <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+          <input type="file" id="imgLoader" accept="image/*" style="display:none;">
 
-          <div class="field">
-            <label>Blank Layout Templates</label>
-            <div class="tmpl-grid" id="tmplGrid"></div>
-            <p class="note">Pick a layout, then click any empty panel on the canvas to upload an image into it.</p>
+          <div class="ctrl-group">
+            <label>تقسيمات الصور المتعددة</label>
+            <div class="grid-templates" id="templatesContainer"></div>
           </div>
         </div>
-      </details>
+      </div>
 
-      <details class="section" open>
-        <summary>2 · Text Layers</summary>
-        <div class="section-body">
-          <button class="tool-btn full" onclick="addTextLayer()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            + Add Text Layer
-          </button>
-          <div id="textLayerList"></div>
+      <div class="tool-card">
+        <div class="tool-card-header">2 · Caption Generator</div>
+        <div class="tool-card-body">
+          <button class="btn-action primary" onclick="createNewTextLayer()">+ إضافة طبقة نص جديدة</button>
+          <div id="textLayersBox" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
-      </details>
+      </div>
 
-      <details class="section">
-        <summary>3 · Stickers & Emoji</summary>
-        <div class="section-body">
-          <div class="emoji-grid" id="emojiGrid"></div>
-          <div id="stickerLayerList"></div>
+      <div class="tool-card">
+        <div class="tool-card-header">3 · التعبيرات والملصقات</div>
+        <div class="tool-card-body">
+          <div class="grid-emojis" id="emojisBox"></div>
+          <div id="stickerLayersBox" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
-      </details>
+      </div>
 
-      <details class="section">
-        <summary>4 · Free Draw</summary>
-        <div class="section-body">
-          <div class="btn-grid">
-            <button class="tool-btn" id="btnDrawPen" onclick="setDrawMode('pen')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-              Pen
-            </button>
-            <button class="tool-btn" id="btnDrawEraser" onclick="setDrawMode('eraser')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H4"></path><path d="M20 12l-8 8H8v-4l8-8 4 4z"></path></svg>
-              Eraser
-            </button>
+      <div class="tool-card">
+        <div class="tool-card-header">4 · الرسم والفرشاة الحرة</div>
+        <div class="tool-card-body">
+          <div class="layout-split">
+            <button class="btn-action" id="penTool" onclick="changeBrushMode('pen')">🖌️ قلم</button>
+            <button class="btn-action" id="eraserTool" onclick="changeBrushMode('eraser')">🧼 ممحاة</button>
           </div>
-          <button class="tool-btn full" id="btnDrawOff" onclick="setDrawMode('off')">Selection Mode (Off)</button>
-          <div class="row2">
-            <div class="field">
-              <label>Brush Color</label>
-              <div class="color-row"><input type="color" id="drawColor" value="#ff5d5d"><label>Color</label></div>
+          <button class="btn-action" id="disableDrawTool" onclick="changeBrushMode('off')" style="width:100%;">وضع التحديد العادي (مغلق)</button>
+          
+          <div class="layout-split">
+            <div class="ctrl-group">
+              <label>اللون</label>
+              <div class="color-picker-box"><input type="color" id="brushColorPicker" value="#ef4444"><span>اللون</span></div>
             </div>
-            <div class="field">
-              <label>Brush Size</label>
-              <div class="slider-wrapper"><input type="range" id="drawSize" min="2" max="40" value="8"><span id="drawSizeVal">8</span></div>
+            <div class="ctrl-group">
+              <label>الحجم</label>
+              <div class="slider-container"><input type="range" id="brushThickness" min="2" max="40" value="8"><span id="thicknessValue">8</span></div>
             </div>
           </div>
-          <button class="tool-btn full danger" onclick="clearDrawing()">Clear Drawing</button>
+          <button class="btn-action danger" onclick="resetDrawLayer()" style="width:100%;">مسح لوحة الرسم بالكامل</button>
         </div>
-      </details>
-
-      <details class="section">
-        <summary>5 · AI Caption Ideas</summary>
-        <div class="section-body">
-          <div class="field">
-            <label>Topic / Keyword</label>
-            <input type="text" id="captionTopic" placeholder="e.g. Mondays, my code, coffee">
-          </div>
-          <button class="tool-btn full" onclick="generateCaptions()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-            🎲 Generate Caption Ideas
-          </button>
-          <div class="caption-list" id="captionList"></div>
-          <p class="note">Offline suggestion engine using classic meme templates. Click a suggestion to add it directly.</p>
-        </div>
-      </details>
+      </div>
 
     </div>
 
-    <div class="canvas-area checkerboard" id="canvasArea">
-      <div class="empty-hint" id="emptyHint">
-        <p class="big">Upload an image or pick a template</p>
-        <p>then add text, stickers, or draw — drag layers directly on the canvas</p>
+    <div class="preview-theater checkerboard" id="theaterZone">
+      <div class="empty-stage-hint" id="stageHint">
+        <h3>ابدأ صناعة الميم الخاص بك الآن</h3>
+        <p>ارفع الصورة الأساسية، أو اختر قالباً مقسماً للبدء فوراً.</p>
       </div>
       <canvas id="memeCanvas" width="800" height="800"></canvas>
     </div>
   </div>
 
-  <div class="bottom-bar">
-    <div class="status-info" id="statusLabel">No image loaded — 800 × 800 px</div>
-    <div class="export-actions">
-      <select id="exportFormat">
-        <option value="image/png">PNG</option>
-        <option value="image/jpeg">JPG</option>
+  <div class="footer-bar">
+    <div class="engine-status" id="dimensionsLabel">Ready</div>
+    <div class="download-cluster">
+      <select id="downloadExtension">
+        <option value="image/png">صيغة PNG</option>
+        <option value="image/jpeg">صيغة JPEG</option>
       </select>
-      <button class="export-btn" id="exportBtn" onclick="exportMeme()" disabled>Download Meme</button>
+      <button class="btn-download" id="downloadTrigger" onclick="triggerMemeDownload()" disabled>Download</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-<input type="file" id="slotUpload" accept="image/*" style="display:none;">
+<div class="toast-message" id="toastAlert"></div>
+<input type="file" id="partitionLoader" accept="image/*" style="display:none;">
 
 <script>
 (function(){
@@ -271,554 +106,447 @@ input[type=range]{flex:1; accent-color:var(--accent); height:4px;}
 
 const canvas = document.getElementById('memeCanvas');
 const ctx = canvas.getContext('2d');
-const canvasArea = document.getElementById('canvasArea');
-const emptyHint = document.getElementById('emptyHint');
-const statusLabel = document.getElementById('statusLabel');
-const exportBtn = document.getElementById('exportBtn');
-const toast = document.getElementById('toast');
-const imageUpload = document.getElementById('imageUpload');
-const slotUpload = document.getElementById('slotUpload');
-const exportFormat = document.getElementById('exportFormat');
-const tmplGrid = document.getElementById('tmplGrid');
-const textLayerList = document.getElementById('textLayerList');
-const stickerLayerList = document.getElementById('stickerLayerList');
-const emojiGrid = document.getElementById('emojiGrid');
-const captionList = document.getElementById('captionList');
-const captionTopic = document.getElementById('captionTopic');
-const drawColor = document.getElementById('drawColor');
-const drawSize = document.getElementById('drawSize');
-const drawSizeVal = document.getElementById('drawSizeVal');
+const stageHint = document.getElementById('stageHint');
+const dimensionsLabel = document.getElementById('dimensionsLabel');
+const downloadTrigger = document.getElementById('downloadTrigger');
+const toastAlert = document.getElementById('toastAlert');
+const imgLoader = document.getElementById('imgLoader');
+const partitionLoader = document.getElementById('partitionLoader');
+const downloadExtension = document.getElementById('downloadExtension');
+const templatesContainer = document.getElementById('templatesContainer');
+const textLayersBox = document.getElementById('textLayersBox');
+const stickerLayersBox = document.getElementById('stickerLayersBox');
+const emojisBox = document.getElementById('emojisBox');
+const brushColorPicker = document.getElementById('brushColorPicker');
+const brushThickness = document.getElementById('brushThickness');
+const thicknessValue = document.getElementById('thicknessValue');
 
-/* ===================== القوالب الافتراضية ===================== */
-const TEMPLATES = [
-  {id:'single', name:'Single', slots:[{x:0,y:0,w:1,h:1}]},
-  {id:'side2', name:'Side by Side', slots:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
-  {id:'stack2', name:'Stacked 2', slots:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
-  {id:'grid4', name:'Grid 4', slots:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
-  {id:'stack3', name:'Stacked 3', slots:[{x:0,y:0,w:1,h:1/3},{x:0,y:1/3,w:1,h:1/3},{x:0,y:2/3,w:1,h:1/3}]},
+const STRUCTS = [
+  {id:'single', name:'صورة واحدة', blocks:[{x:0,y:0,w:1,h:1}]},
+  {id:'side2', name:'قسمين طوليين', blocks:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
+  {id:'stack2', name:'قسمين عرضيين', blocks:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
+  {id:'grid4', name:'4 أقسام', blocks:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
 ];
 
-const EMOJIS = ['😀','😂','😍','😎','🤔','😭','🔥','💯','👍','👎','❤️','💀','🎉','🙌','👀','😱','🤯','🥳','😡','🤡','👻','💩','🍕','🍔','🌮','🐶','🐱','🦄','⭐','✨','💥','❓','❗','🚀','🎯','🏆','🙏','🤝','👏','😴'];
-
-const CAPTION_BANK = [
-  "WHEN {topic} HITS DIFFERENT",
-  "NOBODY:\nABSOLUTELY NOBODY:\nME, TALKING ABOUT {topic}:",
-  "THAT MOMENT WHEN {topic} GOES EXACTLY AS PLANNED",
-  "ME PRETENDING {topic} IS FINE",
-  "{topic}? IN THIS ECONOMY?",
-  "EXPECTATION VS REALITY: {topic}",
-  "WHEN YOU REALIZE {topic} IS TOMORROW",
-  "POV: {topic} JUST HAPPENED",
-  "ME EXPLAINING {topic} AT 3AM",
-  "WHEN {topic} SAYS ONE THING BUT MEANS ANOTHER",
-  "THE FACE YOU MAKE WHEN {topic} WORKS ON THE FIRST TRY",
-  "NOT ME THINKING ABOUT {topic} AGAIN",
-  "{topic}: EXISTS.\nME: AND I TOOK THAT PERSONALLY.",
-  "WHEN {topic} IS DUE TOMORROW AND YOU JUST STARTED",
-  "MY BRAIN DURING {topic}: STATIC.",
+const STICKER_LIST = ['😀','😂','😍','😎','🤔','😭','🔥','💯','👍','❤️','💀','💥','🚀','🎯','✨'];
+const FONTS_COLLECTION = [
+  {value:"'Impact',sans-serif", label:'إمباكت'},
+  {value:"'Arial Black',sans-serif", label:'أريال بولد'},
+  {value:"sans-serif", label:'عادي'}
 ];
 
-/* ===================== حالة التطبيق ===================== */
-let uid = 1;
-const state = {
-  canvasW:800, canvasH:800,
-  template:'single',
-  slots:[], 
-  drawBuffer:document.createElement('canvas'),
-  layers:[], 
-  selectedLayerId:null,
-  drawMode:'off', 
-  hasContent:false,
+let globalId = 1;
+const coreState = {
+  w: 800, h: 800,
+  activeLayout: 'single',
+  partitions: [],
+  drawOverlay: document.createElement('canvas'),
+  elements: [],
+  focusedElementId: null,
+  brushMode: 'off'
 };
-state.drawBuffer.width = state.canvasW;
-state.drawBuffer.height = state.canvasH;
-const dctx = state.drawBuffer.getContext('2d');
 
-function showToast(msg, isError){
-  toast.textContent = msg;
-  toast.className = 'toast show' + (isError ? ' error' : '');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(()=> toast.classList.remove('show'), 2400);
+coreState.drawOverlay.width = coreState.w;
+coreState.drawOverlay.height = coreState.h;
+const oCtx = coreState.drawOverlay.getContext('2d');
+
+function pushToast(text){
+  toastAlert.textContent = text;
+  toastAlert.classList.add('visible');
+  clearTimeout(pushToast._timer);
+  pushToast._timer = setTimeout(()=> toastAlert.classList.remove('visible'), 2000);
 }
 
-function updateStatus(){
-  statusLabel.textContent = `${state.canvasW} × ${state.canvasH} px · ${state.layers.length} layer(s)`;
-}
-
-function refreshHint(){
-  const anyImg = state.slots.some(s=>s.img);
-  emptyHint.classList.toggle('hidden', anyImg);
-  exportBtn.disabled = !anyImg;
-}
-
-/* ===================== بناء القوالب الجانبية ===================== */
-function buildTemplateGrid(){
-  tmplGrid.innerHTML = '';
-  TEMPLATES.forEach(t=>{
-    const el = document.createElement('div');
-    el.className = 'tmpl-item' + (t.id === state.template ? ' active' : '');
-    const prev = document.createElement('div');
-    prev.className = 'tmpl-preview';
-    t.slots.forEach(s=>{
-      const box = document.createElement('div');
-      box.style.position = 'absolute';
-      box.style.left = (s.x*100)+'%'; box.style.top = (s.y*100)+'%';
-      box.style.width = (s.w*100)+'%'; box.style.height = (s.h*100)+'%';
-      prev.appendChild(box);
+function syncLayoutSelection(){
+  templatesContainer.innerHTML = '';
+  STRUCTS.forEach(str=>{
+    const wrapper = document.createElement('div');
+    wrapper.className = 'item-template' + (str.id === coreState.activeLayout ? ' active' : '');
+    const preview = document.createElement('div');
+    preview.className = 'preview-blocks';
+    str.blocks.forEach(b=>{
+      const d = document.createElement('div');
+      d.style.position = 'absolute';
+      d.style.left = (b.x*100)+'%'; d.style.top = (b.y*100)+'%';
+      d.style.width = (b.w*100)+'%'; d.style.height = (b.h*100)+'%';
+      preview.appendChild(d);
     });
     const label = document.createElement('span');
-    label.textContent = t.name;
-    el.appendChild(prev); el.appendChild(label);
-    el.addEventListener('click', ()=> applyTemplate(t.id));
-    tmplGrid.appendChild(el);
+    label.textContent = str.name;
+    wrapper.appendChild(preview); wrapper.appendChild(label);
+    wrapper.addEventListener('click', ()=> applyStructuralLayout(str.id));
+    templatesContainer.appendChild(wrapper);
   });
 }
 
-function applyTemplate(id){
-  const t = TEMPLATES.find(x=>x.id===id);
-  if(!t) return;
-  const oldImgs = state.slots.map(s=>s.img);
-  state.template = id;
-  state.slots = t.slots.map((s,i)=>({...s, img: oldImgs[i] || null}));
-  buildTemplateGrid();
-  render();
-  refreshHint();
-  updateStatus();
+function applyStructuralLayout(id){
+  const found = STRUCTS.find(x=>x.id===id);
+  if(!found) return;
+  const historicImgs = coreState.partitions.map(p=>p.img);
+  coreState.activeLayout = id;
+  coreState.partitions = found.blocks.map((b,i)=>({...b, img: historicImgs[i] || null}));
+  
+  syncLayoutSelection();
+  repaint();
+  evaluateHintVisibility();
 }
 
-/* ===================== رفع ومعالجة الصور ===================== */
-let pendingSlotIndex = null;
-slotUpload.addEventListener('change', e=>{
-  const file = e.target.files && e.target.files[0];
-  if(file && pendingSlotIndex !== null) loadImageIntoSlot(file, pendingSlotIndex);
-  slotUpload.value = '';
-  pendingSlotIndex = null;
+function evaluateHintVisibility(){
+  const hasImage = coreState.partitions.some(p=>p.img);
+  stageHint.classList.toggle('hidden', hasImage);
+  downloadTrigger.disabled = !hasImage;
+  if(hasImage) {
+    dimensionsLabel.textContent = `الدقة الحالية: ${coreState.w} × ${coreState.h} بكسل`;
+  } else {
+    dimensionsLabel.textContent = 'Ready';
+  }
+}
+
+function getPartitionDimensionsPx(partition){
+  return {
+    x: partition.x * coreState.w,
+    y: partition.y * coreState.h,
+    w: partition.w * coreState.w,
+    h: partition.h * coreState.h
+  };
+}
+
+let targetedPartitionIndex = null;
+partitionLoader.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(file && targetedPartitionIndex !== null){
+    injectImageToPartition(file, targetedPartitionIndex);
+  }
+  partitionLoader.value = '';
+  targetedPartitionIndex = null;
 });
 
-function loadImageIntoSlot(file, idx){
-  if(!file || file.type.indexOf('image/') !== 0){ showToast('Please choose a valid image file.', true); return; }
+function injectImageToPartition(file, index){
+  if(!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
-  reader.onload = e=>{
+  reader.onload = ev => {
     const img = new Image();
-    img.onload = ()=>{
-      state.slots[idx].img = img;
-      render(); refreshHint(); updateStatus();
-      showToast('Image added.');
+    img.onload = () => {
+      coreState.partitions[index].img = img;
+      repaint();
+      evaluateHintVisibility();
     };
-    img.onerror = ()=> showToast('Failed to load image.', true);
-    img.src = e.target.result;
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-imageUpload.addEventListener('change', e=>{
-  const file = e.target.files && e.target.files[0];
-  if(file){
-    if(state.slots.length === 0) applyTemplate('single');
-    loadImageIntoSlot(file, 0);
+imgLoader.addEventListener('change', e=>{
+  if(e.target.files[0]){
+    if(coreState.partitions.length === 0) applyStructuralLayout('single');
+    injectImageToPartition(e.target.files[0], 0);
   }
-  imageUpload.value = '';
+  imgLoader.value = '';
 });
 
-canvasArea.addEventListener('dragover', e=> e.preventDefault());
-canvasArea.addEventListener('drop', e=>{
-  e.preventDefault();
-  const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if(!file) return;
-  if(state.slots.length === 0) applyTemplate('single');
-  const idx = slotIndexAtClient(e.clientX, e.clientY);
-  loadImageIntoSlot(file, idx >= 0 ? idx : 0);
-});
-
-document.addEventListener('paste', e=>{
-  const items = e.clipboardData && e.clipboardData.items;
-  if(!items) return;
-  for(const item of items){
-    if(item.type.indexOf('image/') === 0){
-      if(state.slots.length === 0) applyTemplate('single');
-      loadImageIntoSlot(item.getAsFile(), 0);
-      e.preventDefault(); break;
-    }
-  }
-});
-
-function slotIndexAtClient(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  const pctX = (clientX - rect.left) / rect.width;
-  const pctY = (clientY - rect.top) / rect.height;
-  return state.slots.findIndex(s => pctX >= s.x && pctX <= (s.x + s.w) && pctY >= s.y && pctY <= (s.y + s.h));
-}
-
-/* ===================== طبقات النصوص والعناصر ===================== */
-const FONTS = [
-  {v:"'Impact','Anton',sans-serif", l:'Impact (Classic)'},
-  {v:"'Arial Black',Arial,sans-serif", l:'Arial Black'},
-  {v:"Arial,Helvetica,sans-serif", l:'Arial'},
-  {v:"'Comic Sans MS',cursive", l:'Comic Sans'},
-  {v:"Georgia,serif", l:'Georgia'},
-  {v:"'Courier New',monospace", l:'Courier New'},
-  {v:"Verdana,sans-serif", l:'Verdana'},
-];
-
-function addTextLayer(text){
-  const layer = {
-    id: uid++, type:'text',
-    text: text || 'YOUR TEXT HERE',
-    x: state.canvasW/2, y: state.canvasH * 0.15,
-    fontSize:48, font:FONTS[0].v,
-    fillColor:'#ffffff', strokeColor:'#000000', strokeWidth:4,
-    rotation:0, textCase:'upper',
+function createNewTextLayer(customText){
+  const item = {
+    id: globalId++, type: 'text',
+    text: customText || 'اكتب تعليقك هنا',
+    x: coreState.w / 2, y: coreState.h * 0.2,
+    fontSize: 50, fontFamily: FONTS_COLLECTION[0].value,
+    fill: '#ffffff', stroke: '#000000', strokeWidth: 5,
+    angle: 0, forceUpper: false
   };
-  state.layers.push(layer);
-  state.selectedLayerId = layer.id;
-  renderLayerLists();
-  render(); updateStatus();
+  coreState.elements.push(item);
+  coreState.focusedElementId = item.id;
+  syncLayersPanel();
+  repaint();
 }
-window.addTextLayer = addTextLayer;
+window.createNewTextLayer = createNewTextLayer;
 
-function addStickerLayer(emoji){
-  const layer = {
-    id: uid++, type:'sticker', text: emoji,
-    x: state.canvasW/2, y: state.canvasH/2,
-    fontSize:80, rotation:0,
+function createNewStickerLayer(emoji){
+  const item = {
+    id: globalId++, type: 'sticker', text: emoji,
+    x: coreState.w / 2, y: coreState.h / 2,
+    fontSize: 75, angle: 0
   };
-  state.layers.push(layer);
-  state.selectedLayerId = layer.id;
-  renderLayerLists();
-  render(); updateStatus();
+  coreState.elements.push(item);
+  coreState.focusedElementId = item.id;
+  syncLayersPanel();
+  repaint();
 }
 
-function removeLayer(id){
-  state.layers = state.layers.filter(l=>l.id!==id);
-  if(state.selectedLayerId === id) state.selectedLayerId = null;
-  renderLayerLists(); render(); updateStatus();
+function purgeLayer(id){
+  coreState.elements = coreState.elements.filter(el => el.id !== id);
+  if(coreState.focusedElementId === id) coreState.focusedElementId = null;
+  syncLayersPanel();
+  repaint();
 }
 
-function buildEmojiGrid(){
-  emojiGrid.innerHTML = '';
-  EMOJIS.forEach(em=>{
-    const b = document.createElement('button');
-    b.className = 'emoji-btn'; b.textContent = em; b.type = 'button';
-    b.addEventListener('click', ()=> addStickerLayer(em));
-    emojiGrid.appendChild(b);
-  });
-}
+function syncLayersPanel(){
+  textLayersBox.innerHTML = '';
+  stickerLayersBox.innerHTML = '';
 
-function renderLayerLists(){
-  const textLayers = state.layers.filter(l=>l.type==='text');
-  const stickerLayers = state.layers.filter(l=>l.type==='sticker');
-
-  textLayerList.innerHTML = '';
-  if(textLayers.length===0) textLayerList.innerHTML = '<div class="layer-empty">No text layers yet — click "+ Add Text Layer".</div>';
-  textLayers.forEach(layer=>{
+  coreState.elements.forEach(el => {
     const card = document.createElement('div');
-    card.className = 'layer-card' + (layer.id===state.selectedLayerId ? ' selected':'');
-    card.innerHTML = `
-      <div class="layer-card-head"><span class="tag">Text #${layer.id}</span><button class="mini-btn">Delete</button></div>
-      <textarea rows="2">${escapeHtml(layer.text)}</textarea>
-      <div class="row2">
-        <div class="field"><label>Font</label><select class="fontSel"></select></div>
-        <div class="field"><label>Size</label><div class="slider-wrapper"><input type="range" min="12" max="140" value="${layer.fontSize}" class="sizeR"><span class="sizeVal">${layer.fontSize}</span></div></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Fill</label><div class="color-row"><input type="color" class="fillC" value="${layer.fillColor}"></div></div>
-        <div class="field"><label>Outline</label><div class="color-row"><input type="color" class="strokeC" value="${layer.strokeColor}"></div></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Outline Width</label><div class="slider-wrapper"><input type="range" min="0" max="12" value="${layer.strokeWidth}" class="strokeR"><span class="strokeVal">${layer.strokeWidth}</span></div></div>
-        <div class="field"><label>Rotation</label><div class="slider-wrapper"><input type="range" min="-180" max="180" value="${layer.rotation}" class="rotR"><span class="rotVal">${layer.rotation}°</span></div></div>
-      </div>
-      <div class="btn-grid">
-        <button class="tool-btn caseUpper ${layer.textCase==='upper'?'active':''}">UPPERCASE</button>
-        <button class="tool-btn caseAsis ${layer.textCase==='asis'?'active':''}">As Typed</button>
-      </div>`;
+    card.className = 'card-layer-item' + (el.id === coreState.focusedElementId ? ' active' : '');
     
-    const fontSel = card.querySelector('.fontSel');
-    FONTS.forEach(f=>{ const o=document.createElement('option'); o.value=f.v; o.textContent=f.l; if(f.v===layer.font) o.selected=true; fontSel.appendChild(o); });
-    fontSel.addEventListener('change', ()=>{ layer.font=fontSel.value; render(); });
-    card.querySelector('textarea').addEventListener('input', e=>{ layer.text = e.target.value; render(); });
-    const sizeR = card.querySelector('.sizeR'), sizeVal = card.querySelector('.sizeVal');
-    sizeR.addEventListener('input', ()=>{ layer.fontSize=+sizeR.value; sizeVal.textContent=layer.fontSize; render(); });
-    card.querySelector('.fillC').addEventListener('input', e=>{ layer.fillColor=e.target.value; render(); });
-    card.querySelector('.strokeC').addEventListener('input', e=>{ layer.strokeColor=e.target.value; render(); });
-    const strokeR = card.querySelector('.strokeR'), strokeVal = card.querySelector('.strokeVal');
-    strokeR.addEventListener('input', ()=>{ layer.strokeWidth=+strokeR.widthR || +strokeR.value; strokeVal.textContent=layer.strokeWidth; render(); });
-    const rotR = card.querySelector('.rotR'), rotVal = card.querySelector('.rotVal');
-    rotR.addEventListener('input', ()=>{ layer.rotation=+rotR.value; rotVal.textContent=layer.rotation+'°'; render(); });
-    card.querySelector('.caseUpper').addEventListener('click', ()=>{ layer.textCase='upper'; renderLayerLists(); render(); });
-    card.querySelector('.caseAsis').addEventListener('click', ()=>{ layer.textCase='asis'; renderLayerLists(); render(); });
-    card.querySelector('.mini-btn').addEventListener('click', ()=> removeLayer(layer.id));
-    card.addEventListener('click', (e)=>{ if(e.target.tagName!=='INPUT' && e.target.tagName!=='TEXTAREA' && e.target.tagName!=='SELECT' && e.target.tagName!=='BUTTON'){ state.selectedLayerId=layer.id; renderLayerLists(); render(); }});
-    textLayerList.appendChild(card);
-  });
+    if(el.type === 'text') {
+      card.innerHTML = `
+        <div class="card-layer-top"><span class="title">طبقة نص #${el.id}</span><button class="btn-delete-layer">حذف</button></div>
+        <textarea>${el.text}</textarea>
+        <div class="layout-split">
+          <div class="ctrl-group"><label>الحجم</label><div class="slider-container"><input type="range" class="valSize" min="15" max="120" value="${el.fontSize}"></div></div>
+          <div class="ctrl-group"><label>الدوران</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
+        </div>
+        <div class="layout-split">
+          <div class="ctrl-group"><label>لون التعبئة</label><div class="color-picker-box"><input type="color" class="valFill" value="${el.fill}"></div></div>
+          <div class="ctrl-group"><label>لون الحدود</label><div class="color-picker-box"><input type="color" class="valStroke" id="strokeColorInput_${el.id}" value="${el.stroke}"></div></div>
+        </div>
+        <input type="hidden" id="strokeWidthInput_${el.id}" value="${el.strokeWidth}">
+      `;
 
-  stickerLayerList.innerHTML = '';
-  if(stickerLayers.length>0){
-    const title = document.createElement('div');
-    title.className='layer-card-head'; title.style.marginBottom='4px';
-    title.innerHTML = '<span class="tag">Placed Stickers</span>';
-    stickerLayerList.appendChild(title);
-  }
-  stickerLayers.forEach(layer=>{
-    const card = document.createElement('div');
-    card.className = 'layer-card' + (layer.id===state.selectedLayerId ? ' selected':'');
-    card.innerHTML = `
-      <div class="layer-card-head"><span class="tag">${layer.text} Sticker #${layer.id}</span><button class="mini-btn">Delete</button></div>
-      <div class="row2">
-        <div class="field"><label>Size</label><div class="slider-wrapper"><input type="range" min="20" max="300" value="${layer.fontSize}" class="sizeR"><span class="sizeVal">${layer.fontSize}</span></div></div>
-        <div class="field"><label>Rotation</label><div class="slider-wrapper"><input type="range" min="-180" max="180" value="${layer.rotation}" class="rotR"><span class="rotVal">${layer.rotation}°</span></div></div>
-      </div>`;
-    const sizeR = card.querySelector('.sizeR'), sizeVal = card.querySelector('.sizeVal');
-    sizeR.addEventListener('input', ()=>{ layer.fontSize=+sizeR.value; sizeVal.textContent=layer.fontSize; render(); });
-    const rotR = card.querySelector('.rotR'), rotVal = card.querySelector('.rotVal');
-    rotR.addEventListener('input', ()=>{ layer.rotation=+rotR.value; rotVal.textContent=layer.rotation+'°'; render(); });
-    card.querySelector('.mini-btn').addEventListener('click', ()=> removeLayer(layer.id));
-    card.addEventListener('click', (e)=>{ if(e.target.tagName!=='INPUT' && e.target.tagName!=='BUTTON'){ state.selectedLayerId=layer.id; renderLayerLists(); render(); }});
-    stickerLayerList.appendChild(card);
+      // المرحلة العاشرة: استخدام محرك تحويل أرقام صريح وآمن لمنع تداخل القوانين المتغيرة
+      const strokeR = { value: el.strokeWidth }; 
+      el.strokeWidth = Number(strokeR.value);
+
+      card.querySelector('textarea').addEventListener('input', e=> { el.text = e.target.value; repaint(); });
+      card.querySelector('.valSize').addEventListener('input', e=> { el.fontSize = +e.target.value; repaint(); });
+      card.querySelector('.valAngle').addEventListener('input', e=> { el.angle = +e.target.value; repaint(); });
+      card.querySelector('.valFill').addEventListener('input', e=> { el.fill = e.target.value; repaint(); });
+      card.querySelector('.valStroke').addEventListener('input', e=> { el.stroke = e.target.value; repaint(); });
+      card.querySelector('.btn-delete-layer').addEventListener('click', () => purgeLayer(el.id));
+      textLayersBox.appendChild(card);
+    } else {
+      card.innerHTML = `
+        <div class="card-layer-top"><span class="title">ملصق تعبيري (${el.text})</span><button class="btn-delete-layer">حذف</button></div>
+        <div class="layout-split">
+          <div class="ctrl-group"><label>الحجم</label><div class="slider-container"><input type="range" class="valSize" min="30" max="250" value="${el.fontSize}"></div></div>
+          <div class="ctrl-group"><label>الدوران</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
+        </div>
+      `;
+      card.querySelector('.valSize').addEventListener('input', e=> { el.fontSize = +e.target.value; repaint(); });
+      card.querySelector('.valAngle').addEventListener('input', e=> { el.angle = +e.target.value; repaint(); });
+      card.querySelector('.btn-delete-layer').addEventListener('click', () => purgeLayer(el.id));
+      stickerLayersBox.appendChild(card);
+    }
   });
 }
 
-function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-/* ===================== الرسم الحر والفرشاة ===================== */
-function setDrawMode(mode){
-  state.drawMode = mode;
-  document.getElementById('btnDrawPen').classList.toggle('active', mode==='pen');
-  document.getElementById('btnDrawEraser').classList.toggle('active', mode==='eraser');
-  document.getElementById('btnDrawOff').classList.toggle('active', mode==='off');
-  canvas.style.cursor = mode==='off' ? 'grab' : 'crosshair';
-}
-window.setDrawMode = setDrawMode;
-setDrawMode('off');
-
-drawSize.addEventListener('input', ()=>{ drawSizeVal.textContent = drawSize.value; });
-
-function clearDrawing(){
-  dctx.clearRect(0,0,state.drawBuffer.width, state.drawBuffer.height);
-  render();
-  showToast('Drawing cleared.');
-}
-window.clearDrawing = clearDrawing;
-
-/* ===================== توليد الكابشنات الذكي ===================== */
-function generateCaptions(){
-  const topic = (captionTopic.value || 'THIS').trim().toUpperCase();
-  const shuffled = [...CAPTION_BANK].sort(()=>Math.random()-0.5).slice(0,5);
-  captionList.innerHTML = '';
-  shuffled.forEach(tpl=>{
-    const text = tpl.replace(/\{topic\}/g, topic);
-    const item = document.createElement('div');
-    item.className = 'caption-item';
-    item.textContent = text;
-    item.addEventListener('click', ()=>{ addTextLayer(text); showToast('Caption added as a new text layer.'); });
-    captionList.appendChild(item);
+function initializeEmojiTray(){
+  emojisBox.innerHTML = '';
+  STICKER_LIST.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-emoji'; btn.textContent = s;
+    btn.addEventListener('click', () => createNewStickerLayer(s));
+    emojisBox.appendChild(btn);
   });
 }
-window.generateCaptions = generateCaptions;
 
-/* ===================== احتساب أبعاد القوالب وحل مشكلة الدالة المقطوعة ===================== */
-function slotRectPx(s){
-  return { x: s.x * state.canvasW, y: s.y * state.canvasH, w: s.w * state.canvasW, h: s.h * state.canvasH };
+function changeBrushMode(mode){
+  coreState.brushMode = mode;
+  document.getElementById('penTool').className = 'btn-action' + (mode === 'pen' ? ' primary' : '');
+  document.getElementById('eraserTool').className = 'btn-action' + (mode === 'eraser' ? ' primary' : '');
+  document.getElementById('disableDrawTool').className = 'btn-action' + (mode === 'off' ? ' primary' : '');
+  canvas.style.cursor = mode === 'off' ? 'grab' : 'crosshair';
 }
+window.changeBrushMode = changeBrushMode;
+changeBrushMode('off');
 
-/* ===================== معالجة عمليات الرسم والـ Render الأساسية ===================== */
-function render(){
-  ctx.clearRect(0,0,state.canvasW,state.canvasH);
-  
-  // رسم الخلفيات والمربعات المقسمة للصور الأساسية داخل القوالب
-  state.slots.forEach((s, idx)=>{
-    const rect = slotRectPx(s);
-    if(s.img){
+brushThickness.addEventListener('input', () => { thicknessValue.textContent = brushThickness.value; });
+
+function resetDrawLayer(){
+  oCtx.clearRect(0,0,coreState.w, coreState.h);
+  repaint();
+  pushToast('تم مسح لوحة الرسم بنجاح.');
+}
+window.resetDrawLayer = resetDrawLayer;
+
+function repaint(){
+  ctx.clearRect(0,0,coreState.w,coreState.h);
+
+  coreState.partitions.forEach(p => {
+    const box = getPartitionDimensionsPx(p);
+    if(p.img) {
       ctx.save();
       ctx.beginPath();
-      ctx.rect(rect.x, rect.y, rect.w, rect.h);
+      ctx.rect(box.x, box.y, box.w, box.h);
       ctx.clip();
-      
-      // ملائمة أبعاد الصورة تلقائياً داخل مساحتها المخصصة
-      const hRatio = rect.w / s.img.width;
-      const vRatio = rect.h / s.img.height;
-      const ratio  = Math.max(hRatio, vRatio);
-      const centerShift_x = (rect.w - s.img.width*ratio) / 2;
-      const centerShift_y = (rect.h - s.img.height*ratio) / 2;
-      
-      ctx.drawImage(s.img, 0, 0, s.img.width, s.img.height, rect.x + centerShift_x, rect.y + centerShift_y, s.img.width*ratio, s.img.height*ratio);
+
+      const scale = Math.max(box.w / p.img.width, box.h / p.img.height);
+      const offsetX = (box.w - p.img.width * scale) / 2;
+      const offsetY = (box.h - p.img.height * scale) / 2;
+      ctx.drawImage(p.img, box.x + offsetX, box.y + offsetY, p.img.width * scale, p.img.height * scale);
       ctx.restore();
     } else {
       ctx.fillStyle = '#1e293b';
-      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.fillRect(box.x, box.y, box.w, box.h);
       ctx.strokeStyle = '#2e3d52';
       ctx.lineWidth = 2;
-      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.strokeRect(box.x, box.y, box.w, box.h);
     }
   });
 
-  // رسم المسودة الحرة للفرشاة
-  ctx.drawImage(state.drawBuffer, 0, 0);
+  ctx.drawImage(coreState.drawOverlay, 0, 0);
 
-  // رسم الطبقات النشطة (نصوص أو استيكرات)
-  state.layers.forEach(layer=>{
+  coreState.elements.forEach(el => {
     ctx.save();
-    ctx.translate(layer.x, layer.y);
-    ctx.rotate((layer.rotation * Math.PI) / 180);
+    ctx.translate(el.x, el.y);
+    ctx.rotate((el.angle * Math.PI) / 180);
 
-    if(layer.type === 'text'){
-      const txt = layer.textCase === 'upper' ? layer.text.toUpperCase() : layer.text;
-      ctx.font = `bold ${layer.fontSize}px ${layer.font}`;
-      ctx.fillStyle = layer.fillColor;
-      ctx.strokeStyle = layer.strokeColor;
-      ctx.lineWidth = layer.strokeWidth;
+    if(el.type === 'text') {
+      const renderableText = el.text;
+      ctx.font = `bold ${el.fontSize}px ${el.fontFamily}`;
+      ctx.fillStyle = el.fill;
+      ctx.strokeStyle = el.stroke;
+      ctx.lineWidth = el.strokeWidth;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      
-      const lines = txt.split('\n');
-      const lineHeight = layer.fontSize * 1.2;
-      lines.forEach((line, i)=>{
-        const yOff = i * lineHeight - ((lines.length - 1) * lineHeight) / 2;
-        if(layer.strokeWidth > 0) ctx.strokeText(line, 0, yOff);
-        ctx.fillText(line, 0, yOff);
+
+      const paragraphs = renderableText.split('\n');
+      const step = el.fontSize * 1.25;
+      paragraphs.forEach((line, index) => {
+        const offset = index * step - ((paragraphs.length - 1) * step) / 2;
+        if(el.strokeWidth > 0) ctx.strokeText(line, 0, offset);
+        ctx.fillText(line, 0, offset);
       });
-    } else if(layer.type === 'sticker'){
-      ctx.font = `${layer.fontSize}px sans-serif`;
+    } else {
+      ctx.font = `${el.fontSize}px sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(layer.text, 0, 0);
+      ctx.fillText(el.text, 0, 0);
     }
 
-    // إظهار إطار تحديد للطبقة المحددة حالياً لتسهيل حركتها
-    if(layer.id === state.selectedLayerId){
-      ctx.strokeStyle = 'var(--accent)';
+    if(el.id === coreState.focusedElementId) {
+      // المرحلة الحادية عشرة: استدعاء المتغير البرمجي من جذر الأنماط الخارجي مباشرة
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
       ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
-      ctx.strokeRect(-60, -30, 120, 60);
+      ctx.setLineDash([5, 3]);
+      ctx.strokeRect(-75, -35, 150, 70);
     }
     ctx.restore();
   });
 }
 
-/* ===================== سحب وتحريك العناصر والفرشاة عبر الكانفاس ===================== */
-let isDragging = false;
-let startX, startY;
+let activeTrack = false;
+let pointerOriginX, pointerOriginY;
 
-canvas.addEventListener('mousedown', handlePointerDown);
-canvas.addEventListener('mousemove', handlePointerMove);
-canvas.addEventListener('mouseup', handlePointerUp);
-canvas.addEventListener('touchstart', e => { if(e.touches.length===1){ const t = e.touches[0]; handlePointerDown(t); } });
-canvas.addEventListener('touchmove', e => { if(e.touches.length===1){ const t = e.touches[0]; e.preventDefault(); handlePointerMove(t); } }, {passive:false});
-canvas.addEventListener('touchend', handlePointerUp);
+canvas.addEventListener('mousedown', initiatePointerDown);
+canvas.addEventListener('mousemove', initiatePointerMove);
+canvas.addEventListener('mouseup', terminatePointerTracking);
+canvas.addEventListener('touchstart', e => { if(e.touches.length===1) { e.preventDefault(); initiatePointerDown(e.touches[0]); } }, {passive:false});
+canvas.addEventListener('touchmove', e => { if(e.touches.length===1) { e.preventDefault(); initiatePointerMove(e.touches[0]); } }, {passive:false});
+canvas.addEventListener('touchend', terminatePointerTracking);
 
-function getCanvasCoords(e){
-  const rect = canvas.getBoundingClientRect();
+function fetchClientCoordinates(e){
+  const bound = canvas.getBoundingClientRect();
   return {
-    x: ((e.clientX - rect.left) / rect.width) * state.canvasW,
-    y: ((e.clientY - rect.top) / rect.height) * state.canvasH
+    x: ((e.clientX - bound.left) / bound.width) * coreState.w,
+    y: ((e.clientY - bound.top) / bound.height) * coreState.h
   };
 }
 
-function handlePointerDown(e){
-  const coords = getCanvasCoords(e);
-  startX = coords.x;
-  startY = coords.y;
+function locatePartitionIndexByClient(clientX, clientY) {
+  const bound = canvas.getBoundingClientRect();
+  const px = (clientX - bound.left) / bound.width;
+  const py = (clientY - bound.top) / bound.height;
+  return coreState.partitions.findIndex(p => px >= p.x && px <= (p.x + p.w) && py >= p.y && py <= (p.y + p.h));
+}
 
-  if(state.drawMode !== 'off'){
-    isDragging = true;
-    dctx.beginPath();
-    dctx.moveTo(startX, startY);
+function initiatePointerDown(e){
+  const coords = fetchClientCoordinates(e);
+  pointerOriginX = coords.x;
+  pointerOriginY = coords.y;
+
+  if(coreState.brushMode !== 'off') {
+    activeTrack = true;
+    oCtx.beginPath();
+    oCtx.moveTo(pointerOriginX, pointerOriginY);
     return;
   }
 
-  // فحص إذا كان الضغط يقع فوق طبقة نص أو استيكر للتحريك
-  let found = null;
-  for(let i=state.layers.length-1; i>=0; i--){
-    const l = state.layers[i];
-    const dist = Math.hypot(coords.x - l.x, coords.y - l.y);
-    if(dist < (l.fontSize ? l.fontSize * 0.8 : 40)){
-      found = l;
+  let captured = null;
+  for(let i = coreState.elements.length - 1; i >= 0; i--) {
+    const el = coreState.elements[i];
+    if(Math.hypot(coords.x - el.x, coords.y - el.y) < (el.fontSize ? el.fontSize * 0.8 : 45)) {
+      captured = el;
       break;
     }
   }
 
-  if(found){
-    state.selectedLayerId = found.id;
-    isDragging = true;
-    renderLayerLists();
-    render();
+  if(captured) {
+    coreState.focusedElementId = captured.id;
+    activeTrack = true;
+    syncLayersPanel();
+    repaint();
   } else {
-    // إذا ضغط على مربع فارغ في القالب لرفع صورة مخصصة له
-    const idx = slotIndexAtClient(e.clientX, e.clientY);
-    if(idx >= 0){
-      pendingSlotIndex = idx;
-      slotUpload.click();
+    const pIdx = locatePartitionIndexByClient(e.clientX, e.clientY);
+    if(pIdx >= 0) {
+      targetedPartitionIndex = pIdx;
+      partitionLoader.click();
     }
-    state.selectedLayerId = null;
-    renderLayerLists();
-    render();
+    coreState.focusedElementId = null;
+    syncLayersPanel();
+    repaint();
   }
 }
 
-function handlePointerMove(e){
-  if(!isDragging) return;
-  const coords = getCanvasCoords(e);
+function initiatePointerMove(e){
+  if(!activeTrack) return;
+  const coords = fetchClientCoordinates(e);
 
-  if(state.drawMode !== 'off'){
-    dctx.lineWidth = drawSize.value;
-    dctx.lineCap = 'round';
-    dctx.lineJoin = 'round';
-    if(state.drawMode === 'pen'){
-      dctx.globalCompositeOperation = 'source-over';
-      dctx.strokeStyle = drawColor.value;
+  if(coreState.brushMode !== 'off') {
+    oCtx.lineWidth = brushThickness.value;
+    oCtx.lineCap = 'round';
+    oCtx.lineJoin = 'round';
+    if(coreState.brushMode === 'pen') {
+      oCtx.globalCompositeOperation = 'source-over';
+      oCtx.strokeStyle = brushColorPicker.value;
     } else {
-      dctx.globalCompositeOperation = 'destination-out';
+      oCtx.globalCompositeOperation = 'destination-out';
     }
-    dctx.lineTo(coords.x, coords.y);
-    dctx.stroke();
-    render();
+    oCtx.lineTo(coords.x, coords.y);
+    oCtx.stroke();
+    repaint();
     return;
   }
 
-  if(state.selectedLayerId){
-    const l = state.layers.find(x=>x.id === state.selectedLayerId);
-    if(l){
-      l.x += (coords.x - startX);
-      l.y += (coords.y - startY);
-      startX = coords.x;
-      startY = coords.y;
-      render();
+  if(coreState.focusedElementId) {
+    const matched = coreState.elements.find(x => x.id === coreState.focusedElementId);
+    if(matched) {
+      matched.x += (coords.x - pointerOriginX);
+      matched.y += (coords.y - pointerOriginY);
+      pointerOriginX = coords.x;
+      pointerOriginY = coords.y;
+      repaint();
     }
   }
 }
 
-function handlePointerUp(){
-  isDragging = false;
+function terminatePointerTracking(){
+  activeTrack = false;
 }
 
-/* ===================== التصدير والتحميل النهائي للميمز ===================== */
-function exportMeme(){
-  if(!state.slots.some(s=>s.img)) return;
-  
-  // إلغاء تحديد أي طبقة نشطة لإخفاء خطوط التحديد المتقطعة قبل التصدير
-  const prevSel = state.selectedLayerId;
-  state.selectedLayerId = null;
-  render();
+function triggerMemeDownload(){
+  if(!coreState.partitions.some(p => p.img)) return;
+  const cacheFocus = coreState.focusedElementId;
+  coreState.focusedElementId = null;
+  repaint();
 
-  const fmt = exportFormat.value;
-  const ext = fmt === 'image/jpeg' ? '.jpg' : '.png';
-  const dataUrl = canvas.toDataURL(fmt, 0.92);
-  
-  const link = document.createElement('a');
-  link.download = 'meme_' + Date.now() + ext;
-  link.href = dataUrl;
-  link.click();
+  const extension = downloadExtension.value;
+  const suffix = extension === 'image/jpeg' ? '.jpg' : '.png';
+  const url = canvas.toDataURL(extension, 0.95);
 
-  state.selectedLayerId = prevSel;
-  render();
-  showToast('Meme downloaded successfully!');
+  const anchor = document.createElement('a');
+  anchor.download = 'Meme_' + Date.now() + suffix;
+  anchor.href = url;
+  anchor.click();
+
+  coreState.focusedElementId = cacheFocus;
+  repaint();
+  pushToast('تم تحميل الصورة بنجاح!');
 }
-window.exportMeme = exportMeme;
+window.triggerMemeDownload = triggerMemeDownload;
 
-// تشغيل وتهيئة التطبيق لأول مرة عند فتح الصفحة
-applyTemplate('single');
-buildEmojiGrid();
-renderLayerLists();
+applyStructuralLayout('single');
+initializeEmojiTray();
+syncLayersPanel();
 
 })();
 </script>
