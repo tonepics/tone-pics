@@ -5,139 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tone.pics | Animated GIF Maker</title>
     <style>
-        :root{ --bg:#0e0f12; --panel:#15171c; --panel2:#1b1e24; --line:#2a2d34; --text:#e9eaee; --muted:#9a9ea8; --accent:#ffd23f; --danger:#ff5d5d; }
-        *{ box-sizing:border-box; }
-        body{ margin:0; background:var(--bg); color:var(--text); font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial; min-height:100vh; }
-        .header{ height:60px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; padding:0 20px; gap:15px; }
-        .back-btn{ background:var(--panel2); color:var(--text); border:1px solid var(--line); padding:8px 15px; border-radius:8px; cursor:pointer; text-decoration:none; font-size:14px; }
-        .back-btn:hover{ border-color:var(--accent); color:var(--accent); }
-        .logo{ font-size:20px; font-weight:800; }
-        .logo span{ background:var(--accent); color:#111; padding:3px 7px; border-radius:5px; font-size:12px; }
-        .container{ max-width:1100px; margin:auto; padding:25px; display:grid; grid-template-columns:350px 1fr; gap:20px; }
-        .panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; }
-        h2{ margin-top:0; font-size:18px; }
-        .drop-zone{ border:2px dashed var(--line); border-radius:12px; padding:35px 20px; text-align:center; cursor:pointer; color:var(--muted); display:block; }
-        .drop-zone:hover{ border-color:var(--accent); color:var(--accent); }
-        input[type=file]{ display:none; }
-        button{ background:var(--panel2); border:1px solid var(--line); color:var(--text); padding:10px 15px; border-radius:8px; cursor:pointer; }
-        button:hover{ border-color:var(--accent); color:var(--accent); }
-        .primary{ background:var(--accent); color:#111; font-weight:800; border:none; }
-        .primary:hover{ background:#ffe27a; }
-        .images-list{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
-        .image-card{ width:110px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:8px; position:relative; }
-        .image-card img{ width:100%; height:80px; object-fit:cover; border-radius:6px; }
-        .remove{ position:absolute; top:5px; right:5px; background:var(--danger); color:white; border:none; width:22px; height:22px; border-radius:50%; padding:0; cursor:pointer; }
-        .control{ margin-top:15px; }
-        label{ display:block; color:var(--muted); font-size:13px; margin-bottom:6px; }
-        input[type=range], select{ width:100%; background:var(--panel2); color:white; padding:8px; border:1px solid var(--line); border-radius:8px; }
-        .preview{ min-height:400px; display:flex; align-items:center; justify-content:center; background:#08090b; border-radius:12px; border:1px solid var(--line); }
-        #previewImage{ max-width:100%; max-height:380px; border-radius:10px; }
-        .actions{ margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; }
-        .status{ margin-top:15px; color:var(--muted); font-size:14px; }
-        @media(max-width:800px){ .container{ grid-template-columns:1fr; } }
+        :root{ --bg:#0e0f12; --panel:#15171c; --panel2:#1b1e24; --line:#2a2d34; --text:#e9eaee; --accent:#ffd23f; }
+        body{ background:var(--bg); color:var(--text); font-family: sans-serif; margin:0; padding:20px; }
+        .container{ max-width: 800px; margin: auto; background: var(--panel); padding: 30px; border-radius: 14px; border: 1px solid var(--line); }
+        h2{ color: var(--text); margin-top: 0; }
+        .drop-zone{ border: 2px dashed var(--line); padding: 30px; text-align: center; cursor: pointer; color: var(--accent); border-radius: 10px; margin-bottom: 20px; }
+        .controls{ display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+        button{ background: var(--accent); color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #previewImage{ max-width: 100%; border-radius: 8px; margin-top: 20px; display: none; }
+        #downloadBtn{ display: none; background: #28a745; color: white; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <header class="header">
-        <a href="../index.html" class="back-btn">← Back</a>
-        <div class="logo">Tone.pics <span>GIF MAKER</span></div>
-    </header>
-    <div class="container">
-        <div class="panel">
-            <h2>🎬 Animated GIF Maker</h2>
-            <label class="drop-zone" id="dropZone">
-                Click or Drop Images Here
-                <input type="file" id="fileInput" accept="image/*" multiple>
-            </label>
-            <div class="images-list" id="imagesList"></div>
-            <div class="control">
-                <label>Frame Duration (ms)</label>
-                <input type="range" id="duration" min="100" max="2000" value="500">
-                <p id="durationValue">500 ms</p>
-            </div>
-            <div class="control">
-                <label>GIF Size</label>
-                <select id="gifSize">
-                    <option value="512">512px</option>
-                    <option value="256" selected>256px</option>
-                    <option value="128">128px</option>
-                </select>
-            </div>
-            <div class="actions" id="actionContainer">
-                <button class="primary" id="createBtn">Generate GIF</button>
-                <button id="clearBtn">Clear</button>
-            </div>
-            <div class="status" id="status">No images selected</div>
-        </div>
-        <div class="panel">
-            <h2>Preview</h2>
-            <div class="preview"><img id="previewImage"></div>
-        </div>
+
+<div class="container">
+    <h2>Animated GIF Maker</h2>
+    <div class="drop-zone" id="dropZone">Click to upload images</div>
+    <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+    
+    <div class="controls">
+        <button id="createBtn">Generate GIF</button>
+        <a id="downloadBtn">Download GIF</a>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
-    <script>
-        const fileInput = document.getElementById("fileInput"), dropZone = document.getElementById("dropZone"), imagesList = document.getElementById("imagesList"), duration = document.getElementById("duration"), durationValue = document.getElementById("durationValue"), previewImage = document.getElementById("previewImage"), createBtn = document.getElementById("createBtn"), clearBtn = document.getElementById("clearBtn"), status = document.getElementById("status"), gifSize = document.getElementById("gifSize");
+    
+    <p id="status"></p>
+    <img id="previewImage">
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const createBtn = document.getElementById('createBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const status = document.getElementById('status');
+    const preview = document.getElementById('previewImage');
+
+    dropZone.onclick = () => fileInput.click();
+
+    createBtn.onclick = () => {
+        if(fileInput.files.length === 0) return alert("Please select images first!");
+        status.innerText = "Processing... Please wait.";
+        
         let images = [];
-
-        dropZone.onclick = () => fileInput.click();
-        fileInput.onchange = e => addFiles(e.target.files);
-
-        function addFiles(files){
-            [...files].forEach(file => {
-                if(!file.type.startsWith("image/")) return;
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => { images.push(img); renderImages(); };
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function renderImages(){
-            imagesList.innerHTML="";
-            images.forEach((img, index) => {
-                const card = document.createElement("div");
-                card.className = "image-card";
-                card.innerHTML = `<img src="${img.src}"><button class="remove">×</button>`;
-                card.querySelector(".remove").onclick = () => { images.splice(index,1); renderImages(); };
-                imagesList.appendChild(card);
-            });
-            status.innerHTML = images.length + " image(s) loaded";
-        }
-
-        createBtn.onclick = () => {
-            if(images.length < 1) { alert("Please upload images first"); return; }
-            status.innerHTML = "Processing GIF... Please wait";
-            const size = Number(gifSize.value);
-            const gif = new GIF({ workers: 2, quality: 10, width: size, height: size });
-
-            images.forEach(img => {
-                const canvas = document.createElement("canvas");
-                canvas.width = size; canvas.height = size;
-                const ctx = canvas.getContext("2d");
-                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size);
-                const ratio = Math.max(size/img.width, size/img.height);
-                const w = img.width * ratio, h = img.height * ratio;
-                ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
-                gif.addFrame(canvas, { delay: Number(duration.value) });
-            });
-
-            gif.on("finished", blob => {
-                const url = URL.createObjectURL(blob);
-                previewImage.src = url;
-                const download = document.createElement("a");
-                download.href = url;
-                download.download = "generated-gif.gif";
-                download.innerHTML = "Download GIF";
-                download.className = "primary";
-                download.style.cssText = "display:inline-block; text-decoration:none; padding:10px 15px; margin-top:15px; border-radius:8px;";
-                status.innerHTML = "Success! 🎉";
-                document.getElementById("actionContainer").appendChild(download);
-            });
-            gif.render();
-        };
-    </script>
+        let files = Array.from(fileInput.files);
+        
+        files.forEach(file => {
+            let reader = new FileReader();
+            reader.onload = (e) => {
+                images.push(e.target.result);
+                if(images.length === files.length) {
+                    gifshot.createGIF({
+                        images: images,
+                        gifWidth: 400,
+                        gifHeight: 400,
+                        interval: 0.5
+                    }, (obj) => {
+                        if(!obj.error) {
+                            preview.src = obj.image;
+                            preview.style.display = "block";
+                            downloadBtn.href = obj.image;
+                            downloadBtn.download = "animated.gif";
+                            downloadBtn.style.display = "inline-block";
+                            status.innerText = "Done!";
+                        }
+                    });
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+</script>
 </body>
 </html>
