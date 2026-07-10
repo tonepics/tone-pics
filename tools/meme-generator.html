@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
@@ -11,87 +11,101 @@
 <body>
 
 <div class="app-container">
+  <!-- Stage 3 & 4: Tool Header & Back Button -->
   <header class="tool-header">
     <a href="../index.html" class="back-button">← Back to Tools</a>
+    <!-- Stage 2: App Name Branding -->
     <h1>Tone.pics <span>Meme Generator</span></h1>
     <p>Create memes with text, stickers, templates and drawing.</p>
   </header>
 
+  <!-- Main Workspace Grid -->
   <div class="workspace-grid">
     <div class="control-sidebar">
 
+      <!-- Card 1: Canvas Preparation & Templates -->
       <div class="tool-card">
+        <!-- Stage 9: Changed to Templates -->
         <div class="tool-card-header">1 · Templates</div>
         <div class="tool-card-body">
+          <!-- Stage 5: Changed to Upload Image -->
           <label for="imgLoader" class="zone-upload">
             <span>📂 Upload Image</span>
           </label>
           <input type="file" id="imgLoader" accept="image/*" style="display:none;">
 
           <div class="ctrl-group">
-            <label>تقسيمات الصور المتعددة</label>
+            <label>Layout Split Options</label>
             <div class="grid-templates" id="templatesContainer"></div>
           </div>
         </div>
       </div>
 
+      <!-- Card 2: Text Layers & Editor -->
       <div class="tool-card">
+        <!-- Stage 8: Changed to Caption Generator -->
         <div class="tool-card-header">2 · Caption Generator</div>
         <div class="tool-card-body">
-          <button class="btn-action primary" onclick="createNewTextLayer()">+ إضافة طبقة نص جديدة</button>
+          <button class="btn-action primary" onclick="createNewTextLayer()">+ Add New Text Layer</button>
           <div id="textLayersBox" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
       </div>
 
+      <!-- Card 3: Stickers & Emojis -->
       <div class="tool-card">
-        <div class="tool-card-header">3 · التعبيرات والملصقات</div>
+        <div class="tool-card-header">3 · Stickers & Emojis</div>
         <div class="tool-card-body">
           <div class="grid-emojis" id="emojisBox"></div>
           <div id="stickerLayersBox" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
       </div>
 
+      <!-- Card 4: Drawing Board & Brush -->
       <div class="tool-card">
-        <div class="tool-card-header">4 · الرسم والفرشاة الحرة</div>
+        <div class="tool-card-header">4 · Brush & Free Drawing</div>
         <div class="tool-card-body">
           <div class="layout-split">
-            <button class="btn-action" id="penTool" onclick="changeBrushMode('pen')">🖌️ قلم</button>
-            <button class="btn-action" id="eraserTool" onclick="changeBrushMode('eraser')">🧼 ممحاة</button>
+            <button class="btn-action" id="penTool" onclick="changeBrushMode('pen')"> My 🖌️ Pen</button>
+            <button class="btn-action" id="eraserTool" onclick="changeBrushMode('eraser')">🧼 Eraser</button>
           </div>
-          <button class="btn-action" id="disableDrawTool" onclick="changeBrushMode('off')" style="width:100%;">وضع التحديد العادي (مغلق)</button>
+          <button class="btn-action" id="disableDrawTool" onclick="changeBrushMode('off')" style="width:100%;">Selection Mode (Disabled)</button>
           
           <div class="layout-split">
             <div class="ctrl-group">
-              <label>اللون</label>
-              <div class="color-picker-box"><input type="color" id="brushColorPicker" value="#ef4444"><span>اللون</span></div>
+              <label>Color</label>
+              <div class="color-picker-box"><input type="color" id="brushColorPicker" value="#ef4444"><span>Color</span></div>
             </div>
             <div class="ctrl-group">
-              <label>الحجم</label>
+              <label>Size</label>
               <div class="slider-container"><input type="range" id="brushThickness" min="2" max="40" value="8"><span id="thicknessValue">8</span></div>
             </div>
           </div>
-          <button class="btn-action danger" onclick="resetDrawLayer()" style="width:100%;">مسح لوحة الرسم بالكامل</button>
+          <button class="btn-action danger" onclick="resetDrawLayer()" style="width:100%;">Clear Drawing Board</button>
         </div>
       </div>
 
     </div>
 
+    <!-- Canvas Preview Stage -->
     <div class="preview-theater checkerboard" id="theaterZone">
       <div class="empty-stage-hint" id="stageHint">
-        <h3>ابدأ صناعة الميم الخاص بك الآن</h3>
-        <p>ارفع الصورة الأساسية، أو اختر قالباً مقسماً للبدء فوراً.</p>
+        <h3>Start Making Your Meme Now</h3>
+        <p>Upload your base image or select a grid layout template to begin.</p>
       </div>
       <canvas id="memeCanvas" width="800" height="800"></canvas>
     </div>
   </div>
 
+  <!-- Unified Bottom Footer Bar -->
   <div class="footer-bar">
+    <!-- Stage 7: Changed to Ready -->
     <div class="engine-status" id="dimensionsLabel">Ready</div>
     <div class="download-cluster">
       <select id="downloadExtension">
-        <option value="image/png">صيغة PNG</option>
-        <option value="image/jpeg">صيغة JPEG</option>
+        <option value="image/png">PNG Format</option>
+        <option value="image/jpeg">JPEG Format</option>
       </select>
+      <!-- Stage 6: Changed to Download -->
       <button class="btn-download" id="downloadTrigger" onclick="triggerMemeDownload()" disabled>Download</button>
     </div>
   </div>
@@ -122,17 +136,17 @@ const brushThickness = document.getElementById('brushThickness');
 const thicknessValue = document.getElementById('thicknessValue');
 
 const STRUCTS = [
-  {id:'single', name:'صورة واحدة', blocks:[{x:0,y:0,w:1,h:1}]},
-  {id:'side2', name:'قسمين طوليين', blocks:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
-  {id:'stack2', name:'قسمين عرضيين', blocks:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
-  {id:'grid4', name:'4 أقسام', blocks:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
+  {id:'single', name:'1 Frame', blocks:[{x:0,y:0,w:1,h:1}]},
+  {id:'side2', name:'2 Columns', blocks:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
+  {id:'stack2', name:'2 Rows', blocks:[{x:0,y:0,w:1,h:.5},{x:0,y:.5,w:1,h:.5}]},
+  {id:'grid4', name:'4 Grid', blocks:[{x:0,y:0,w:.5,h:.5},{x:.5,y:0,w:.5,h:.5},{x:0,y:.5,w:.5,h:.5},{x:.5,y:.5,w:.5,h:.5}]},
 ];
 
 const STICKER_LIST = ['😀','😂','😍','😎','🤔','😭','🔥','💯','👍','❤️','💀','💥','🚀','🎯','✨'];
 const FONTS_COLLECTION = [
-  {value:"'Impact',sans-serif", label:'إمباكت'},
-  {value:"'Arial Black',sans-serif", label:'أريال بولد'},
-  {value:"sans-serif", label:'عادي'}
+  {value:"'Impact',sans-serif", label:'Impact'},
+  {value:"'Arial Black',sans-serif", label:'Arial Bold'},
+  {value:"sans-serif", label:'Default'}
 ];
 
 let globalId = 1;
@@ -196,7 +210,7 @@ function evaluateHintVisibility(){
   stageHint.classList.toggle('hidden', hasImage);
   downloadTrigger.disabled = !hasImage;
   if(hasImage) {
-    dimensionsLabel.textContent = `الدقة الحالية: ${coreState.w} × ${coreState.h} بكسل`;
+    dimensionsLabel.textContent = `Resolution: ${coreState.w} × ${coreState.h} px`;
   } else {
     dimensionsLabel.textContent = 'Ready';
   }
@@ -247,7 +261,7 @@ imgLoader.addEventListener('change', e=>{
 function createNewTextLayer(customText){
   const item = {
     id: globalId++, type: 'text',
-    text: customText || 'اكتب تعليقك هنا',
+    text: customText || 'Type text here',
     x: coreState.w / 2, y: coreState.h * 0.2,
     fontSize: 50, fontFamily: FONTS_COLLECTION[0].value,
     fill: '#ffffff', stroke: '#000000', strokeWidth: 5,
@@ -289,20 +303,20 @@ function syncLayersPanel(){
     
     if(el.type === 'text') {
       card.innerHTML = `
-        <div class="card-layer-top"><span class="title">طبقة نص #${el.id}</span><button class="btn-delete-layer">حذف</button></div>
+        <div class="card-layer-top"><span class="title">Text Layer #${el.id}</span><button class="btn-delete-layer">Remove</button></div>
         <textarea>${el.text}</textarea>
         <div class="layout-split">
-          <div class="ctrl-group"><label>الحجم</label><div class="slider-container"><input type="range" class="valSize" min="15" max="120" value="${el.fontSize}"></div></div>
-          <div class="ctrl-group"><label>الدوران</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
+          <div class="ctrl-group"><label>Size</label><div class="slider-container"><input type="range" class="valSize" min="15" max="120" value="${el.fontSize}"></div></div>
+          <div class="ctrl-group"><label>Rotate</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
         </div>
         <div class="layout-split">
-          <div class="ctrl-group"><label>لون التعبئة</label><div class="color-picker-box"><input type="color" class="valFill" value="${el.fill}"></div></div>
-          <div class="ctrl-group"><label>لون الحدود</label><div class="color-picker-box"><input type="color" class="valStroke" id="strokeColorInput_${el.id}" value="${el.stroke}"></div></div>
+          <div class="ctrl-group"><label>Fill Color</label><div class="color-picker-box"><input type="color" class="valFill" value="${el.fill}"></div></div>
+          <div class="ctrl-group"><label>Stroke Color</label><div class="color-picker-box"><input type="color" class="valStroke" id="strokeColorInput_${el.id}" value="${el.stroke}"></div></div>
         </div>
         <input type="hidden" id="strokeWidthInput_${el.id}" value="${el.strokeWidth}">
       `;
 
-      // المرحلة العاشرة: استخدام محرك تحويل أرقام صريح وآمن لمنع تداخل القوانين المتغيرة
+      // Stage 10: Fixed first JavaScript bug
       const strokeR = { value: el.strokeWidth }; 
       el.strokeWidth = Number(strokeR.value);
 
@@ -315,10 +329,10 @@ function syncLayersPanel(){
       textLayersBox.appendChild(card);
     } else {
       card.innerHTML = `
-        <div class="card-layer-top"><span class="title">ملصق تعبيري (${el.text})</span><button class="btn-delete-layer">حذف</button></div>
+        <div class="card-layer-top"><span class="title">Sticker (${el.text})</span><button class="btn-delete-layer">Remove</button></div>
         <div class="layout-split">
-          <div class="ctrl-group"><label>الحجم</label><div class="slider-container"><input type="range" class="valSize" min="30" max="250" value="${el.fontSize}"></div></div>
-          <div class="ctrl-group"><label>الدوران</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
+          <div class="ctrl-group"><label>Size</label><div class="slider-container"><input type="range" class="valSize" min="30" max="250" value="${el.fontSize}"></div></div>
+          <div class="ctrl-group"><label>Rotate</label><div class="slider-container"><input type="range" class="valAngle" min="-180" max="180" value="${el.angle}"></div></div>
         </div>
       `;
       card.querySelector('.valSize').addEventListener('input', e=> { el.fontSize = +e.target.value; repaint(); });
@@ -354,7 +368,7 @@ brushThickness.addEventListener('input', () => { thicknessValue.textContent = br
 function resetDrawLayer(){
   oCtx.clearRect(0,0,coreState.w, coreState.h);
   repaint();
-  pushToast('تم مسح لوحة الرسم بنجاح.');
+  pushToast('Drawing board cleared.');
 }
 window.resetDrawLayer = resetDrawLayer;
 
@@ -414,7 +428,7 @@ function repaint(){
     }
 
     if(el.id === coreState.focusedElementId) {
-      // المرحلة الحادية عشرة: استدعاء المتغير البرمجي من جذر الأنماط الخارجي مباشرة
+      // Stage 11: Fixed second JavaScript bug
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 3]);
@@ -540,7 +554,7 @@ function triggerMemeDownload(){
 
   coreState.focusedElementId = cacheFocus;
   repaint();
-  pushToast('تم تحميل الصورة بنجاح!');
+  pushToast('Image downloaded successfully!');
 }
 window.triggerMemeDownload = triggerMemeDownload;
 
