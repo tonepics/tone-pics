@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
   }
   #toolbar {
     width:300px; background:#171a21; padding:16px; display:flex; flex-direction:column;
-    gap:12px; border-left:1px solid #2a2e37; overflow-y:auto;
+    gap:12px; border-right:1px solid #2a2e37; overflow-y:auto;
   }
   #toolbar h3 { margin:0 0 4px; color:#ffd23f; }
   .section { background:#1e222b; padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
@@ -70,68 +70,68 @@
 <body>
 
 <div id="toolbar">
-  <button id="homeBtn" onclick="goHome()">🏠 الرجوع إلى الرئيسية</button>
+  <button id="homeBtn" onclick="goHome()">🏠 Back to Home</button>
   <h3>🎬 Pro GIF Maker</h3>
 
   <div class="section">
-    <label>حجم الكانفاس (يُقفل بعد أول رفع)</label>
+    <label>Canvas size (locked after first upload)</label>
     <select id="canvasSize">
       <option value="400">400 × 400</option>
       <option value="512" selected>512 × 512</option>
       <option value="640">640 × 480</option>
     </select>
-    <label>إضافة صور كإطارات</label>
+    <label>Add images as frames</label>
     <input type="file" id="upload" multiple accept="image/*">
-    <button class="btn secondary" onclick="addBlankFrame()">+ إطار فارغ</button>
+    <button class="btn secondary" onclick="addBlankFrame()">+ Blank Frame</button>
   </div>
 
   <div class="section">
-    <label>أدوات التحرير للإطار الحالي</label>
+    <label>Editing tools for the current frame</label>
     <div class="row">
-      <button class="btn secondary" onclick="addText()">+ نص</button>
-      <button class="btn secondary" onclick="addRect()">+ مربع</button>
-      <button class="btn secondary" onclick="addCircle()">+ دائرة</button>
+      <button class="btn secondary" onclick="addText()">+ Text</button>
+      <button class="btn secondary" onclick="addRect()">+ Rectangle</button>
+      <button class="btn secondary" onclick="addCircle()">+ Circle</button>
     </div>
     <div class="row">
-      <button class="btn secondary" onclick="deleteSelected()">🗑 حذف العنصر المحدد</button>
+      <button class="btn secondary" onclick="deleteSelected()">🗑 Delete Selected Object</button>
     </div>
-    <label>لون النص/الشكل المحدد</label>
+    <label>Color of selected text/shape</label>
     <input type="color" id="colorPicker" value="#ffd23f" oninput="applyColor(this.value)">
   </div>
 
   <div class="section">
-    <label>فلتر الإطار الحالي</label>
+    <label>Filter for current frame</label>
     <select id="filterType" onchange="applyFilters()">
-      <option value="none">بدون</option>
-      <option value="grayscale">تدرج رمادي</option>
-      <option value="sepia">سيبيا</option>
-      <option value="invert">عكس الألوان</option>
+      <option value="none">None</option>
+      <option value="grayscale">Grayscale</option>
+      <option value="sepia">Sepia</option>
+      <option value="invert">Invert</option>
     </select>
-    <label>السطوع</label>
+    <label>Brightness</label>
     <input type="range" id="brightness" min="-0.5" max="0.5" step="0.05" value="0" oninput="applyFilters()">
   </div>
 
   <div class="section">
-    <label>مدة عرض الإطار الحالي (ملي ثانية)</label>
+    <label>Current frame display duration (ms)</label>
     <input type="number" id="frameDelay" min="50" step="50" value="500" onchange="updateDelay(this.value)">
     <div class="row">
-      <button class="btn secondary" onclick="duplicateFrame()">⧉ تكرار الإطار</button>
-      <button class="btn danger" onclick="deleteFrame()">🗑 حذف الإطار</button>
+      <button class="btn secondary" onclick="duplicateFrame()">⧉ Duplicate Frame</button>
+      <button class="btn danger" onclick="deleteFrame()">🗑 Delete Frame</button>
     </div>
     <div class="row">
-      <button class="btn secondary" onclick="moveFrame(-1)">◀ تحريك يسار</button>
-      <button class="btn secondary" onclick="moveFrame(1)">تحريك يمين ▶</button>
+      <button class="btn secondary" onclick="moveFrame(-1)">◀ Move Left</button>
+      <button class="btn secondary" onclick="moveFrame(1)">Move Right ▶</button>
     </div>
   </div>
 
   <div class="section">
-    <button class="btn secondary" onclick="playPreview()">▶ معاينة الحركة</button>
-    <button class="btn success" onclick="generate()">⬇ توليد GIF</button>
+    <button class="btn secondary" onclick="playPreview()">▶ Preview Animation</button>
+    <button class="btn success" onclick="generate()">⬇ Generate GIF</button>
     <div id="progress-wrap"><div id="progress-bar"></div></div>
     <div id="msg"></div>
     <div id="result">
       <img id="resultImg">
-      <a class="btn" id="downloadLink" download="tone-pics.gif">تحميل GIF</a>
+      <a class="btn" id="downloadLink" download="tone-pics.gif">Download GIF</a>
     </div>
   </div>
 </div>
@@ -144,7 +144,7 @@
 <script>
 let CANVAS_SIZE = 512;
 let canvas;
-let frames = [];       // {id, thumb, json, delay}
+let frames = [];       // {id, thumb, json, delay, filterType, brightness}
 let activeIndex = -1;
 let dragSrcIndex = null;
 let workerBlobURLPromise = null;
@@ -172,7 +172,7 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 
 function goHome() {
   if (frames.length > 0) {
-    const ok = confirm('لديك إطارات لم يتم تصديرها كـ GIF بعد. هل تريد الرجوع إلى الرئيسية والتخلي عن العمل الحالي؟');
+    const ok = confirm('You have frames that have not been exported as a GIF yet. Go back to Home and discard current work?');
     if (!ok) return;
   }
   window.location.href = 'https://tone-pics.vercel.app/';
@@ -289,17 +289,17 @@ function addBlankFrame() {
 
 // ---- Editing tools ----
 function addText() {
-  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
-  const t = new fabric.IText('اكتب هنا', { left: 40, top: 40, fill: '#ffd23f', fontSize: 32 });
+  if (activeIndex < 0) return alert('Add a frame first');
+  const t = new fabric.IText('Type here', { left: 40, top: 40, fill: '#ffd23f', fontSize: 32 });
   canvas.add(t).setActiveObject(t);
 }
 function addRect() {
-  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
+  if (activeIndex < 0) return alert('Add a frame first');
   const r = new fabric.Rect({ left: 60, top: 60, width: 100, height: 80, fill: '#ffd23f' });
   canvas.add(r).setActiveObject(r);
 }
 function addCircle() {
-  if (activeIndex < 0) return alert('أضف إطاراً أولاً');
+  if (activeIndex < 0) return alert('Add a frame first');
   const c = new fabric.Circle({ left: 80, top: 80, radius: 50, fill: '#ffd23f' });
   canvas.add(c).setActiveObject(c);
 }
@@ -410,11 +410,11 @@ async function getWorkerBlobURL() {
 }
 
 async function generate() {
-  if (frames.length === 0) { alert('أضف إطارات أولاً'); return; }
+  if (frames.length === 0) { alert('Add frames first'); return; }
   document.getElementById('result').style.display = 'none';
   document.getElementById('progress-wrap').style.display = 'block';
   document.getElementById('progress-bar').style.width = '0%';
-  document.getElementById('msg').innerText = 'جاري تجهيز المُشغل...';
+  document.getElementById('msg').innerText = 'Preparing the worker...';
 
   saveActiveFrameState(async () => {
     const workerScript = await getWorkerBlobURL();
@@ -426,7 +426,7 @@ async function generate() {
       workerScript
     });
 
-    document.getElementById('msg').innerText = 'جاري رسم الإطارات...';
+    document.getElementById('msg').innerText = 'Rendering frames...';
 
     for (const f of frames) {
       await new Promise((resolve) => {
@@ -440,7 +440,7 @@ async function generate() {
 
     gif.on('progress', (p) => {
       document.getElementById('progress-bar').style.width = Math.round(p * 100) + '%';
-      document.getElementById('msg').innerText = 'جاري الترميز... ' + Math.round(p * 100) + '%';
+      document.getElementById('msg').innerText = 'Encoding... ' + Math.round(p * 100) + '%';
     });
 
     gif.on('finished', (blob) => {
@@ -448,7 +448,7 @@ async function generate() {
       document.getElementById('resultImg').src = url;
       document.getElementById('downloadLink').href = url;
       document.getElementById('result').style.display = 'flex';
-      document.getElementById('msg').innerText = 'تم بنجاح ✅';
+      document.getElementById('msg').innerText = 'Done ✅';
       document.getElementById('progress-wrap').style.display = 'none';
       loadFrameIntoCanvas(activeIndex);
     });
