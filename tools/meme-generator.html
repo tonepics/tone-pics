@@ -3,12 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>MemeForge Pro | Meme Generator</title>
+<title>Meme Generator Pro | Production Engine v3.0</title>
 <style>
-:root{
-  --bg:#000000; --panel:#0a0a0c; --panel-2:#111215; --panel-3:#17181c;
-  --line:#22252a; --text:#e9eaee; --text-dim:#9a9ea8; --text-faint:#5c6068;
-  --accent:#ffd23f; --accent-2:#ff5d5d; --accent-3:#5dc9ff;
+/* تدرج الألوان المتوافق تماماً مع الهوية البصرية لبقية الأدوات في موقعك */
+:root {
+  --bg: #0f1319; 
+  --panel: #151d2a; 
+  --panel-2: #1e293b; 
+  --panel-3: #0f172a;
+  --line: #2e3d52; 
+  --text: #f8fafc; 
+  --text-dim: #94a3b8; 
+  --text-faint: #64748b;
+  --accent: #00f2fe; /* اللون الفيروزي المميز للتحكم وزر الـ Zoom */
+  --accent-2: #ef4444; 
+  --accent-3: #38bdf8;
+  --brand-yellow: #ffd23f; /* لون براند Meme Forge القديم والمميز */
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
@@ -16,19 +26,19 @@ body{background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMac
 button,input,select,textarea{font-family:inherit;}
 .studio{display:flex; flex-direction:column; height:100vh;}
 
-/* Topbar Design aligned with main site style */
+/* الـ Topbar الاحترافي الموحد */
 .topbar{display:flex; align-items:center; gap:16px; padding:0 16px; height:56px; min-height:56px; background:var(--panel); border-bottom:1px solid var(--line);}
 .back-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim); border-radius:6px; padding:6px 14px; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; transition:all 0.15s ease;}
 .back-btn:hover{color:var(--text); border-color:var(--text-dim); background:var(--panel-2);}
 .brand{font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:8px;}
 .brand svg{vertical-align:middle;}
-.brand span{font-weight:700; font-size:0.62rem; color:#1a1400; background:var(--accent); padding:2px 7px; border-radius:4px; text-transform:uppercase;}
+.brand span{font-weight:700; font-size:0.62rem; color:#1a1400; background:var(--brand-yellow); padding:2px 7px; border-radius:4px; text-transform:uppercase;}
 .tagline{font-size:0.75rem; color:var(--text-faint); margin-left:auto;}
 
-.main-stage{flex:1; display:grid; grid-template-columns:340px 1fr; min-height:0;}
+.main-stage{display:grid; grid-template-columns:340px 1fr; flex:1; min-height:0;}
 .sidebar{background:var(--panel); border-right:1px solid var(--line); padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;}
 
-/* Section Design matching Main Cards */
+/* تصميم الكروت والقوائم الجانبية المنسدلة الاحترافي */
 details.section{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
 details.section > summary{
   list-style:none; cursor:pointer; padding:12px 14px; font-size:0.82rem; font-weight:700;
@@ -41,7 +51,7 @@ details.section[open] > summary::after{transform:rotate(180deg);}
 .section-body{padding:12px 14px 16px; display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--line);}
 
 .upload-label{display:flex; align-items:center; justify-content:center; gap:8px; background:var(--panel-3); border:1px dashed var(--line); border-radius:8px; padding:12px; font-size:0.8rem; cursor:pointer; transition:all 0.15s;}
-.upload-label:hover{border-color:var(--accent); color:var(--accent); background:rgba(255,210,63,0.02);}
+.upload-label:hover{border-color:var(--accent); color:var(--accent); background:rgba(0,242,254,0.02);}
 
 .field{display:flex; flex-direction:column; gap:6px; width:100%;}
 .field label{font-size:0.68rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; font-weight:600;}
@@ -63,57 +73,57 @@ input[type=range]{flex:1; accent-color:var(--accent); height:4px;}
 .btn-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px;}
 .tool-btn{background:var(--panel-3); border:1px solid var(--line); color:var(--text-dim); border-radius:6px; padding:8px 10px; font-size:0.76rem; cursor:pointer; text-align:center; font-weight:500; display:flex; align-items:center; justify-content:center; gap:6px;}
 .tool-btn:hover{color:var(--text); border-color:var(--text-dim);}
-.tool-btn.active{background:rgba(255,210,63,.12); border-color:var(--accent); color:var(--accent);}
+.tool-btn.active{background:rgba(0,242,254,.12); border-color:var(--accent); color:var(--accent);}
 .tool-btn.full{width:100%;}
 .tool-btn.danger:hover{border-color:var(--accent-2); color:var(--accent-2); background:rgba(255,93,93,0.05);}
 
-/* templates grid */
+/* شبكة القوالب المصغرة */
 .tmpl-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
 .tmpl-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;}
 .tmpl-item:hover{border-color:var(--accent);}
-.tmpl-item.active{border-color:var(--accent); background:rgba(255,210,63,.06);}
+.tmpl-item.active{border-color:var(--accent); background:rgba(0,242,254,.06);}
 .tmpl-preview{width:100%; height:36px; display:grid; gap:2px; position:relative;}
-.tmpl-preview div{background:#2a2d34; border-radius:2px;}
+.tmpl-preview div{background:#2a3a52; border-radius:2px;}
 .tmpl-item span{font-size:0.65rem; color:var(--text-faint); text-align:center;}
 
-/* emoji grid */
+/* الإيموجي */
 .emoji-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; max-height:140px; overflow-y:auto; padding-right:2px;}
 .emoji-btn{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; font-size:1.15rem; padding:6px 0; cursor:pointer; text-align:center; transition:transform 0.1s;}
 .emoji-btn:hover{border-color:var(--accent); transform:scale(1.05);}
 
-/* layer cards */
+/* كروت طبقات النصوص والمستندات */
 .layer-card{background:var(--panel-3); border:1px solid var(--line); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px; margin-top:8px;}
-.layer-card.selected{border-color:var(--accent); background:rgba(255,210,63,0.01);}
+.layer-card.selected{border-color:var(--accent); background:rgba(0,242,254,0.01);}
 .layer-card-head{display:flex; align-items:center; justify-content:space-between; gap:6px;}
 .layer-card-head .tag{font-size:0.65rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; font-weight:700;}
 .mini-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim); border-radius:5px; padding:4px 8px; font-size:0.68rem; cursor:pointer;}
 .mini-btn:hover{color:var(--accent-2); border-color:var(--accent-2);}
 .layer-empty{color:var(--text-faint); font-size:0.78rem; padding:8px 2px; text-align:center;}
 
-/* caption suggestions */
 .caption-list{display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;}
 .caption-item{background:var(--panel-3); border:1px solid var(--line); border-radius:6px; padding:10px; font-size:0.78rem; cursor:pointer; line-height:1.4;}
 .caption-item:hover{border-color:var(--accent-3); color:var(--accent-3);}
 
-/* canvas */
-.canvas-area{position:relative; display:flex; align-items:center; justify-content:center; background:#000000; overflow:auto; padding:24px;}
+/* منطقة الكانفاس التفاعلية ولوحة المعاينة الشفافة */
+.canvas-area{position:relative; display:flex; align-items:center; justify-content:center; background:#0b0f14; overflow:auto; padding:24px;}
 .canvas-area.checkerboard{
-  background-image:linear-gradient(45deg,#070709 25%,transparent 25%),linear-gradient(-45deg,#070709 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#070709 75%),linear-gradient(-45deg,transparent 75%,#070709 75%);
-  background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0px; background-color:#000000;
+  background-image:linear-gradient(45deg,#06090d 25%,transparent 25%),linear-gradient(-45deg,#06090d 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#06090d 75%),linear-gradient(-45deg,transparent 75%,#06090d 75%);
+  background-size:20px 20px; background-position:0 0,0 10px,10px -10px,-10px 0px; background-color:#0b0f14;
 }
-#memeCanvas{max-width:100%; max-height:100%; width:auto; height:auto; box-shadow:0 0 0 1px var(--line), 0 20px 60px rgba(0,0,0,.9); cursor:grab; touch-action:none;}
+#memeCanvas{max-width:100%; max-height:100%; width:auto; height:auto; box-shadow:0 0 0 1px var(--line), 0 20px 60px rgba(0,0,0,.6); cursor:grab; touch-action:none;}
 .empty-hint{position:absolute; inset:24px; border:2px dashed var(--line); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; z-index:2;}
 .empty-hint p{margin:0; color:var(--text-dim); font-size:0.88rem;}
-.empty-hint p.big{font-weight:800; color:var(--accent); font-size:1.1rem; margin-bottom:6px;}
+.empty-hint p.big{font-weight:800; color:var(--brand-yellow); font-size:1.1rem; margin-bottom:6px;}
 .empty-hint.hidden{display:none;}
 
+/* شريط التحكم السفلي وخيارات التحميل الاحترافية */
 .bottom-bar{height:60px; min-height:60px; background:var(--panel); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; padding:0 16px; gap:12px;}
 .status-info{font-size:0.75rem; color:var(--text-dim);}
 .export-actions{display:flex; align-items:center; gap:10px;}
 .export-actions select{background:var(--panel-2); border:1px solid var(--line); color:var(--text); border-radius:6px; padding:8px 12px; font-size:0.82rem;}
-.export-btn{background:var(--accent); color:#1a1400; border:none; border-radius:6px; padding:10px 22px; font-weight:800; font-size:0.88rem; cursor:pointer; transition:opacity 0.15s;}
-.export-btn:hover{background:#ffe07a;}
-.export-btn:disabled{opacity:.3; cursor:not-allowed;}
+.export-btn{background:var(--accent); color:#000000; border:none; border-radius:6px; padding:10px 22px; font-weight:800; font-size:0.88rem; cursor:pointer; transition:all 0.15s;}
+.export-btn:hover{background:#5df2ff; box-shadow: 0 0 15px rgba(0,242,254,0.4);}
+.export-btn:disabled{opacity:.3; cursor:not-allowed; box-shadow: none;}
 
 .toast{position:fixed; bottom:76px; left:50%; transform:translateX(-50%); background:var(--panel-2); border:1px solid var(--line); color:var(--text); padding:10px 18px; border-radius:8px; font-size:0.82rem; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;}
 .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
@@ -135,7 +145,6 @@ input[type=range]{flex:1; accent-color:var(--accent); height:4px;}
       Back
     </button>
     <div class="brand">
-      <!-- SVG Icon Matching the Main Dashboard Concept -->
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -280,7 +289,7 @@ const drawColor = document.getElementById('drawColor');
 const drawSize = document.getElementById('drawSize');
 const drawSizeVal = document.getElementById('drawSizeVal');
 
-/* ===================== TEMPLATES ===================== */
+/* ===================== القوالب الافتراضية ===================== */
 const TEMPLATES = [
   {id:'single', name:'Single', slots:[{x:0,y:0,w:1,h:1}]},
   {id:'side2', name:'Side by Side', slots:[{x:0,y:0,w:.5,h:1},{x:.5,y:0,w:.5,h:1}]},
@@ -309,7 +318,7 @@ const CAPTION_BANK = [
   "MY BRAIN DURING {topic}: STATIC.",
 ];
 
-/* ===================== STATE ===================== */
+/* ===================== حالة التطبيق ===================== */
 let uid = 1;
 const state = {
   canvasW:800, canvasH:800,
@@ -331,16 +340,18 @@ function showToast(msg, isError){
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=> toast.classList.remove('show'), 2400);
 }
+
 function updateStatus(){
   statusLabel.textContent = `${state.canvasW} × ${state.canvasH} px · ${state.layers.length} layer(s)`;
 }
+
 function refreshHint(){
   const anyImg = state.slots.some(s=>s.img);
   emptyHint.classList.toggle('hidden', anyImg);
   exportBtn.disabled = !anyImg;
 }
 
-/* ===================== TEMPLATE SETUP ===================== */
+/* ===================== بناء القوالب الجانبية ===================== */
 function buildTemplateGrid(){
   tmplGrid.innerHTML = '';
   TEMPLATES.forEach(t=>{
@@ -375,7 +386,7 @@ function applyTemplate(id){
   updateStatus();
 }
 
-/* ===================== SLOT IMAGE UPLOAD ===================== */
+/* ===================== رفع ومعالجة الصور ===================== */
 let pendingSlotIndex = null;
 slotUpload.addEventListener('change', e=>{
   const file = e.target.files && e.target.files[0];
@@ -438,7 +449,7 @@ function slotIndexAtClient(clientX, clientY) {
   return state.slots.findIndex(s => pctX >= s.x && pctX <= (s.x + s.w) && pctY >= s.y && pctY <= (s.y + s.h));
 }
 
-/* ===================== TEXT LAYERS ===================== */
+/* ===================== طبقات النصوص والعناصر ===================== */
 const FONTS = [
   {v:"'Impact','Anton',sans-serif", l:'Impact (Classic)'},
   {v:"'Arial Black',Arial,sans-serif", l:'Arial Black'},
@@ -531,7 +542,7 @@ function renderLayerLists(){
     card.querySelector('.fillC').addEventListener('input', e=>{ layer.fillColor=e.target.value; render(); });
     card.querySelector('.strokeC').addEventListener('input', e=>{ layer.strokeColor=e.target.value; render(); });
     const strokeR = card.querySelector('.strokeR'), strokeVal = card.querySelector('.strokeVal');
-    strokeR.addEventListener('input', ()=>{ layer.strokeWidth=+strokeR.value; strokeVal.textContent=layer.strokeWidth; render(); });
+    strokeR.addEventListener('input', ()=>{ layer.strokeWidth=+strokeR.widthR || +strokeR.value; strokeVal.textContent=layer.strokeWidth; render(); });
     const rotR = card.querySelector('.rotR'), rotVal = card.querySelector('.rotVal');
     rotR.addEventListener('input', ()=>{ layer.rotation=+rotR.value; rotVal.textContent=layer.rotation+'°'; render(); });
     card.querySelector('.caseUpper').addEventListener('click', ()=>{ layer.textCase='upper'; renderLayerLists(); render(); });
@@ -569,7 +580,7 @@ function renderLayerLists(){
 
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
-/* ===================== FREE DRAW ===================== */
+/* ===================== الرسم الحر والفرشاة ===================== */
 function setDrawMode(mode){
   state.drawMode = mode;
   document.getElementById('btnDrawPen').classList.toggle('active', mode==='pen');
@@ -589,7 +600,7 @@ function clearDrawing(){
 }
 window.clearDrawing = clearDrawing;
 
-/* ===================== CAPTION GENERATOR ===================== */
+/* ===================== توليد الكابشنات الذكي ===================== */
 function generateCaptions(){
   const topic = (captionTopic.value || 'THIS').trim().toUpperCase();
   const shuffled = [...CAPTION_BANK].sort(()=>Math.random()-0.5).slice(0,5);
@@ -605,203 +616,210 @@ function generateCaptions(){
 }
 window.generateCaptions = generateCaptions;
 
-/* ===================== RENDER ===================== */
+/* ===================== احتساب أبعاد القوالب وحل مشكلة الدالة المقطوعة ===================== */
 function slotRectPx(s){
-  return { x:s.x*state.canvasW, y:s.y*state.canvasH, w:s.w*state.canvasW, h:s.h*state.canvasH };
-}
-function drawImageCover(context, img, rx, ry, rw, rh){
-  const scale = Math.max(rw/img.width, rh/img.height);
-  const dw = img.width*scale, dh = img.height*scale;
-  const dx = rx + (rw-dw)/2, dy = ry + (rh-dh)/2;
-  context.save();
-  context.beginPath(); context.rect(rx,ry,rw,rh); context.clip();
-  context.drawImage(img, dx, dy, dw, dh);
-  context.restore();
+  return { x: s.x * state.canvasW, y: s.y * state.canvasH, w: s.w * state.canvasW, h: s.h * state.canvasH };
 }
 
-function wrapLines(context, text, maxWidth){
-  const paragraphs = text.split('\n');
-  const lines = [];
-  paragraphs.forEach(p=>{
-    const words = p.split(/\s+/).filter(Boolean);
-    if(words.length===0){ lines.push(''); return; }
-    let line = words[0];
-    for(let i=1;i<words.length;i++){
-      const test = line+' '+words[i];
-      if(context.measureText(test).width > maxWidth && line){ lines.push(line); line = words[i]; }
-      else line = test;
-    }
-    lines.push(line);
-  });
-  return lines;
-}
-
-function drawTextLayer(context, layer){
-  const text = layer.textCase==='upper' ? layer.text.toUpperCase() : layer.text;
-  if(!text.trim()) return;
-  const maxWidth = state.canvasW * 0.85;
-  let fontSize = layer.fontSize;
-  context.font = `800 ${fontSize}px ${layer.font}`;
-  let lines = wrapLines(context, text, maxWidth);
-  while(fontSize > 10 && lines.some(l=>context.measureText(l).width > maxWidth)){
-    fontSize -= 2; context.font = `800 ${fontSize}px ${layer.font}`;
-    lines = wrapLines(context, text, maxWidth);
-  }
-  const lineHeight = fontSize*1.15;
-  const blockHeight = lineHeight*lines.length;
-
-  context.save();
-  context.translate(layer.x, layer.y);
-  context.rotate(layer.rotation*Math.PI/180);
-  context.textAlign='center'; context.textBaseline='alphabetic'; context.lineJoin='round';
-  const startY = -blockHeight/2 + fontSize;
-  lines.forEach((line,idx)=>{
-    const y = startY + idx*lineHeight;
-    context.font = `800 ${fontSize}px ${layer.font}`;
-    if(layer.strokeWidth>0){ context.strokeStyle=layer.strokeColor; context.lineWidth=layer.strokeWidth; context.strokeText(line,0,y); }
-    context.fillStyle = layer.fillColor;
-    context.fillText(line,0,y);
-  });
-  context.restore();
-
-  layer._bbox = {w: Math.max(...lines.map(l=>{context.font=`800 ${fontSize}px ${layer.font}`; return context.measureText(l).width;}),1), h: blockHeight};
-}
-
-function drawStickerLayer(context, layer){
-  context.save();
-  context.translate(layer.x, layer.y);
-  context.rotate(layer.rotation*Math.PI/180);
-  context.font = `${layer.fontSize}px sans-serif`;
-  context.textAlign='center'; context.textBaseline='middle';
-  context.fillText(layer.text, 0, 0);
-  context.restore();
-  layer._bbox = {w: layer.fontSize, h: layer.fontSize};
-}
-
+/* ===================== معالجة عمليات الرسم والـ Render الأساسية ===================== */
 function render(){
   ctx.clearRect(0,0,state.canvasW,state.canvasH);
-  state.slots.forEach(s=>{
-    const p = slotRectPx(s);
+  
+  // رسم الخلفيات والمربعات المقسمة للصور الأساسية داخل القوالب
+  state.slots.forEach((s, idx)=>{
+    const rect = slotRectPx(s);
     if(s.img){
-      drawImageCover(ctx, s.img, p.x, p.y, p.w, p.h);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rect.x, rect.y, rect.w, rect.h);
+      ctx.clip();
+      
+      // ملائمة أبعاد الصورة تلقائياً داخل مساحتها المخصصة
+      const hRatio = rect.w / s.img.width;
+      const vRatio = rect.h / s.img.height;
+      const ratio  = Math.max(hRatio, vRatio);
+      const centerShift_x = (rect.w - s.img.width*ratio) / 2;
+      const centerShift_y = (rect.h - s.img.height*ratio) / 2;
+      
+      ctx.drawImage(s.img, 0, 0, s.img.width, s.img.height, rect.x + centerShift_x, rect.y + centerShift_y, s.img.width*ratio, s.img.height*ratio);
+      ctx.restore();
     } else {
-      ctx.fillStyle = '#0f1013'; ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.strokeStyle = '#22252a'; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.strokeStyle = '#2e3d52';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
     }
   });
 
+  // رسم المسودة الحرة للفرشاة
   ctx.drawImage(state.drawBuffer, 0, 0);
 
-  state.layers.forEach(l=>{
-    if(l.type==='text') drawTextLayer(ctx, l);
-    else if(l.type==='sticker') drawStickerLayer(ctx, l);
+  // رسم الطبقات النشطة (نصوص أو استيكرات)
+  state.layers.forEach(layer=>{
+    ctx.save();
+    ctx.translate(layer.x, layer.y);
+    ctx.rotate((layer.rotation * Math.PI) / 180);
 
-    if(l.id === state.selectedLayerId && state.drawMode==='off'){
-      ctx.save();
-      ctx.translate(l.x, l.y); ctx.rotate(l.rotation*Math.PI/180);
-      ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 2; ctx.setLineDash([6,4]);
-      if(l._bbox){ ctx.strokeRect(-l._bbox.w/2 - 6, -l._bbox.h/2 - 6, l._bbox.w+12, l._bbox.h+12); }
-      ctx.restore();
+    if(layer.type === 'text'){
+      const txt = layer.textCase === 'upper' ? layer.text.toUpperCase() : layer.text;
+      ctx.font = `bold ${layer.fontSize}px ${layer.font}`;
+      ctx.fillStyle = layer.fillColor;
+      ctx.strokeStyle = layer.strokeColor;
+      ctx.lineWidth = layer.strokeWidth;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const lines = txt.split('\n');
+      const lineHeight = layer.fontSize * 1.2;
+      lines.forEach((line, i)=>{
+        const yOff = i * lineHeight - ((lines.length - 1) * lineHeight) / 2;
+        if(layer.strokeWidth > 0) ctx.strokeText(line, 0, yOff);
+        ctx.fillText(line, 0, yOff);
+      });
+    } else if(layer.type === 'sticker'){
+      ctx.font = `${layer.fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(layer.text, 0, 0);
     }
+
+    // إظهار إطار تحديد للطبقة المحددة حالياً لتسهيل حركتها
+    if(layer.id === state.selectedLayerId){
+      ctx.strokeStyle = 'var(--accent)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(-60, -30, 120, 60);
+    }
+    ctx.restore();
   });
 }
 
-/* ===================== MOUSE/TOUCH INTERACTION ===================== */
+/* ===================== سحب وتحريك العناصر والفرشاة عبر الكانفاس ===================== */
 let isDragging = false;
-let startX=0, startY=0;
-let objStartX=0, objStartY=0;
+let startX, startY;
+
+canvas.addEventListener('mousedown', handlePointerDown);
+canvas.addEventListener('mousemove', handlePointerMove);
+canvas.addEventListener('mouseup', handlePointerUp);
+canvas.addEventListener('touchstart', e => { if(e.touches.length===1){ const t = e.touches[0]; handlePointerDown(t); } });
+canvas.addEventListener('touchmove', e => { if(e.touches.length===1){ const t = e.touches[0]; e.preventDefault(); handlePointerMove(t); } }, {passive:false});
+canvas.addEventListener('touchend', handlePointerUp);
 
 function getCanvasCoords(e){
   const rect = canvas.getBoundingClientRect();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   return {
-    x: (clientX - rect.left) * (state.canvasW / rect.width),
-    y: (clientY - rect.top) * (state.canvasH / rect.height),
-    clientX, clientY
+    x: ((e.clientX - rect.left) / rect.width) * state.canvasW,
+    y: ((e.clientY - rect.top) / rect.height) * state.canvasH
   };
 }
 
-canvas.addEventListener('pointerdown', e=>{
-  const p = getCanvasCoords(e);
+function handlePointerDown(e){
+  const coords = getCanvasCoords(e);
+  startX = coords.x;
+  startY = coords.y;
 
-  if(state.drawMode!=='off'){
+  if(state.drawMode !== 'off'){
     isDragging = true;
-    dctx.beginPath(); dctx.moveTo(p.x, p.y);
-    dctx.lineWidth = +drawSize.value; dctx.lineCap = 'round'; dctx.lineJoin = 'round';
-    if(state.drawMode==='pen'){ dctx.globalCompositeOperation='source-over'; dctx.strokeStyle=drawColor.value; }
-    else { dctx.globalCompositeOperation='destination-out'; }
-    dctx.lineTo(p.x, p.y); dctx.stroke(); render(); return;
+    dctx.beginPath();
+    dctx.moveTo(startX, startY);
+    return;
   }
 
-  let hit = false;
+  // فحص إذا كان الضغط يقع فوق طبقة نص أو استيكر للتحريك
+  let found = null;
   for(let i=state.layers.length-1; i>=0; i--){
     const l = state.layers[i];
-    if(!l._bbox) continue;
-    if(Math.abs(p.x - l.x) <= (l._bbox.w/2+10) && Math.abs(p.y - l.y) <= (l._bbox.h/2+10)){
-      state.selectedLayerId = l.id;
-      isDragging = true;
-      startX = p.clientX; startY = p.clientY;
-      objStartX = l.x; objStartY = l.y;
-      hit = true; break;
+    const dist = Math.hypot(coords.x - l.x, coords.y - l.y);
+    if(dist < (l.fontSize ? l.fontSize * 0.8 : 40)){
+      found = l;
+      break;
     }
   }
 
-  if(!hit){
-    const idx = slotIndexAtClient(p.clientX, p.clientY);
+  if(found){
+    state.selectedLayerId = found.id;
+    isDragging = true;
+    renderLayerLists();
+    render();
+  } else {
+    // إذا ضغط على مربع فارغ في القالب لرفع صورة مخصصة له
+    const idx = slotIndexAtClient(e.clientX, e.clientY);
     if(idx >= 0){
       pendingSlotIndex = idx;
       slotUpload.click();
-    } else {
-      state.selectedLayerId = null;
     }
+    state.selectedLayerId = null;
+    renderLayerLists();
+    render();
   }
-  renderLayerLists(); render();
-});
+}
 
-canvas.addEventListener('pointermove', e=>{
+function handlePointerMove(e){
   if(!isDragging) return;
-  const p = getCanvasCoords(e);
+  const coords = getCanvasCoords(e);
 
-  if(state.drawMode!=='off'){
-    dctx.lineTo(p.x, p.y); dctx.stroke(); render(); return;
+  if(state.drawMode !== 'off'){
+    dctx.lineWidth = drawSize.value;
+    dctx.lineCap = 'round';
+    dctx.lineJoin = 'round';
+    if(state.drawMode === 'pen'){
+      dctx.globalCompositeOperation = 'source-over';
+      dctx.strokeStyle = drawColor.value;
+    } else {
+      dctx.globalCompositeOperation = 'destination-out';
+    }
+    dctx.lineTo(coords.x, coords.y);
+    dctx.stroke();
+    render();
+    return;
   }
 
-  if(state.selectedLayerId!==null){
-    const l = state.layers.find(x=>x.id===state.selectedLayerId);
+  if(state.selectedLayerId){
+    const l = state.layers.find(x=>x.id === state.selectedLayerId);
     if(l){
-      const rect = canvas.getBoundingClientRect();
-      const dx = (p.clientX - startX) * (state.canvasW / rect.width);
-      const dy = (p.clientY - startY) * (state.canvasH / rect.height);
-      l.x = objStartX + dx; l.y = objStartY + dy;
+      l.x += (coords.x - startX);
+      l.y += (coords.y - startY);
+      startX = coords.x;
+      startY = coords.y;
       render();
     }
   }
-});
+}
 
-window.addEventListener('pointerup', ()=>{ isDragging = false; });
+function handlePointerUp(){
+  isDragging = false;
+}
 
-/* ===================== EXPORT ===================== */
-window.exportMeme = function(){
+/* ===================== التصدير والتحميل النهائي للميمز ===================== */
+function exportMeme(){
+  if(!state.slots.some(s=>s.img)) return;
+  
+  // إلغاء تحديد أي طبقة نشطة لإخفاء خطوط التحديد المتقطعة قبل التصدير
+  const prevSel = state.selectedLayerId;
+  state.selectedLayerId = null;
+  render();
+
   const fmt = exportFormat.value;
-  const out = document.createElement('canvas');
-  out.width = state.canvasW; out.height = state.canvasH;
-  const octx = out.getContext('2d');
-  if(fmt==='image/jpeg'){ octx.fillStyle='#000000'; octx.fillRect(0,0,out.width,out.height); }
-  const backup = state.selectedLayerId; state.selectedLayerId = null; render();
-  octx.drawImage(canvas, 0,0);
-  state.selectedLayerId = backup; render();
-  const a = document.createElement('a');
-  a.href = out.toDataURL(fmt, 0.9);
-  a.download = `meme-${Date.now()}.${fmt==='image/jpeg'?'jpg':'png'}`;
-  a.click(); showToast('Meme downloaded successfully!');
-};
+  const ext = fmt === 'image/jpeg' ? '.jpg' : '.png';
+  const dataUrl = canvas.toDataURL(fmt, 0.92);
+  
+  const link = document.createElement('a');
+  link.download = 'meme_' + Date.now() + ext;
+  link.href = dataUrl;
+  link.click();
 
-/* ===================== INITIALIZATION ===================== */
+  state.selectedLayerId = prevSel;
+  render();
+  showToast('Meme downloaded successfully!');
+}
+window.exportMeme = exportMeme;
+
+// تشغيل وتهيئة التطبيق لأول مرة عند فتح الصفحة
 applyTemplate('single');
-buildTemplateGrid();
 buildEmojiGrid();
 renderLayerLists();
+
 })();
 </script>
 </body>
