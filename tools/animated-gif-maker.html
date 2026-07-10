@@ -2,86 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tone.pics | Animated GIF Maker</title>
+    <title>Tone.pics | GIF Maker Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js"></script>
     <style>
         :root { --bg:#0e0f12; --panel:#15171c; --accent:#ffd23f; --text:#e9eaee; --line:#2a2d34; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        .panel { background: var(--panel); padding: 25px; border-radius: 14px; border: 1px solid var(--line); }
-        .title-area { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .icon { width: 32px; height: 32px; }
-        .drop-zone { border: 2px dashed var(--line); padding: 30px; text-align: center; cursor: pointer; color: #9a9ea8; border-radius: 10px; margin-bottom: 20px; }
-        .drop-zone:hover { border-color: var(--accent); }
-        button { background: var(--accent); color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px; }
-        #preview { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--line); }
-        #downloadBtn { display: none; background: #28a745; color: white; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; }
-        .status { margin: 10px 0; color: #ffd23f; font-size: 14px; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
+        
+        /* Sidebar Styling */
+        #sidebar { width: 320px; background: var(--panel); padding: 20px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Editor Area */
+        #main { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; }
+        #canvas-wrapper { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 8px; }
+        
+        /* Timeline */
+        #timeline { height: 120px; background: var(--panel); margin-top: 15px; display: flex; gap: 10px; padding: 10px; overflow-x: auto; border-radius: 8px; }
+        .frame { width: 80px; height: 80px; background: #333; cursor: pointer; border: 2px solid #555; }
+        
+        button { background: var(--accent); border: none; padding: 12px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        input { width: 100%; padding: 8px; background: #2a2d34; border: 1px solid var(--line); color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="panel">
-        <div class="title-area">
-            <img src="../222.PNG" class="icon" alt="Icon">
-            <h2>GIF Maker</h2>
-        </div>
-        <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-            Upload Images
-            <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
-        </div>
-        <button id="generateBtn">Generate GIF</button>
-        <div id="status" class="status"></div>
-    </div>
+<aside id="sidebar">
+    <h2>GIF Pro Maker</h2>
+    <input type="file" id="upload" multiple accept="image/*">
     
-    <div class="panel">
-        <h2>Preview</h2>
-        <img id="preview" alt="Preview">
-        <br>
-        <a id="downloadBtn" href="#">Download GIF</a>
+    <label>Delay (ms)</label>
+    <input type="number" id="delay" value="500">
+    
+    <button onclick="addText()">Add Text Overlay</button>
+    <button id="generate" style="background:#28a745; color:#fff;">Generate GIF</button>
+    <div id="status"></div>
+</aside>
+
+<main id="main">
+    <div id="canvas-wrapper">
+        <canvas id="canvas" width="512" height="512"></canvas>
     </div>
-</div>
+    <div id="timeline"></div>
+</main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
 <script>
-    const fileInput = document.getElementById('fileInput');
-    const generateBtn = document.getElementById('generateBtn');
-    const preview = document.getElementById('preview');
-    const status = document.getElementById('status');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const canvas = new fabric.Canvas('canvas');
+    const timeline = document.getElementById('timeline');
+    let frames = [];
 
-    generateBtn.onclick = () => {
-        if(fileInput.files.length === 0) return alert("Please upload images first!");
-        status.innerText = "Processing... Please wait.";
-        
-        let images = [];
-        Array.from(fileInput.files).forEach(file => {
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                images.push(e.target.result);
-                if(images.length === fileInput.files.length) {
-                    gifshot.createGIF({
-                        images: images,
-                        gifWidth: 400,
-                        gifHeight: 400,
-                        interval: 0.5
-                    }, (obj) => {
-                        if(!obj.error) {
-                            preview.src = obj.image;
-                            preview.style.display = "block";
-                            downloadBtn.href = obj.image;
-                            downloadBtn.download = "tone-pics-animation.gif";
-                            downloadBtn.style.display = "block";
-                            status.innerText = "Success! GIF is ready.";
-                        } else {
-                            status.innerText = "Error: Could not generate.";
-                        }
-                    });
-                }
+    document.getElementById('upload').onchange = (e) => {
+        Array.from(e.target.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                fabric.Image.fromURL(event.target.result, (img) => {
+                    frames.push(img);
+                    const div = document.createElement('div');
+                    div.className = 'frame';
+                    div.style.backgroundImage = `url(${event.target.result})`;
+                    div.style.backgroundSize = 'cover';
+                    div.onclick = () => { canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas)); };
+                    timeline.appendChild(div);
+                });
             };
             reader.readAsDataURL(file);
         });
+    };
+
+    function addText() {
+        const text = new fabric.IText('Your Text', { left: 50, top: 50, fill: '#ffd23f' });
+        canvas.add(text);
+    }
+
+    document.getElementById('generate').onclick = () => {
+        document.getElementById('status').innerText = "Processing...";
+        const gif = new GIF({ workers: 2, quality: 10, width: 512, height: 512 });
+        
+        frames.forEach(img => {
+            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+            gif.addFrame(canvas.getElement(), { delay: parseInt(document.getElementById('delay').value) });
+        });
+        
+        gif.on('finished', (blob) => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my-gif.gif';
+            a.click();
+            document.getElementById('status').innerText = "Done!";
+        });
+        gif.render();
     };
 </script>
 </body>
