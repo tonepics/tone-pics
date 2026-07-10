@@ -12,15 +12,17 @@
     display:flex; height:100vh; overflow:hidden;
   }
   #toolbar {
-    width:310px; background:#171a21; padding:16px; display:flex; flex-direction:column;
+    width:330px; background:#171a21; padding:16px; display:flex; flex-direction:column;
     gap:12px; border-right:1px solid #2a2e37; overflow-y:auto;
   }
   #toolbar h3 { margin:0 0 4px; color:#ffd23f; }
+  #toolbar h4 { margin:8px 0 0; color:#ffd23f; font-size:13px; border-top:1px solid #2a2e37; padding-top:10px; }
   .section { background:#1e222b; padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
   .section label { font-size:12px; color:#9aa0ac; }
   .row { display:flex; gap:8px; align-items:center; }
   .row > * { flex:1; }
-  input[type=file], select, input[type=range], input[type=number], input[type=color] {
+  .check-row { display:flex; align-items:center; gap:6px; font-size:12px; color:#eee; }
+  input[type=file], select, input[type=range], input[type=number], input[type=color], input[type=text] {
     background:#0d0f13; color:#fff; border:1px solid #333; border-radius:4px; padding:6px; width:100%;
   }
   input[type=checkbox] { width:auto; }
@@ -32,19 +34,32 @@
   .btn.secondary { background:#2a2e37; color:#eee; }
   .btn.danger { background:#e5484d; color:#fff; }
   .btn.success { background:#28a745; color:#fff; }
-  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn.small { padding:6px 8px; font-size:12px; }
   #homeBtn {
     display:flex; align-items:center; gap:6px; background:#2a2e37; color:#eee;
     border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:13px;
     width:100%; justify-content:center;
   }
   #homeBtn:hover { background:#343946; }
-  #canvas-area {
-    flex:1; display:flex; align-items:center; justify-content:center; padding:20px; overflow:auto;
+  #dropHint {
+    border:2px dashed #333; border-radius:8px; padding:14px; text-align:center; font-size:12px;
+    color:#9aa0ac; cursor:pointer;
   }
-  #canvas-wrap { border:1px solid #2a2e37; background:
-    repeating-conic-gradient(#20232b 0% 25%, #14161b 0% 50%) 50% / 20px 20px; box-shadow:0 0 40px rgba(0,0,0,.5); }
-  #imgList { display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; }
+  #canvas-area {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; gap:10px;
+    overflow:auto; position:relative;
+  }
+  #canvas-area.dragover::after {
+    content:'Drop images here'; position:absolute; inset:20px; border:3px dashed #ffd23f; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:20px; color:#ffd23f;
+    background:rgba(13,15,19,.7); pointer-events:none;
+  }
+  #canvas-wrap {
+    border:1px solid #2a2e37; background: repeating-conic-gradient(#20232b 0% 25%, #14161b 0% 50%) 50% / 20px 20px;
+    box-shadow:0 0 40px rgba(0,0,0,.5); transition:transform .1s;
+  }
+  #zoomRow { width:100%; max-width:400px; display:flex; align-items:center; gap:8px; }
+  #imgList { display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; }
   .img-item {
     display:flex; align-items:center; gap:8px; background:#0d0f13; border:1px solid #2a2e37;
     border-radius:6px; padding:6px; cursor:grab;
@@ -56,7 +71,7 @@
   #msg { font-size:13px; color:#9aa0ac; min-height:18px; }
   #result { display:none; flex-direction:column; align-items:center; gap:6px; }
   #result img { max-width:280px; border:1px solid #333; border-radius:6px; }
-  .mode-only { display:none; }
+  .mode-only, .fit-only, .out-only { display:none; }
 </style>
 </head>
 <body>
@@ -66,23 +81,31 @@
   <h3>🧩 Image Merger</h3>
 
   <div class="section">
-    <label>Add images</label>
+    <label>📂 Upload images (unlimited, JPG / PNG / WebP / GIF)</label>
     <input type="file" id="upload" multiple accept="image/*">
+    <div id="dropHint" onclick="document.getElementById('upload').click()">Drag &amp; drop images here, or click to browse</div>
     <label>Images (drag to reorder)</label>
     <div id="imgList"></div>
   </div>
 
+  <h4>🖼️ Merge Mode</h4>
   <div class="section">
-    <label>Merge mode</label>
     <select id="mode" onchange="onModeChange()">
-      <option value="grid">Grid (rows &amp; columns)</option>
-      <option value="horizontal">Horizontal strip</option>
-      <option value="vertical">Vertical strip</option>
-      <option value="overlay">Free overlay (drag / resize / blend)</option>
+      <option value="horizontal">⬅️ Horizontal</option>
+      <option value="vertical">⬇️ Vertical</option>
+      <option value="grid" selected>🔲 Grid</option>
+      <option value="custom">🧩 Custom Layout (drag / resize / blend)</option>
     </select>
   </div>
 
-  <div class="section mode-only" data-mode="grid,horizontal,vertical">
+  <h4>⚙️ Merge Options</h4>
+  <div class="section">
+    <div class="row mode-only" data-mode="grid">
+      <div>
+        <label>Columns</label>
+        <input type="number" id="cols" value="3" min="1" onchange="applyLayout()">
+      </div>
+    </div>
     <div class="row">
       <div>
         <label>Cell width (px)</label>
@@ -93,28 +116,37 @@
         <input type="number" id="cellH" value="220" min="40" onchange="applyLayout()">
       </div>
     </div>
-    <div class="row mode-only" data-mode="grid">
+    <label>Spacing between images (px)</label>
+    <input type="range" id="gap" min="0" max="60" value="10" oninput="applyLayout()">
+
+    <div class="check-row">
+      <input type="checkbox" id="uniformSize" checked onchange="applyLayout()">
+      <label style="margin:0;">Uniform size for all images</label>
+    </div>
+    <div class="row fit-only">
       <div>
-        <label>Columns</label>
-        <input type="number" id="cols" value="3" min="1" onchange="applyLayout()">
+        <label>Fit mode</label>
+        <select id="fitMode" onchange="applyLayout()">
+          <option value="contain">Contain (keep full image)</option>
+          <option value="cover">Cover (crop to fill)</option>
+        </select>
       </div>
     </div>
-    <label>Gap (px)</label>
-    <input type="range" id="gap" min="0" max="60" value="10" oninput="applyLayout()">
+    <div class="row mode-only" data-mode="horizontal,vertical">
+      <div>
+        <label>Alignment</label>
+        <select id="align" onchange="applyLayout()">
+          <option value="center">Center</option>
+          <option value="start">Start</option>
+          <option value="end">End</option>
+        </select>
+      </div>
+    </div>
+
     <button class="btn secondary" onclick="applyLayout()">↻ Re-apply Layout</button>
   </div>
 
-  <div class="section mode-only" data-mode="overlay">
-    <div class="row">
-      <div>
-        <label>Canvas width</label>
-        <input type="number" id="ovW" value="800" min="100" onchange="setOverlayCanvasSize()">
-      </div>
-      <div>
-        <label>Canvas height</label>
-        <input type="number" id="ovH" value="600" min="100" onchange="setOverlayCanvasSize()">
-      </div>
-    </div>
+  <div class="section mode-only" data-mode="custom">
     <label>Selected layer opacity</label>
     <input type="range" id="layerOpacity" min="0" max="1" step="0.05" value="1" oninput="applyLayerOpacity(this.value)">
     <label>Selected layer blend mode</label>
@@ -129,8 +161,70 @@
       <option value="color-dodge">Color Dodge</option>
     </select>
     <div class="row">
-      <button class="btn secondary" onclick="bringForward()">⬆ Forward</button>
-      <button class="btn secondary" onclick="sendBackward()">⬇ Backward</button>
+      <button class="btn secondary small" onclick="bringForward()">⬆ Forward</button>
+      <button class="btn secondary small" onclick="sendBackward()">⬇ Backward</button>
+    </div>
+  </div>
+
+  <h4>🎨 Customization</h4>
+  <div class="section">
+    <div class="check-row">
+      <input type="checkbox" id="roundedToggle" onchange="onStyleChange()">
+      <label style="margin:0;">Rounded corners</label>
+    </div>
+    <input type="range" id="radius" min="0" max="80" value="20" oninput="onStyleChange()">
+
+    <div class="check-row">
+      <input type="checkbox" id="shadowToggle" onchange="onStyleChange()">
+      <label style="margin:0;">Drop shadow</label>
+    </div>
+    <input type="range" id="shadowBlur" min="0" max="50" value="15" oninput="onStyleChange()">
+
+    <div class="check-row">
+      <input type="checkbox" id="borderToggle" onchange="onStyleChange()">
+      <label style="margin:0;">Border</label>
+    </div>
+    <div class="row">
+      <input type="number" id="borderWidth" value="4" min="1" max="40" onchange="onStyleChange()">
+      <input type="color" id="borderColor" value="#ffffff" onchange="onStyleChange()">
+    </div>
+  </div>
+
+  <div class="section">
+    <label>Add text</label>
+    <div class="row">
+      <input type="text" id="textInput" placeholder="Your text">
+      <input type="color" id="textColor" value="#ffd23f">
+    </div>
+    <div class="row">
+      <input type="number" id="textSize" value="32" min="8">
+      <select id="textPos">
+        <option value="center">Center</option>
+        <option value="top-left">Top Left</option>
+        <option value="top-right">Top Right</option>
+        <option value="bottom-left">Bottom Left</option>
+        <option value="bottom-right">Bottom Right</option>
+      </select>
+    </div>
+    <button class="btn secondary" onclick="addTextLayer()">+ Add Text</button>
+
+    <label>Add watermark image</label>
+    <input type="file" id="watermarkUpload" accept="image/*">
+    <div class="row">
+      <div>
+        <label>Opacity</label>
+        <input type="range" id="wmOpacity" min="0.05" max="1" step="0.05" value="0.5">
+      </div>
+      <div>
+        <label>Position</label>
+        <select id="wmPos">
+          <option value="bottom-right">Bottom Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="top-right">Top Right</option>
+          <option value="top-left">Top Left</option>
+          <option value="center">Center</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -138,24 +232,52 @@
     <label>Background</label>
     <div class="row">
       <input type="color" id="bgColor" value="#000000" onchange="applyBackground()">
-      <label style="flex:0 0 auto; display:flex; align-items:center; gap:4px;">
+      <label class="check-row" style="flex:0 0 auto;">
         <input type="checkbox" id="transparentBg" onchange="applyBackground()"> Transparent
       </label>
     </div>
   </div>
 
+  <h4>📏 Output Size</h4>
   <div class="section">
-    <label>Export</label>
+    <select id="outputMode" onchange="onOutputModeChange()">
+      <option value="auto">Auto (content size)</option>
+      <option value="width">Fixed width</option>
+      <option value="height">Fixed height</option>
+      <option value="custom">Custom size (W × H)</option>
+    </select>
+    <div class="row out-only" data-out="width,custom">
+      <div><label>Target width (px)</label><input type="number" id="targetW" value="1200" min="50"></div>
+    </div>
+    <div class="row out-only" data-out="height,custom">
+      <div><label>Target height (px)</label><input type="number" id="targetH" value="800" min="50"></div>
+    </div>
+    <div class="row out-only" data-out="auto">
+      <div>
+        <label>Resolution</label>
+        <select id="scale">
+          <option value="1">1x</option>
+          <option value="2" selected>2x</option>
+          <option value="3">3x</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <h4>📤 Export</h4>
+  <div class="section">
     <div class="row">
-      <select id="format">
+      <select id="format" onchange="onFormatChange()">
         <option value="png">PNG</option>
-        <option value="jpeg">JPEG</option>
+        <option value="jpeg">JPG</option>
+        <option value="webp">WebP</option>
       </select>
-      <select id="scale">
-        <option value="1">1x</option>
-        <option value="2" selected>2x</option>
-        <option value="3">3x</option>
-      </select>
+      <div class="row out-only" data-out="quality" style="display:flex;">
+        <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.92">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn secondary" onclick="toggleCompare()" id="compareBtn">🔁 Compare Before/After</button>
     </div>
     <button class="btn success" onclick="exportImage()">⬇ Merge &amp; Export</button>
     <div id="msg"></div>
@@ -167,13 +289,21 @@
 </div>
 
 <div id="canvas-area">
+  <div id="zoomRow">
+    <span style="font-size:12px; color:#9aa0ac;">🔍 Zoom</span>
+    <input type="range" id="zoom" min="0.3" max="2" step="0.05" value="1" oninput="setZoom(this.value)">
+  </div>
   <div id="canvas-wrap"><canvas id="c"></canvas></div>
 </div>
 
 <script>
 let canvas;
-let images = []; // { id, src, obj, name }
+let images = [];      // content images: { id, src, obj, name }
+let decorItems = [];  // text / watermark layers
 let currentMode = 'grid';
+let compareMode = false;
+
+const styleSettings = { rounded:false, radius:20, shadow:false, shadowBlur:15, border:false, borderWidth:4, borderColor:'#ffffff' };
 
 function goHome() {
   if (images.length > 0) {
@@ -187,8 +317,8 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 
 function initCanvas() {
   canvas = new fabric.Canvas('c');
-  canvas.setWidth(800);
-  canvas.setHeight(600);
+  canvas.setWidth(700);
+  canvas.setHeight(500);
   canvas.on('selection:created', syncControls);
   canvas.on('selection:updated', syncControls);
   applyBackground();
@@ -212,58 +342,77 @@ function applyBackground() {
   canvas.renderAll();
 }
 
+function setZoom(v) {
+  document.getElementById('canvas-wrap').style.transform = `scale(${v})`;
+}
+
+// ---- Mode switching ----
 function onModeChange() {
   currentMode = document.getElementById('mode').value;
   document.querySelectorAll('.mode-only').forEach(el => {
     const modes = el.getAttribute('data-mode').split(',');
     el.style.display = modes.includes(currentMode) ? '' : 'none';
   });
-  if (currentMode === 'overlay') {
-    setOverlayCanvasSize();
-    images.forEach(im => {
-      im.obj.set({ selectable: true, hasControls: true, hoverCursor: 'move' });
-    });
+  toggleFitOnly();
+  if (currentMode === 'custom') {
+    images.forEach(im => im.obj.set({ selectable:true, hasControls:true, hoverCursor:'move' }));
+    canvas.renderAll();
   } else {
     applyLayout();
   }
-  canvas.renderAll();
+}
+
+function toggleFitOnly() {
+  const uniform = document.getElementById('uniformSize').checked;
+  const showFit = uniform && currentMode !== 'custom';
+  document.querySelectorAll('.fit-only').forEach(el => el.style.display = showFit ? '' : 'none');
+  // grid always uniform
+  document.getElementById('uniformSize').disabled = (currentMode === 'grid');
+  if (currentMode === 'grid') document.getElementById('uniformSize').checked = true;
 }
 onModeChange();
 
-function setOverlayCanvasSize() {
-  const w = parseInt(document.getElementById('ovW').value, 10) || 800;
-  const h = parseInt(document.getElementById('ovH').value, 10) || 600;
-  canvas.setWidth(w);
-  canvas.setHeight(h);
-  applyBackground();
-  if (currentMode === 'overlay') {
-    images.forEach(im => fitContain(im.obj, w, h, true));
-  }
-  canvas.renderAll();
+function onOutputModeChange() {
+  const mode = document.getElementById('outputMode').value;
+  document.querySelectorAll('.out-only').forEach(el => {
+    if (el.getAttribute('data-out') === 'quality') return;
+    const modes = el.getAttribute('data-out').split(',');
+    el.style.display = modes.includes(mode) ? '' : 'none';
+  });
 }
+onOutputModeChange();
 
-function fitContain(obj, boxW, boxH, center) {
-  const scale = Math.min(boxW / obj.width, boxH / obj.height, 1);
-  obj.scale(scale);
-  if (center) {
-    obj.set({
-      left: boxW / 2,
-      top: boxH / 2,
-      originX: 'center',
-      originY: 'center'
-    });
-  }
+function onFormatChange() {
+  const fmt = document.getElementById('format').value;
+  document.querySelector('[data-out="quality"]').style.display = (fmt === 'png') ? 'none' : 'flex';
 }
+onFormatChange();
 
-// ---- Upload ----
+// ---- Drag & drop + upload ----
+const canvasArea = document.getElementById('canvas-area');
+canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); canvasArea.classList.add('dragover'); });
+canvasArea.addEventListener('dragleave', () => canvasArea.classList.remove('dragover'));
+canvasArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  canvasArea.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+document.getElementById('dropHint').addEventListener('dragover', (e) => e.preventDefault());
+document.getElementById('dropHint').addEventListener('drop', (e) => {
+  e.preventDefault();
+  handleFiles(e.dataTransfer.files);
+});
 document.getElementById('upload').onchange = (e) => {
-  Array.from(e.target.files).forEach(file => {
+  handleFiles(e.target.files);
+  e.target.value = '';
+};
+function handleFiles(fileList) {
+  Array.from(fileList).filter(f => f.type.startsWith('image/')).forEach(file => {
     const reader = new FileReader();
     reader.onload = (ev) => addImage(ev.target.result, file.name);
     reader.readAsDataURL(file);
   });
-  e.target.value = '';
-};
+}
 
 function addImage(dataUrl, name) {
   fabric.Image.fromURL(dataUrl, (img) => {
@@ -272,8 +421,12 @@ function addImage(dataUrl, name) {
     canvas.add(img);
     images.push({ id: img._mergeId, src: dataUrl, obj: img, name: name || 'image' });
     renderList();
-    if (currentMode === 'overlay') {
-      setOverlayCanvasSize();
+    if (currentMode === 'custom') {
+      img.set({ selectable:true, hasControls:true, hoverCursor:'move' });
+      fitInBox(img, 220, 220, false);
+      img.set({ left: canvas.getWidth()/2 + images.length*15, top: canvas.getHeight()/2 + images.length*15 });
+      applyStyle(img, {});
+      canvas.renderAll();
     } else {
       applyLayout();
     }
@@ -295,21 +448,17 @@ function renderList() {
       canvas.renderAll();
       syncControls();
     };
-    div.querySelector('.rm').onclick = (e) => {
-      e.stopPropagation();
-      removeImage(i);
-    };
+    div.querySelector('.rm').onclick = (e) => { e.stopPropagation(); removeImage(i); };
     div.ondragstart = () => div._dragIdx = i;
     div.ondragover = (e) => e.preventDefault();
     div.ondrop = (e) => {
       e.preventDefault();
       const from = div._dragIdx;
-      const to = i;
-      if (from === undefined || from === to) return;
+      if (from === undefined || from === i) return;
       const moved = images.splice(from, 1)[0];
-      images.splice(to, 0, moved);
+      images.splice(i, 0, moved);
       renderList();
-      if (currentMode !== 'overlay') applyLayout();
+      if (currentMode !== 'custom') applyLayout();
     };
     list.appendChild(div);
   });
@@ -320,65 +469,169 @@ function removeImage(i) {
   canvas.remove(im.obj);
   images.splice(i, 1);
   renderList();
-  if (currentMode !== 'overlay') applyLayout();
+  if (currentMode !== 'custom') applyLayout();
   canvas.renderAll();
 }
 
-// ---- Grid / strip layout ----
+// ---- Fit helpers ----
+function fitInBox(obj, boxW, boxH, center) {
+  obj.scale(1);
+  const scale = Math.min(boxW / obj.width, boxH / obj.height, 1);
+  obj.scale(scale);
+  if (center) obj.set({ left: boxW / 2, top: boxH / 2 });
+}
+function fitCover(obj, boxW, boxH) {
+  obj.scale(1);
+  const scale = Math.max(boxW / obj.width, boxH / obj.height);
+  obj.scale(scale);
+  return { clipW: boxW / scale, clipH: boxH / scale };
+}
+
+// ---- Styling (rounded corners / shadow / border) ----
+function onStyleChange() {
+  styleSettings.rounded = document.getElementById('roundedToggle').checked;
+  styleSettings.radius = parseFloat(document.getElementById('radius').value);
+  styleSettings.shadow = document.getElementById('shadowToggle').checked;
+  styleSettings.shadowBlur = parseFloat(document.getElementById('shadowBlur').value);
+  styleSettings.border = document.getElementById('borderToggle').checked;
+  styleSettings.borderWidth = parseFloat(document.getElementById('borderWidth').value);
+  styleSettings.borderColor = document.getElementById('borderColor').value;
+  if (currentMode !== 'custom') { applyLayout(); }
+  else { images.forEach(im => applyStyle(im.obj, {})); canvas.renderAll(); }
+}
+
+function applyStyle(obj, clipBox) {
+  const scale = obj.scaleX || 1;
+  if (styleSettings.rounded || clipBox.clipW) {
+    const w = clipBox.clipW ?? obj.width;
+    const h = clipBox.clipH ?? obj.height;
+    obj.clipPath = new fabric.Rect({
+      width: w, height: h,
+      rx: styleSettings.rounded ? styleSettings.radius / scale : 0,
+      ry: styleSettings.rounded ? styleSettings.radius / scale : 0,
+      originX: 'center', originY: 'center'
+    });
+  } else {
+    obj.clipPath = null;
+  }
+  obj.shadow = styleSettings.shadow
+    ? new fabric.Shadow({ color: 'rgba(0,0,0,0.5)', blur: styleSettings.shadowBlur, offsetX: 6, offsetY: 6 })
+    : null;
+  if (styleSettings.border) {
+    obj.set({ stroke: styleSettings.borderColor, strokeWidth: styleSettings.borderWidth / scale });
+  } else {
+    obj.set({ stroke: null, strokeWidth: 0 });
+  }
+}
+
+// ---- Auto layout: grid / horizontal / vertical ----
 function applyLayout() {
-  if (currentMode === 'overlay' || images.length === 0) return;
+  if (currentMode === 'custom') return;
+  toggleFitOnly();
+  if (images.length === 0) { canvas.setWidth(500); canvas.setHeight(350); canvas.renderAll(); return; }
 
   const cellW = parseInt(document.getElementById('cellW').value, 10) || 200;
   const cellH = parseInt(document.getElementById('cellH').value, 10) || 200;
   const gap = parseInt(document.getElementById('gap').value, 10) || 0;
+  const uniform = document.getElementById('uniformSize').checked;
+  const fitMode = document.getElementById('fitMode').value;
+  const align = document.getElementById('align').value;
   const n = images.length;
 
-  let cols, rows, canvasW, canvasH;
-
   if (currentMode === 'grid') {
-    cols = Math.max(1, parseInt(document.getElementById('cols').value, 10) || 1);
-    rows = Math.ceil(n / cols);
-    canvasW = cols * cellW + gap * (cols + 1);
-    canvasH = rows * cellH + gap * (rows + 1);
+    const cols = Math.max(1, parseInt(document.getElementById('cols').value, 10) || 1);
+    const rows = Math.ceil(n / cols);
+    canvas.setWidth(cols * cellW + gap * (cols + 1));
+    canvas.setHeight(rows * cellH + gap * (rows + 1));
+    images.forEach((im, i) => {
+      const r = Math.floor(i / cols), c = i % cols;
+      const boxLeft = gap + c * (cellW + gap), boxTop = gap + r * (cellH + gap);
+      im.obj.set({ selectable:false, hasControls:false, hoverCursor:'default', angle:0 });
+      let clipBox = {};
+      if (fitMode === 'cover') clipBox = fitCover(im.obj, cellW, cellH);
+      else fitInBox(im.obj, cellW, cellH, false);
+      im.obj.set({ left: boxLeft + cellW / 2, top: boxTop + cellH / 2 });
+      applyStyle(im.obj, clipBox);
+    });
   } else if (currentMode === 'horizontal') {
-    cols = n; rows = 1;
-    canvasW = n * cellW + gap * (n + 1);
-    canvasH = cellH + gap * 2;
+    if (uniform) {
+      canvas.setWidth(n * cellW + gap * (n + 1));
+      canvas.setHeight(cellH + gap * 2);
+      images.forEach((im, i) => {
+        const boxLeft = gap + i * (cellW + gap);
+        im.obj.set({ selectable:false, hasControls:false, hoverCursor:'default', angle:0 });
+        let clipBox = {};
+        if (fitMode === 'cover') clipBox = fitCover(im.obj, cellW, cellH);
+        else fitInBox(im.obj, cellW, cellH, false);
+        im.obj.set({ left: boxLeft + cellW / 2, top: gap + cellH / 2 });
+        applyStyle(im.obj, clipBox);
+      });
+    } else {
+      const natural = images.map(im => {
+        im.obj.scale(1);
+        const s = Math.min(cellH / im.obj.height, 1);
+        return { w: im.obj.width * s, h: im.obj.height * s, s };
+      });
+      const maxH = Math.max(...natural.map(x => x.h));
+      const totalW = natural.reduce((a, x) => a + x.w, 0) + gap * (n + 1);
+      canvas.setWidth(totalW);
+      canvas.setHeight(maxH + gap * 2);
+      let cursor = gap;
+      images.forEach((im, i) => {
+        const { w, h, s } = natural[i];
+        im.obj.scale(s);
+        let top;
+        if (align === 'start') top = gap + h / 2;
+        else if (align === 'end') top = maxH + gap - h / 2;
+        else top = gap + maxH / 2;
+        im.obj.set({ selectable:false, hasControls:false, hoverCursor:'default', angle:0, left: cursor + w / 2, top });
+        applyStyle(im.obj, {});
+        cursor += w + gap;
+      });
+    }
   } else { // vertical
-    cols = 1; rows = n;
-    canvasW = cellW + gap * 2;
-    canvasH = n * cellH + gap * (n + 1);
+    if (uniform) {
+      canvas.setWidth(cellW + gap * 2);
+      canvas.setHeight(n * cellH + gap * (n + 1));
+      images.forEach((im, i) => {
+        const boxTop = gap + i * (cellH + gap);
+        im.obj.set({ selectable:false, hasControls:false, hoverCursor:'default', angle:0 });
+        let clipBox = {};
+        if (fitMode === 'cover') clipBox = fitCover(im.obj, cellW, cellH);
+        else fitInBox(im.obj, cellW, cellH, false);
+        im.obj.set({ left: gap + cellW / 2, top: boxTop + cellH / 2 });
+        applyStyle(im.obj, clipBox);
+      });
+    } else {
+      const natural = images.map(im => {
+        im.obj.scale(1);
+        const s = Math.min(cellW / im.obj.width, 1);
+        return { w: im.obj.width * s, h: im.obj.height * s, s };
+      });
+      const maxW = Math.max(...natural.map(x => x.w));
+      const totalH = natural.reduce((a, x) => a + x.h, 0) + gap * (n + 1);
+      canvas.setWidth(maxW + gap * 2);
+      canvas.setHeight(totalH);
+      let cursor = gap;
+      images.forEach((im, i) => {
+        const { w, h, s } = natural[i];
+        im.obj.scale(s);
+        let left;
+        if (align === 'start') left = gap + w / 2;
+        else if (align === 'end') left = maxW + gap - w / 2;
+        else left = gap + maxW / 2;
+        im.obj.set({ selectable:false, hasControls:false, hoverCursor:'default', angle:0, left, top: cursor + h / 2 });
+        applyStyle(im.obj, {});
+        cursor += h + gap;
+      });
+    }
   }
-
-  canvas.setWidth(canvasW);
-  canvas.setHeight(canvasH);
-
-  images.forEach((im, i) => {
-    const r = Math.floor(i / cols);
-    const c = i % cols;
-    const boxLeft = gap + c * (cellW + gap);
-    const boxTop = gap + r * (cellH + gap);
-    im.obj.set({
-      selectable: false,
-      hasControls: false,
-      hoverCursor: 'default',
-      angle: 0
-    });
-    im.obj.scale(1);
-    fitContain(im.obj, cellW, cellH, false);
-    im.obj.set({
-      originX: 'center',
-      originY: 'center',
-      left: boxLeft + cellW / 2,
-      top: boxTop + cellH / 2
-    });
-  });
 
   applyBackground();
   canvas.renderAll();
 }
 
-// ---- Overlay controls ----
+// ---- Custom mode layer controls ----
 function applyLayerOpacity(v) {
   const obj = canvas.getActiveObject();
   if (obj) { obj.set('opacity', parseFloat(v)); canvas.renderAll(); }
@@ -387,45 +640,129 @@ function applyBlendMode(v) {
   const obj = canvas.getActiveObject();
   if (obj) { obj.set('globalCompositeOperation', v); canvas.renderAll(); }
 }
-function bringForward() {
-  const obj = canvas.getActiveObject();
-  if (obj) { canvas.bringForward(obj); canvas.renderAll(); }
+function bringForward() { const o = canvas.getActiveObject(); if (o) { canvas.bringForward(o); canvas.renderAll(); } }
+function sendBackward() { const o = canvas.getActiveObject(); if (o) { canvas.sendBackwards(o); canvas.renderAll(); } }
+
+// ---- Text & watermark ----
+function computePos(w, h, posKey, pad = 20) {
+  const cw = canvas.getWidth(), ch = canvas.getHeight();
+  switch (posKey) {
+    case 'top-left': return { left: pad, top: pad };
+    case 'top-right': return { left: cw - w - pad, top: pad };
+    case 'bottom-left': return { left: pad, top: ch - h - pad };
+    case 'bottom-right': return { left: cw - w - pad, top: ch - h - pad };
+    default: return { left: (cw - w) / 2, top: (ch - h) / 2 };
+  }
 }
-function sendBackward() {
-  const obj = canvas.getActiveObject();
-  if (obj) { canvas.sendBackwards(obj); canvas.renderAll(); }
+function addTextLayer() {
+  const text = document.getElementById('textInput').value.trim();
+  if (!text) return alert('Type some text first');
+  const color = document.getElementById('textColor').value;
+  const size = parseInt(document.getElementById('textSize').value, 10) || 32;
+  const pos = document.getElementById('textPos').value;
+  const t = new fabric.IText(text, { fontSize: size, fill: color, originX: 'left', originY: 'top' });
+  canvas.add(t);
+  const p = computePos(t.width, t.height, pos);
+  t.set(p);
+  t._mergeId = uid();
+  decorItems.push({ id: t._mergeId, obj: t, type: 'text' });
+  canvas.setActiveObject(t);
+  canvas.renderAll();
+}
+document.getElementById('watermarkUpload').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    fabric.Image.fromURL(ev.target.result, (img) => {
+      img.set({ originX: 'left', originY: 'top' });
+      const maxW = canvas.getWidth() * 0.3;
+      if (img.width > maxW) img.scaleToWidth(maxW);
+      img.set('opacity', parseFloat(document.getElementById('wmOpacity').value));
+      const pos = document.getElementById('wmPos').value;
+      const p = computePos(img.getScaledWidth(), img.getScaledHeight(), pos);
+      img.set(p);
+      img._mergeId = uid();
+      canvas.add(img);
+      decorItems.push({ id: img._mergeId, obj: img, type: 'watermark' });
+      canvas.setActiveObject(img);
+      canvas.renderAll();
+    }, { crossOrigin: 'anonymous' });
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+};
+
+// ---- Before / After compare ----
+function toggleCompare() {
+  compareMode = !compareMode;
+  images.forEach(im => {
+    const o = im.obj;
+    if (compareMode) {
+      o._savedClip = o.clipPath; o._savedShadow = o.shadow;
+      o._savedStroke = o.stroke; o._savedStrokeW = o.strokeWidth;
+      o.clipPath = null; o.shadow = null; o.set({ stroke: null, strokeWidth: 0 });
+    } else {
+      o.clipPath = o._savedClip || null; o.shadow = o._savedShadow || null;
+      o.set({ stroke: o._savedStroke || null, strokeWidth: o._savedStrokeW || 0 });
+    }
+  });
+  decorItems.forEach(d => d.obj.set('visible', !compareMode));
+  canvas.renderAll();
+  document.getElementById('compareBtn').innerText = compareMode ? '🔁 Show After (Styled)' : '🔁 Compare Before/After';
 }
 
 // ---- Export ----
 function exportImage() {
   if (images.length === 0) { alert('Add images first'); return; }
+  if (compareMode) toggleCompare();
   canvas.discardActiveObject();
   canvas.renderAll();
 
   const format = document.getElementById('format').value;
-  const scale = parseFloat(document.getElementById('scale').value);
+  const quality = parseFloat(document.getElementById('quality').value);
   const transparent = document.getElementById('transparentBg').checked;
+  const outputMode = document.getElementById('outputMode').value;
 
-  if (format === 'jpeg' && transparent) {
-    document.getElementById('msg').innerText = 'JPEG does not support transparency, using white background for export.';
+  if (format !== 'png' && transparent) {
+    document.getElementById('msg').innerText = format.toUpperCase() + ' does not support transparency; using white background.';
     canvas.set('backgroundColor', '#ffffff');
     canvas.renderAll();
   }
 
-  const dataUrl = canvas.toDataURL({
-    format: format,
-    quality: 0.92,
-    multiplier: scale
-  });
-
-  if (format === 'jpeg' && transparent) {
-    applyBackground(); // restore transparent bg in editor after export
+  let dataUrl;
+  if (outputMode === 'auto') {
+    const mult = parseFloat(document.getElementById('scale').value);
+    dataUrl = canvas.toDataURL({ format, quality, multiplier: mult });
+  } else if (outputMode === 'width' || outputMode === 'height') {
+    const target = parseInt(document.getElementById(outputMode === 'width' ? 'targetW' : 'targetH').value, 10);
+    const base = outputMode === 'width' ? canvas.getWidth() : canvas.getHeight();
+    const mult = target / base;
+    dataUrl = canvas.toDataURL({ format, quality, multiplier: mult });
+  } else {
+    const tw = parseInt(document.getElementById('targetW').value, 10) || 1200;
+    const th = parseInt(document.getElementById('targetH').value, 10) || 800;
+    const srcEl = canvas.toCanvasElement({ multiplier: 2 });
+    const off = document.createElement('canvas');
+    off.width = tw; off.height = th;
+    const ctx = off.getContext('2d');
+    if (format !== 'png' || !transparent) {
+      ctx.fillStyle = transparent ? '#ffffff' : document.getElementById('bgColor').value;
+      ctx.fillRect(0, 0, tw, th);
+    }
+    const s = Math.min(tw / srcEl.width, th / srcEl.height);
+    const dw = srcEl.width * s, dh = srcEl.height * s;
+    ctx.drawImage(srcEl, (tw - dw) / 2, (th - dh) / 2, dw, dh);
+    dataUrl = off.toDataURL('image/' + format, quality);
   }
+
+  if (format !== 'png' && transparent) applyBackground();
 
   document.getElementById('resultImg').src = dataUrl;
   const link = document.getElementById('downloadLink');
   link.href = dataUrl;
-  link.download = 'tone-pics-merged.' + (format === 'jpeg' ? 'jpg' : 'png');
+  const ext = format === 'jpeg' ? 'jpg' : format;
+  link.download = 'tone-pics-merged.' + ext;
   document.getElementById('result').style.display = 'flex';
   document.getElementById('msg').innerText = 'Merged successfully ✅';
 }
