@@ -38,130 +38,106 @@
     </style>
 </head>
 <body>
-
-<header class="header">
-    <a href="../index.html" class="back-btn">← Back</a>
-    <div class="logo">Tone.pics <span>GIF MAKER</span></div>
-</header>
-
-<div class="container">
-    <div class="panel">
-        <h2>🎬 Animated GIF Maker</h2>
-        <label class="drop-zone" id="dropZone">
-            Click or Drop Images Here
-            <input type="file" id="fileInput" accept="image/*" multiple>
-        </label>
-        <div class="images-list" id="imagesList"></div>
-        <div class="control">
-            <label>Frame Duration</label>
-            <input type="range" id="duration" min="100" max="2000" value="500">
-            <p id="durationValue">500 ms</p>
+    <header class="header">
+        <a href="../index.html" class="back-btn">← Back</a>
+        <div class="logo">Tone.pics <span>GIF MAKER</span></div>
+    </header>
+    <div class="container">
+        <div class="panel">
+            <h2>🎬 Animated GIF Maker</h2>
+            <label class="drop-zone" id="dropZone">
+                Click or Drop Images Here
+                <input type="file" id="fileInput" accept="image/*" multiple>
+            </label>
+            <div class="images-list" id="imagesList"></div>
+            <div class="control">
+                <label>Frame Duration (ms)</label>
+                <input type="range" id="duration" min="100" max="2000" value="500">
+                <p id="durationValue">500 ms</p>
+            </div>
+            <div class="control">
+                <label>GIF Size</label>
+                <select id="gifSize">
+                    <option value="512">512px</option>
+                    <option value="256" selected>256px</option>
+                    <option value="128">128px</option>
+                </select>
+            </div>
+            <div class="actions" id="actionContainer">
+                <button class="primary" id="createBtn">Generate GIF</button>
+                <button id="clearBtn">Clear</button>
+            </div>
+            <div class="status" id="status">No images selected</div>
         </div>
-        <div class="control">
-            <label>GIF Size</label>
-            <select id="gifSize">
-                <option value="512">512px</option>
-                <option value="256" selected>256px</option>
-                <option value="128">128px</option>
-            </select>
+        <div class="panel">
+            <h2>Preview</h2>
+            <div class="preview"><img id="previewImage"></div>
         </div>
-        <div class="control">
-            <label>Loop</label>
-            <select id="loop">
-                <option value="0">Infinite</option>
-                <option value="1">One Time</option>
-            </select>
-        </div>
-        <div class="actions" id="actionContainer">
-            <button class="primary" id="createBtn">Create GIF</button>
-            <button id="clearBtn">Clear</button>
-        </div>
-        <div class="status" id="status">No images selected</div>
     </div>
-    <div class="panel">
-        <h2>Preview</h2>
-        <div class="preview"><img id="previewImage"></div>
-    </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+    <script>
+        const fileInput = document.getElementById("fileInput"), dropZone = document.getElementById("dropZone"), imagesList = document.getElementById("imagesList"), duration = document.getElementById("duration"), durationValue = document.getElementById("durationValue"), previewImage = document.getElementById("previewImage"), createBtn = document.getElementById("createBtn"), clearBtn = document.getElementById("clearBtn"), status = document.getElementById("status"), gifSize = document.getElementById("gifSize");
+        let images = [];
 
-<script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
-<script>
-    const fileInput = document.getElementById("fileInput"), dropZone = document.getElementById("dropZone"), imagesList = document.getElementById("imagesList"), duration = document.getElementById("duration"), durationValue = document.getElementById("durationValue"), previewImage = document.getElementById("previewImage"), createBtn = document.getElementById("createBtn"), clearBtn = document.getElementById("clearBtn"), status = document.getElementById("status"), gifSize = document.getElementById("gifSize"), loop = document.getElementById("loop");
-    let images = [];
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = e => addFiles(e.target.files);
 
-    dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = e => addFiles(e.target.files);
+        function addFiles(files){
+            [...files].forEach(file => {
+                if(!file.type.startsWith("image/")) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => { images.push(img); renderImages(); };
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
-    function addFiles(files){
-        [...files].forEach(file => {
-            if(!file.type.startsWith("image/")) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = () => { images.push(img); renderImages(); updatePreview(); };
-            };
-            reader.readAsDataURL(file);
-        });
-    }
+        function renderImages(){
+            imagesList.innerHTML="";
+            images.forEach((img, index) => {
+                const card = document.createElement("div");
+                card.className = "image-card";
+                card.innerHTML = `<img src="${img.src}"><button class="remove">×</button>`;
+                card.querySelector(".remove").onclick = () => { images.splice(index,1); renderImages(); };
+                imagesList.appendChild(card);
+            });
+            status.innerHTML = images.length + " image(s) loaded";
+        }
 
-    function renderImages(){
-        imagesList.innerHTML="";
-        images.forEach((img, index) => {
-            const card = document.createElement("div");
-            card.className = "image-card";
-            card.innerHTML = `<img src="${img.src}"><button class="remove">×</button>`;
-            card.querySelector(".remove").onclick = () => { images.splice(index,1); renderImages(); updatePreview(); };
-            imagesList.appendChild(card);
-        });
-        status.innerHTML = images.length + " image(s) loaded";
-    }
+        createBtn.onclick = () => {
+            if(images.length < 1) { alert("Please upload images first"); return; }
+            status.innerHTML = "Processing GIF... Please wait";
+            const size = Number(gifSize.value);
+            const gif = new GIF({ workers: 2, quality: 10, width: size, height: size });
 
-    let previewTimer;
-    function updatePreview(){
-        clearInterval(previewTimer);
-        if(images.length === 0){ previewImage.src = ""; return; }
-        let index = 0;
-        previewImage.src = images[0].src;
-        previewTimer = setInterval(() => { index = (index + 1) % images.length; previewImage.src = images[index].src; }, Number(duration.value));
-    }
+            images.forEach(img => {
+                const canvas = document.createElement("canvas");
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size);
+                const ratio = Math.max(size/img.width, size/img.height);
+                const w = img.width * ratio, h = img.height * ratio;
+                ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+                gif.addFrame(canvas, { delay: Number(duration.value) });
+            });
 
-    duration.oninput = () => { durationValue.innerHTML = duration.value + " ms"; updatePreview(); };
-    clearBtn.onclick = () => { images = []; imagesList.innerHTML = ""; previewImage.src = ""; status.innerHTML = "No images selected"; };
-
-    createBtn.onclick = () => {
-        if(images.length < 1) { alert("Please upload images first"); return; }
-        status.innerHTML = "Processing GIF... Please wait";
-        const size = Number(gifSize.value);
-        
-        // Using direct constructor without external worker path to avoid CORS
-        const gif = new GIF({ workers: 2, quality: 10, width: size, height: size, repeat: Number(loop.value) === 0 ? 0 : -1 });
-
-        images.forEach(img => {
-            const canvas = document.createElement("canvas");
-            canvas.width = size; canvas.height = size;
-            const ctx = canvas.getContext("2d");
-            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, size, size);
-            const ratio = Math.max(size/img.width, size/img.height);
-            const w = img.width * ratio, h = img.height * ratio;
-            ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
-            gif.addFrame(canvas, { delay: Number(duration.value) });
-        });
-
-        gif.on("finished", blob => {
-            const url = URL.createObjectURL(blob);
-            previewImage.src = url;
-            const download = document.createElement("a");
-            download.href = url;
-            download.download = "animation.gif";
-            download.innerHTML = "Download GIF";
-            download.className = "primary";
-            download.style.cssText = "display:inline-block; text-decoration:none; padding:10px 15px; margin-top:15px; border-radius:8px;";
-            status.innerHTML = "GIF Created Successfully!";
-            document.getElementById("actionContainer").appendChild(download);
-        });
-        gif.render();
-    };
-</script>
+            gif.on("finished", blob => {
+                const url = URL.createObjectURL(blob);
+                previewImage.src = url;
+                const download = document.createElement("a");
+                download.href = url;
+                download.download = "generated-gif.gif";
+                download.innerHTML = "Download GIF";
+                download.className = "primary";
+                download.style.cssText = "display:inline-block; text-decoration:none; padding:10px 15px; margin-top:15px; border-radius:8px;";
+                status.innerHTML = "Success! 🎉";
+                document.getElementById("actionContainer").appendChild(download);
+            });
+            gif.render();
+        };
+    </script>
 </body>
 </html>
