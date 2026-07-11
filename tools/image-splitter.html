@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Image Splitter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #controls { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; }
+        #canvas-preview { max-width: 100%; border: 2px solid #333; cursor: crosshair; }
+        .btn { padding: 10px 20px; background: #ffd23f; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Image Splitter</h2>
+    <div id="controls">
+        <input type="file" id="upload" accept="image/*">
+        <label>Rows: <input type="number" id="rows" value="2" min="1" max="10" style="width: 40px;"></label>
+        <label>Cols: <input type="number" id="cols" value="2" min="1" max="10" style="width: 40px;"></label>
+        <button class="btn" onclick="processSplit()">Split & Download ZIP</button>
+        <button class="btn" onclick="history.back()">Back</button>
+    </div>
+
+    <img id="preview" style="display:none; max-width: 600px;">
+
+<script>
+    const upload = document.getElementById('upload');
+    const imgElement = document.getElementById('preview');
+
+    upload.onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            imgElement.src = ev.target.result;
+            imgElement.style.display = 'block';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    async function processSplit() {
+        if (!imgElement.src) return alert("Please upload an image first!");
+        
+        const rows = parseInt(document.getElementById('rows').value);
+        const cols = parseInt(document.getElementById('cols').value);
+        const zip = new JSZip();
+        
+        const pieceW = imgElement.naturalWidth / cols;
+        const pieceH = imgElement.naturalHeight / rows;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const canvas = document.createElement('canvas');
+                canvas.width = pieceW;
+                canvas.height = pieceH;
+                canvas.getContext('2d').drawImage(imgElement, c * pieceW, r * pieceH, pieceW, pieceH, 0, 0, pieceW, pieceH);
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve));
+                zip.file(`piece_${r}_${c}.png`, blob);
+            }
+        }
+
+        zip.generateAsync({type:"blob"}).then(content => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = "split_images.zip";
+            link.click();
+        });
+    }
+</script>
+</body>
+</html>
