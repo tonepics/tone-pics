@@ -913,7 +913,7 @@ window.exportFinalImage = function(){
   const ext = format.split('/')[1];
   const a = document.createElement('a');
   a.href = outCanvas.toDataURL(format, quality);
-  a.download = `tone-pics-${outCanvas.width}x${outCanvas.height}.${ext}`;
+  a.download = `Bloia.com-${outCanvas.width}x${outCanvas.height}.${ext}`;
   a.click();
   showToast('Image exported successfully.');
 };
