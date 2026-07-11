@@ -1,71 +1,389 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <title>Pro Image Splitter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #controls { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; }
-        #canvas-preview { max-width: 100%; border: 2px solid #333; cursor: crosshair; }
-        .btn { padding: 10px 20px; background: #ffd23f; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tone.pics | Image Splitter</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:#000; color:#eee; font-family:'Segoe UI', sans-serif;
+    display:flex; height:100vh; overflow:hidden;
+  }
+  #toolbar {
+    width:320px; background:#0a0a0a; padding:16px; display:flex; flex-direction:column;
+    gap:12px; border-right:1px solid #222; overflow-y:auto;
+  }
+  #toolbar h3 { margin:0 0 4px; color:#ffd23f; }
+  #toolbar h4 { margin:8px 0 0; color:#ffd23f; font-size:13px; border-top:1px solid #222; padding-top:10px; }
+  .section { background:#141414; padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+  .section label { font-size:12px; color:#9aa0ac; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .row > * { flex:1; }
+  .check-row { display:flex; align-items:center; gap:6px; font-size:12px; color:#eee; }
+  input[type=file], select, input[type=range], input[type=number], input[type=text] {
+    background:#000; color:#fff; border:1px solid #333; border-radius:4px; padding:6px; width:100%;
+  }
+  input[type=checkbox] { width:auto; }
+  .btn {
+    background:#ffd23f; color:#111; border:none; padding:10px; cursor:pointer;
+    font-weight:bold; border-radius:6px; transition:.15s;
+  }
+  .btn:hover { filter:brightness(1.1); }
+  .btn.secondary { background:#222; color:#eee; }
+  .btn.danger { background:#e5484d; color:#fff; }
+  .btn.success { background:#28a745; color:#fff; }
+  .btn.small { padding:6px 8px; font-size:12px; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  #homeBtn {
+    display:flex; align-items:center; gap:6px; background:#222; color:#eee;
+    border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:13px;
+    width:100%; justify-content:center;
+  }
+  #homeBtn:hover { background:#2c2c2c; }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; }
+  .presets button {
+    background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:6px 8px;
+    font-size:11px; cursor:pointer;
+  }
+  .presets button:hover { background:#2c2c2c; }
+  #dropHint {
+    border:2px dashed #333; border-radius:8px; padding:14px; text-align:center; font-size:12px;
+    color:#9aa0ac; cursor:pointer;
+  }
+  #canvas-area {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:24px; gap:18px; overflow-y:auto; background:#000; position:relative;
+  }
+  #canvas-area.dragover::after {
+    content:'Drop image here'; position:absolute; inset:20px; border:3px dashed #ffd23f; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:20px; color:#ffd23f;
+    background:rgba(0,0,0,.7); pointer-events:none;
+  }
+  #previewWrap { border:1px solid #222; background:#000; box-shadow:0 0 40px rgba(0,0,0,.6); }
+  #emptyState { color:#555; font-size:14px; text-align:center; margin-top:80px; }
+  #piecesGrid {
+    display:grid; gap:4px; background:#000; padding:4px; border:1px solid #222;
+  }
+  .piece-cell { position:relative; overflow:hidden; }
+  .piece-cell img { width:100%; display:block; }
+  .piece-cell .num {
+    position:absolute; top:4px; left:4px; background:rgba(0,0,0,.7); color:#ffd23f;
+    font-size:11px; padding:1px 5px; border-radius:3px;
+  }
+  .piece-cell .dl {
+    position:absolute; bottom:4px; right:4px; background:#ffd23f; color:#111; border:none;
+    border-radius:3px; font-size:11px; padding:3px 6px; cursor:pointer;
+  }
+  #msg { font-size:13px; color:#9aa0ac; min-height:18px; }
+  #resultsTitle { color:#ffd23f; font-size:14px; margin:0; }
+</style>
 </head>
 <body>
 
-    <h2>Image Splitter</h2>
-    <div id="controls">
-        <input type="file" id="upload" accept="image/*">
-        <label>Rows: <input type="number" id="rows" value="2" min="1" max="10" style="width: 40px;"></label>
-        <label>Cols: <input type="number" id="cols" value="2" min="1" max="10" style="width: 40px;"></label>
-        <button class="btn" onclick="processSplit()">Split & Download ZIP</button>
-        <button class="btn" onclick="history.back()">Back</button>
-    </div>
+<div id="toolbar">
+  <button id="homeBtn" onclick="goHome()">🏠 Back to Home</button>
+  <h3>✂️ Image Splitter</h3>
 
-    <img id="preview" style="display:none; max-width: 600px;">
+  <div class="section">
+    <label>Upload image</label>
+    <input type="file" id="upload" accept="image/*">
+    <div id="dropHint" onclick="document.getElementById('upload').click()">Drag &amp; drop an image here, or click to browse</div>
+  </div>
+
+  <h4>🔲 Grid Settings</h4>
+  <div class="section">
+    <div class="row">
+      <div>
+        <label>Rows</label>
+        <input type="number" id="rows" value="3" min="1" max="20" onchange="onGridChange()">
+      </div>
+      <div>
+        <label>Columns</label>
+        <input type="number" id="cols" value="3" min="1" max="20" onchange="onGridChange()">
+      </div>
+    </div>
+    <label>Presets</label>
+    <div class="presets">
+      <button onclick="setPreset(1,2)">1×2</button>
+      <button onclick="setPreset(2,1)">2×1</button>
+      <button onclick="setPreset(1,3)">1×3</button>
+      <button onclick="setPreset(3,1)">3×1</button>
+      <button onclick="setPreset(2,2)">2×2</button>
+      <button onclick="setPreset(3,3)">3×3</button>
+      <button onclick="setPreset(4,4)">4×4</button>
+      <button onclick="setPreset(1,3)">IG Panorama</button>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="showGrid" checked onchange="drawPreview()">
+      <label style="margin:0;">Show grid lines on preview</label>
+    </div>
+    <div class="check-row">
+      <input type="checkbox" id="reverseOrder" onchange="onGridChange()">
+      <label style="margin:0;">Reverse numbering (for IG carousel)</label>
+    </div>
+  </div>
+
+  <h4>📤 Export</h4>
+  <div class="section">
+    <div class="row">
+      <div>
+        <label>Format</label>
+        <select id="format" onchange="onFormatChange()">
+          <option value="png">PNG</option>
+          <option value="jpeg">JPG</option>
+        </select>
+      </div>
+      <div id="qualityWrap" style="display:none;">
+        <label>Quality</label>
+        <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.92">
+      </div>
+    </div>
+    <label>Filename prefix</label>
+    <input type="text" id="prefix" value="tone-pics-piece">
+  </div>
+
+  <div class="section">
+    <button class="btn success" onclick="splitImage()" id="splitBtn" disabled>✂️ Split Image</button>
+    <button class="btn secondary" onclick="downloadAllZip()" id="zipBtn" disabled>⬇ Download All as ZIP</button>
+    <button class="btn danger" onclick="resetAll()">🗑 Reset</button>
+    <div id="msg"></div>
+  </div>
+</div>
+
+<div id="canvas-area">
+  <div id="emptyState">📂 Upload an image to start splitting</div>
+  <div id="previewWrap" style="display:none;"><canvas id="previewCanvas"></canvas></div>
+  <div id="resultsWrap" style="display:none; display:flex; flex-direction:column; align-items:center; gap:10px;">
+    <p id="resultsTitle">Split result — click a piece to download it</p>
+    <div id="piecesGrid"></div>
+  </div>
+</div>
 
 <script>
-    const upload = document.getElementById('upload');
-    const imgElement = document.getElementById('preview');
+let sourceImg = null;
+let srcW = 0, srcH = 0;
+let pieces = []; // { row, col, dataUrl, w, h, index }
 
-    upload.onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            imgElement.src = ev.target.result;
-            imgElement.style.display = 'block';
-        };
-        reader.readAsDataURL(e.target.files[0]);
+function goHome() {
+  if (sourceImg) {
+    const ok = confirm('You have an image loaded. Go back to Home and discard it?');
+    if (!ok) return;
+  }
+  window.location.href = 'https://tone-pics.vercel.app/';
+}
+
+// ---- Upload ----
+const canvasArea = document.getElementById('canvas-area');
+canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); canvasArea.classList.add('dragover'); });
+canvasArea.addEventListener('dragleave', () => canvasArea.classList.remove('dragover'));
+canvasArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  canvasArea.classList.remove('dragover');
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+document.getElementById('upload').onchange = (e) => {
+  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+  e.target.value = '';
+};
+
+function loadFile(file) {
+  if (!file.type.startsWith('image/')) { setMsg('Please select a valid image file.'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImg = img;
+      srcW = img.naturalWidth;
+      srcH = img.naturalHeight;
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('previewWrap').style.display = 'block';
+      document.getElementById('splitBtn').disabled = false;
+      document.getElementById('resultsWrap').style.display = 'none';
+      document.getElementById('zipBtn').disabled = true;
+      pieces = [];
+      setMsg(`Loaded: ${srcW} × ${srcH}px`);
+      drawPreview();
     };
+    img.onerror = () => setMsg('Could not load this image file.');
+    img.src = ev.target.result;
+  };
+  reader.onerror = () => setMsg('Could not read this file.');
+  reader.readAsDataURL(file);
+}
 
-    async function processSplit() {
-        if (!imgElement.src) return alert("Please upload an image first!");
-        
-        const rows = parseInt(document.getElementById('rows').value);
-        const cols = parseInt(document.getElementById('cols').value);
-        const zip = new JSZip();
-        
-        const pieceW = imgElement.naturalWidth / cols;
-        const pieceH = imgElement.naturalHeight / rows;
+function setMsg(t) { document.getElementById('msg').innerText = t; }
 
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                const canvas = document.createElement('canvas');
-                canvas.width = pieceW;
-                canvas.height = pieceH;
-                canvas.getContext('2d').drawImage(imgElement, c * pieceW, r * pieceH, pieceW, pieceH, 0, 0, pieceW, pieceH);
-                
-                const blob = await new Promise(resolve => canvas.toBlob(resolve));
-                zip.file(`piece_${r}_${c}.png`, blob);
-            }
-        }
+// ---- Preset & grid change ----
+function setPreset(r, c) {
+  document.getElementById('rows').value = r;
+  document.getElementById('cols').value = c;
+  onGridChange();
+}
+function onGridChange() {
+  document.getElementById('resultsWrap').style.display = 'none';
+  document.getElementById('zipBtn').disabled = true;
+  pieces = [];
+  drawPreview();
+}
+function onFormatChange() {
+  document.getElementById('qualityWrap').style.display = document.getElementById('format').value === 'jpeg' ? '' : 'none';
+}
 
-        zip.generateAsync({type:"blob"}).then(content => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = "split_images.zip";
-            link.click();
-        });
+// ---- Boundaries: distribute pixels evenly with max 1px rounding difference ----
+function computeBoundaries(total, parts) {
+  const arr = [0];
+  for (let i = 1; i <= parts; i++) arr.push(Math.round((total * i) / parts));
+  return arr;
+}
+
+// ---- Preview with grid overlay ----
+function drawPreview() {
+  if (!sourceImg) return;
+  const maxW = Math.min(canvasArea.clientWidth - 48, 800);
+  const maxH = 560;
+  const scale = Math.min(maxW / srcW, maxH / srcH, 1);
+  const dispW = Math.round(srcW * scale);
+  const dispH = Math.round(srcH * scale);
+
+  const canvas = document.getElementById('previewCanvas');
+  canvas.width = dispW;
+  canvas.height = dispH;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, dispW, dispH);
+  ctx.drawImage(sourceImg, 0, 0, dispW, dispH);
+
+  if (document.getElementById('showGrid').checked) {
+    const rows = Math.max(1, parseInt(document.getElementById('rows').value, 10) || 1);
+    const cols = Math.max(1, parseInt(document.getElementById('cols').value, 10) || 1);
+    const xB = computeBoundaries(dispW, cols);
+    const yB = computeBoundaries(dispH, rows);
+    ctx.strokeStyle = '#ffd23f';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    xB.forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, dispH); ctx.stroke(); });
+    yB.forEach(y => { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(dispW, y); ctx.stroke(); });
+    ctx.setLineDash([]);
+  }
+}
+window.addEventListener('resize', () => { if (sourceImg) drawPreview(); });
+
+// ---- Split ----
+function splitImage() {
+  if (!sourceImg) { setMsg('Upload an image first.'); return; }
+  const rows = Math.max(1, parseInt(document.getElementById('rows').value, 10) || 1);
+  const cols = Math.max(1, parseInt(document.getElementById('cols').value, 10) || 1);
+  const format = document.getElementById('format').value;
+  const quality = parseFloat(document.getElementById('quality').value);
+  const reverse = document.getElementById('reverseOrder').checked;
+
+  const xB = computeBoundaries(srcW, cols);
+  const yB = computeBoundaries(srcH, rows);
+
+  pieces = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const sx = xB[c], sy = yB[r];
+      const sw = xB[c + 1] - xB[c], sh = yB[r + 1] - yB[r];
+      const off = document.createElement('canvas');
+      off.width = sw; off.height = sh;
+      const ctx = off.getContext('2d');
+      ctx.drawImage(sourceImg, sx, sy, sw, sh, 0, 0, sw, sh);
+      const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+      const dataUrl = off.toDataURL(mime, quality);
+      pieces.push({ row: r, col: c, dataUrl, w: sw, h: sh });
     }
+  }
+
+  const total = pieces.length;
+  pieces.forEach((p, i) => p.index = reverse ? (total - i) : (i + 1));
+
+  renderPieces(rows, cols);
+  document.getElementById('zipBtn').disabled = false;
+  setMsg(`Split into ${pieces.length} pieces ✅`);
+}
+
+function renderPieces(rows, cols) {
+  const grid = document.getElementById('piecesGrid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${cols}, minmax(60px, 120px))`;
+
+  pieces.forEach((p) => {
+    const cell = document.createElement('div');
+    cell.className = 'piece-cell';
+    const img = document.createElement('img');
+    img.src = p.dataUrl;
+    const num = document.createElement('div');
+    num.className = 'num';
+    num.innerText = p.index;
+    const dl = document.createElement('button');
+    dl.className = 'dl';
+    dl.innerText = '⬇';
+    dl.onclick = () => downloadPiece(p);
+    cell.appendChild(img);
+    cell.appendChild(num);
+    cell.appendChild(dl);
+    grid.appendChild(cell);
+  });
+
+  document.getElementById('resultsWrap').style.display = 'flex';
+}
+
+function downloadPiece(p) {
+  const format = document.getElementById('format').value;
+  const ext = format === 'jpeg' ? 'jpg' : 'png';
+  const prefix = document.getElementById('prefix').value.trim() || 'tone-pics-piece';
+  const a = document.createElement('a');
+  a.href = p.dataUrl;
+  a.download = `${prefix}-${String(p.index).padStart(2, '0')}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function downloadAllZip() {
+  if (pieces.length === 0) { setMsg('Split the image first.'); return; }
+  setMsg('Building ZIP file...');
+  try {
+    const zip = new JSZip();
+    const format = document.getElementById('format').value;
+    const ext = format === 'jpeg' ? 'jpg' : 'png';
+    const prefix = document.getElementById('prefix').value.trim() || 'tone-pics-piece';
+
+    pieces.forEach((p) => {
+      const base64 = p.dataUrl.split(',')[1];
+      zip.file(`${prefix}-${String(p.index).padStart(2, '0')}.${ext}`, base64, { base64: true });
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${prefix}-all.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setMsg('ZIP downloaded ✅');
+  } catch (err) {
+    console.error(err);
+    setMsg('Failed to build ZIP file. Try downloading pieces individually.');
+  }
+}
+
+function resetAll() {
+  sourceImg = null;
+  srcW = 0; srcH = 0;
+  pieces = [];
+  document.getElementById('emptyState').style.display = 'block';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('resultsWrap').style.display = 'none';
+  document.getElementById('splitBtn').disabled = true;
+  document.getElementById('zipBtn').disabled = true;
+  document.getElementById('upload').value = '';
+  setMsg('');
+}
 </script>
 </body>
 </html>
