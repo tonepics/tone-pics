@@ -42,6 +42,21 @@
     width:100%; justify-content:center;
   }
   #homeBtn:hover { background:#2c2c2c; }
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    background: #0a0a0a;
+    border-top: 1px solid #222;
+    z-index: 999;
+    box-sizing: border-box;
+  }
+  #appWrap { display:flex; height:calc(100vh - 34px); width:100%; }
   .presets { display:flex; flex-wrap:wrap; gap:6px; }
   .presets button {
     background:#222; color:#eee; border:1px solid #333; border-radius:4px; padding:6px 8px;
@@ -81,6 +96,8 @@
 </style>
 </head>
 <body>
+
+<div id="appWrap">
 
 <div id="toolbar">
   <button id="homeBtn" onclick="goHome()">🏠 Back to Home</button>
@@ -160,6 +177,11 @@
     <div id="piecesGrid"></div>
   </div>
 </div>
+</div>
+
+<footer>
+© 2026 Bloia.com | Creative Asset Utilities
+</footer>
 
 <script>
 let sourceImg = null;
