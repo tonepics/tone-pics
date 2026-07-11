@@ -65,9 +65,26 @@
     width:100%; justify-content:center;
   }
   #homeBtn:hover { background:#343946; }
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    background: #0d0f13;
+    border-top: 1px solid #2a2e37;
+    z-index: 999;
+    box-sizing: border-box;
+  }
+  #appWrap { display:flex; height:calc(100vh - 34px); width:100%; }
 </style>
 </head>
 <body>
+
+<div id="appWrap">
 
 <div id="toolbar">
   <button id="homeBtn" onclick="goHome()">🏠 Back to Home</button>
@@ -140,6 +157,11 @@
   <div id="canvas-wrap"><canvas id="c"></canvas></div>
   <div id="timeline"></div>
 </div>
+</div>
+
+<footer>
+© 2026 Bloia.com | Creative Asset Utilities
+</footer>
 
 <script>
 let CANVAS_SIZE = 512;
