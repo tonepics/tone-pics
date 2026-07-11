@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tone.pics | Black &amp; White Converter</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:#000; color:#eee; font-family:'Segoe UI', sans-serif;
+    display:flex; height:100vh; overflow:hidden;
+  }
+  #toolbar {
+    width:320px; background:#0a0a0a; padding:16px; display:flex; flex-direction:column;
+    gap:12px; border-right:1px solid #222; overflow-y:auto;
+  }
+  #toolbar h3 { margin:0 0 4px; color:#ffd23f; }
+  #toolbar h4 { margin:8px 0 0; color:#ffd23f; font-size:13px; border-top:1px solid #222; padding-top:10px; }
+  .section { background:#141414; padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px; }
+  .section label { font-size:12px; color:#9aa0ac; display:flex; justify-content:space-between; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .row > * { flex:1; }
+  .check-row { display:flex; align-items:center; gap:6px; font-size:12px; color:#eee; }
+  input[type=file], select, input[type=range], input[type=number] {
+    background:#000; color:#fff; border:1px solid #333; border-radius:4px; padding:6px; width:100%;
+  }
+  input[type=checkbox] { width:auto; }
+  .btn {
+    background:#ffd23f; color:#111; border:none; padding:10px; cursor:pointer;
+    font-weight:bold; border-radius:6px; transition:.15s;
+  }
+  .btn:hover { filter:brightness(1.1); }
+  .btn.secondary { background:#222; color:#eee; }
+  .btn.danger { background:#e5484d; color:#fff; }
+  .btn.success { background:#28a745; color:#fff; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  #homeBtn {
+    display:flex; align-items:center; gap:6px; background:#222; color:#eee;
+    border:none; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:13px;
+    width:100%; justify-content:center;
+  }
+  #homeBtn:hover { background:#2c2c2c; }
+  #dropHint {
+    border:2px dashed #333; border-radius:8px; padding:14px; text-align:center; font-size:12px;
+    color:#9aa0ac; cursor:pointer;
+  }
+  #canvas-area {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; gap:16px; overflow:auto; background:#000; position:relative;
+  }
+  #canvas-area.dragover::after {
+    content:'Drop image here'; position:absolute; inset:20px; border:3px dashed #ffd23f; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:20px; color:#ffd23f;
+    background:rgba(0,0,0,.75); pointer-events:none;
+  }
+  #emptyState { color:#555; font-size:14px; text-align:center; }
+  #compareWrap {
+    position:relative; display:none; user-select:none; box-shadow:0 0 40px rgba(0,0,0,.6); border:1px solid #222;
+  }
+  #compareWrap canvas { display:block; }
+  #bwCanvas { position:absolute; top:0; left:0; }
+  #handle {
+    position:absolute; top:0; bottom:0; left:50%; width:2px; background:#ffd23f; cursor:ew-resize; z-index:5;
+  }
+  #handle .knob {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:34px; height:34px; border-radius:50%; background:#ffd23f; color:#111;
+    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold;
+  }
+  .tagLabel {
+    position:absolute; top:8px; background:rgba(0,0,0,.6); color:#ffd23f; font-size:11px;
+    padding:2px 8px; border-radius:4px; z-index:4;
+  }
+  #msg { font-size:13px; color:#9aa0ac; min-height:18px; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button id="homeBtn" onclick="goHome()">🏠 Back to Home</button>
+  <h3>⚫⚪ B&amp;W Converter</h3>
+
+  <div class="section">
+    <label>Upload photo</label>
+    <input type="file" id="upload" accept="image/*">
+    <div id="dropHint" onclick="document.getElementById('upload').click()">Drag &amp; drop an image here, or click to browse</div>
+  </div>
+
+  <h4>🎛️ Conversion Settings</h4>
+  <div class="section">
+    <label>Method</label>
+    <select id="method" onchange="updatePreview()">
+      <option value="luminosity">Luminosity (recommended)</option>
+      <option value="average">Average</option>
+      <option value="lightness">Lightness</option>
+      <option value="red">Red channel</option>
+      <option value="green">Green channel</option>
+      <option value="blue">Blue channel</option>
+    </select>
+
+    <label>Intensity <span id="intensityVal">100%</span></label>
+    <input type="range" id="intensity" min="0" max="100" value="100" oninput="updatePreview()">
+
+    <label>Brightness <span id="brightnessVal">0</span></label>
+    <input type="range" id="brightness" min="-100" max="100" value="0" oninput="updatePreview()">
+
+    <label>Contrast <span id="contrastVal">0</span></label>
+    <input type="range" id="contrast" min="-100" max="100" value="0" oninput="updatePreview()">
+
+    <div class="check-row">
+      <input type="checkbox" id="thresholdToggle" onchange="updatePreview()">
+      <label style="margin:0;">Pure black &amp; white (threshold)</label>
+    </div>
+    <input type="range" id="threshold" min="0" max="255" value="128" oninput="updatePreview()" disabled>
+
+    <button class="btn secondary" onclick="resetSettings()">↻ Reset Settings</button>
+  </div>
+
+  <h4>📤 Export</h4>
+  <div class="section">
+    <div class="row">
+      <div>
+        <label>Format</label>
+        <select id="format" onchange="onFormatChange()">
+          <option value="png">PNG</option>
+          <option value="jpeg">JPG</option>
+        </select>
+      </div>
+      <div id="qualityWrap" style="display:none;">
+        <label>Quality</label>
+        <input type="range" id="quality" min="0.1" max="1" step="0.05" value="0.92">
+      </div>
+    </div>
+    <button class="btn success" onclick="downloadResult()" id="dlBtn" disabled>⬇ Download Result</button>
+    <button class="btn danger" onclick="resetAll()">🗑 Reset Image</button>
+    <div id="msg"></div>
+  </div>
+</div>
+
+<div id="canvas-area">
+  <div id="emptyState">📂 Upload a color photo to convert it to black &amp; white</div>
+  <div id="compareWrap">
+    <span class="tagLabel" style="left:8px;">Original</span>
+    <span class="tagLabel" style="right:8px;">B&amp;W</span>
+    <canvas id="origCanvas"></canvas>
+    <canvas id="bwCanvas"></canvas>
+    <div id="handle"><div class="knob">⇔</div></div>
+  </div>
+</div>
+
+<script>
+let sourceImg = null;   // full-resolution Image element (immutable)
+let srcW = 0, srcH = 0;
+let baseCanvas = null;  // off-DOM canvas holding pristine scaled-down preview pixels
+
+function goHome() {
+  if (sourceImg) {
+    const ok = confirm('You have an image loaded. Go back to Home and discard it?');
+    if (!ok) return;
+  }
+  window.location.href = 'https://tone-pics.vercel.app/';
+}
+
+function clamp(v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
+
+// ---- Upload ----
+const canvasArea = document.getElementById('canvas-area');
+canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); canvasArea.classList.add('dragover'); });
+canvasArea.addEventListener('dragleave', () => canvasArea.classList.remove('dragover'));
+canvasArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  canvasArea.classList.remove('dragover');
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+document.getElementById('upload').onchange = (e) => {
+  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+  e.target.value = '';
+};
+
+function loadFile(file) {
+  if (!file.type.startsWith('image/')) { setMsg('Please select a valid image file.'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImg = img;
+      srcW = img.naturalWidth;
+      srcH = img.naturalHeight;
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('compareWrap').style.display = 'inline-block';
+      document.getElementById('dlBtn').disabled = false;
+      buildBaseCanvas();
+      resetSettings(false);
+      updatePreview();
+      setMsg(`Loaded: ${srcW} × ${srcH}px`);
+    };
+    img.onerror = () => setMsg('Could not load this image file.');
+    img.src = ev.target.result;
+  };
+  reader.onerror = () => setMsg('Could not read this file.');
+  reader.readAsDataURL(file);
+}
+
+function setMsg(t) { document.getElementById('msg').innerText = t; }
+
+// ---- Build a pristine, downscaled base canvas for fast live preview ----
+function buildBaseCanvas() {
+  const maxW = Math.min(canvasArea.clientWidth - 48, 760);
+  const maxH = 560;
+  const scale = Math.min(maxW / srcW, maxH / srcH, 1);
+  const w = Math.max(1, Math.round(srcW * scale));
+  const h = Math.max(1, Math.round(srcH * scale));
+
+  baseCanvas = document.createElement('canvas');
+  baseCanvas.width = w;
+  baseCanvas.height = h;
+  baseCanvas.getContext('2d').drawImage(sourceImg, 0, 0, w, h);
+
+  const orig = document.getElementById('origCanvas');
+  orig.width = w; orig.height = h;
+  orig.getContext('2d').drawImage(baseCanvas, 0, 0);
+
+  const bw = document.getElementById('bwCanvas');
+  bw.width = w; bw.height = h;
+
+  document.getElementById('compareWrap').style.width = w + 'px';
+  document.getElementById('compareWrap').style.height = h + 'px';
+  updateClip(50);
+}
+
+// ---- Core pixel processing ----
+function getOptions() {
+  return {
+    method: document.getElementById('method').value,
+    intensity: parseFloat(document.getElementById('intensity').value) / 100,
+    brightness: parseFloat(document.getElementById('brightness').value),
+    contrast: parseFloat(document.getElementById('contrast').value) * 2.55,
+    thresholdOn: document.getElementById('thresholdToggle').checked,
+    thresholdVal: parseFloat(document.getElementById('threshold').value)
+  };
+}
+
+function processCanvas(ctx, w, h, opts) {
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+  const factor = (259 * (opts.contrast + 255)) / (255 * (259 - opts.contrast));
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    let gray;
+    switch (opts.method) {
+      case 'average': gray = (r + g + b) / 3; break;
+      case 'lightness': gray = (Math.max(r, g, b) + Math.min(r, g, b)) / 2; break;
+      case 'red': gray = r; break;
+      case 'green': gray = g; break;
+      case 'blue': gray = b; break;
+      default: gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+    let nr = r * (1 - opts.intensity) + gray * opts.intensity;
+    let ng = g * (1 - opts.intensity) + gray * opts.intensity;
+    let nb = b * (1 - opts.intensity) + gray * opts.intensity;
+
+    nr += opts.brightness; ng += opts.brightness; nb += opts.brightness;
+    nr = factor * (nr - 128) + 128;
+    ng = factor * (ng - 128) + 128;
+    nb = factor * (nb - 128) + 128;
+
+    if (opts.thresholdOn) {
+      const avg = (nr + ng + nb) / 3;
+      const v = avg > opts.thresholdVal ? 255 : 0;
+      nr = ng = nb = v;
+    }
+
+    data[i] = clamp(nr); data[i + 1] = clamp(ng); data[i + 2] = clamp(nb);
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+// ---- Live preview ----
+function updatePreview() {
+  document.getElementById('intensityVal').innerText = document.getElementById('intensity').value + '%';
+  document.getElementById('brightnessVal').innerText = document.getElementById('brightness').value;
+  document.getElementById('contrastVal').innerText = document.getElementById('contrast').value;
+  document.getElementById('threshold').disabled = !document.getElementById('thresholdToggle').checked;
+
+  if (!baseCanvas) return;
+  const bw = document.getElementById('bwCanvas');
+  const ctx = bw.getContext('2d');
+  ctx.clearRect(0, 0, bw.width, bw.height);
+  ctx.drawImage(baseCanvas, 0, 0);
+  processCanvas(ctx, bw.width, bw.height, getOptions());
+}
+
+function resetSettings(refresh = true) {
+  document.getElementById('method').value = 'luminosity';
+  document.getElementById('intensity').value = 100;
+  document.getElementById('brightness').value = 0;
+  document.getElementById('contrast').value = 0;
+  document.getElementById('thresholdToggle').checked = false;
+  document.getElementById('threshold').value = 128;
+  if (refresh) updatePreview();
+}
+
+// ---- Before / after slider ----
+const compareWrap = document.getElementById('compareWrap');
+const handle = document.getElementById('handle');
+let dragging = false;
+
+function updateClip(pct) {
+  pct = Math.max(0, Math.min(100, pct));
+  document.getElementById('bwCanvas').style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+  handle.style.left = pct + '%';
+}
+function posFromEvent(e) {
+  const rect = compareWrap.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  return (x / rect.width) * 100;
+}
+handle.addEventListener('mousedown', () => dragging = true);
+handle.addEventListener('touchstart', () => dragging = true);
+compareWrap.addEventListener('mousedown', (e) => { dragging = true; updateClip(posFromEvent(e)); });
+window.addEventListener('mousemove', (e) => { if (dragging) updateClip(posFromEvent(e)); });
+window.addEventListener('touchmove', (e) => { if (dragging) updateClip(posFromEvent(e)); });
+window.addEventListener('mouseup', () => dragging = false);
+window.addEventListener('touchend', () => dragging = false);
+window.addEventListener('resize', () => { if (sourceImg) buildBaseCanvas(), updatePreview(); });
+
+// ---- Export ----
+function onFormatChange() {
+  document.getElementById('qualityWrap').style.display = document.getElementById('format').value === 'jpeg' ? '' : 'none';
+}
+
+function downloadResult() {
+  if (!sourceImg) { setMsg('Upload an image first.'); return; }
+  setMsg('Processing full-resolution image...');
+
+  setTimeout(() => {
+    const off = document.createElement('canvas');
+    off.width = srcW; off.height = srcH;
+    const ctx = off.getContext('2d');
+    ctx.drawImage(sourceImg, 0, 0, srcW, srcH);
+    processCanvas(ctx, srcW, srcH, getOptions());
+
+    const format = document.getElementById('format').value;
+    const quality = parseFloat(document.getElementById('quality').value);
+    const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const dataUrl = off.toDataURL(mime, quality);
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'tone-pics-bw.' + (format === 'jpeg' ? 'jpg' : 'png');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setMsg('Downloaded ✅');
+  }, 30);
+}
+
+function resetAll() {
+  sourceImg = null;
+  srcW = 0; srcH = 0;
+  baseCanvas = null;
+  document.getElementById('emptyState').style.display = 'block';
+  document.getElementById('compareWrap').style.display = 'none';
+  document.getElementById('dlBtn').disabled = true;
+  document.getElementById('upload').value = '';
+  resetSettings(false);
+  setMsg('');
+}
+</script>
+</body>
+</html>
