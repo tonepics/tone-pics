@@ -31,11 +31,11 @@
 
         .container {
             max-width: 1100px;
-            margin: 20px auto 40px auto; /* تقليل الهامش ليتناسق مع التثبيت العلوي */
+            margin: 20px auto 40px auto; /* reduced margin to align with the fixed top bar */
             padding: 20px;
         }
 
-        /* شريط علوي موحد ومثبت في الأعلى بدون أي فروق أبعاد */
+        /* unified top bar, pinned at the top with no spacing mismatch */
         .tool-top-bar {
             display: flex;
             justify-content: space-between;
@@ -139,6 +139,11 @@
             opacity: .85;
         }
 
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
         .file-list {
             margin-top: 15px;
             text-align: left;
@@ -157,6 +162,13 @@
 
         .result {
             margin-top: 20px;
+        }
+
+        .status-msg {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+            min-height: 16px;
         }
 
         footer {
@@ -182,7 +194,7 @@
 
     <div class="header">
         <h1>📄 PDF Tools</h1>
-        <p>Convert, merge and compress PDF files easily.</p>
+        <p>Convert, merge, split and compress PDF files easily.</p>
     </div>
 
     <div class="tools-grid">
@@ -203,7 +215,7 @@
         <div class="tool-card">
             <div>
                 <h2>📄 PDF → Images</h2>
-                <p>Convert PDF pages to images</p>
+                <p>Convert PDF pages to PNG images</p>
                 <div class="drop-zone" id="pdfDrop">
                     Click or Drop PDF
                     <input type="file" id="pdfInput" accept="application/pdf">
@@ -224,6 +236,47 @@
                 <div class="file-list" id="mergeList"></div>
             </div>
             <button id="mergePDF">Merge PDF</button>
+        </div>
+
+        <div class="tool-card">
+            <div>
+                <h2>✂️ Split PDF</h2>
+                <p>Split every page into a separate PDF file</p>
+                <div class="drop-zone" id="splitDrop">
+                    Select PDF
+                    <input type="file" id="splitInput" accept="application/pdf">
+                </div>
+                <div class="file-list" id="splitList"></div>
+                <div class="status-msg" id="splitStatus"></div>
+            </div>
+            <button id="splitPDF">Split PDF</button>
+        </div>
+
+        <div class="tool-card">
+            <div>
+                <h2>🧩 PDF → JPG</h2>
+                <p>Convert PDF pages to JPG images</p>
+                <div class="drop-zone" id="pdfJpgDrop">
+                    Click or Drop PDF
+                    <input type="file" id="pdfJpgInput" accept="application/pdf">
+                </div>
+                <div class="file-list" id="pdfJpgList"></div>
+                <div class="status-msg" id="pdfJpgStatus"></div>
+            </div>
+            <button id="convertPDFtoJPG">Convert to JPG</button>
+        </div>
+
+        <div class="tool-card">
+            <div>
+                <h2>🖼️ JPG → PDF</h2>
+                <p>Create a PDF from JPG images</p>
+                <div class="drop-zone" id="jpgDrop">
+                    Click or Drop JPG Images
+                    <input type="file" id="jpgInput" accept="image/jpeg" multiple>
+                </div>
+                <div class="file-list" id="jpgList"></div>
+            </div>
+            <button id="createPDFfromJPG">Create PDF</button>
         </div>
 
         <div class="tool-card">
@@ -253,7 +306,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
 <script>
-    // تهيئة محرك السحب والإفلات وعمل التنسيقات المتطابقة
+    // Sets up the shared drag-and-drop / click-to-browse behavior for every tool card
     function setupDrop(id, inputId, callback){
         const zone = document.getElementById(id);
         const input = document.getElementById(inputId);
@@ -286,8 +339,16 @@
         });
     }
 
+    function setStatus(id, text){
+        const el = document.getElementById(id);
+        if(el) el.textContent = text;
+    }
+
+    // Small delay helper so sequential auto-downloads don't get blocked by the browser
+    function delay(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+
     // ==========================
-    // منطق تحويل الصور لملف PDF (إصلاح مشكلة الصفحات الفارغة)
+    // Images → PDF logic (fixes the blank-pages issue)
     // ==========================
     let images = [];
     setupDrop("imageDrop", "imageInput", (files) => {
@@ -295,24 +356,19 @@
         showFiles(document.getElementById("imageList"), images);
     });
 
-    document.getElementById("createPDF").onclick = async () => {
-        if (images.length === 0) {
-            alert("Please select images first");
-            return;
-        }
-
+    async function buildPdfFromImages(fileList, downloadName){
         const { jsPDF } = window.jspdf;
         let pdf = null;
 
-        for (let i = 0; i < images.length; i++) {
-            let imgFile = images[i];
+        for (let i = 0; i < fileList.length; i++) {
+            let imgFile = fileList[i];
             let url = URL.createObjectURL(imgFile);
             let img = new Image();
             img.src = url;
 
             await new Promise(resolve => { img.onload = resolve; });
 
-            // ضبط اتجاه الورقة ديناميكياً بناءً على حجم الصورة الأصلية
+            // Set the page orientation dynamically based on the original image size
             const orientation = img.width > img.height ? "landscape" : "portrait";
 
             if (i === 0) {
@@ -325,17 +381,25 @@
                 pdf.addPage([img.width, img.height], orientation);
             }
 
-            // الحفاظ على جودة ونوع امتداد الصورة الشفافة داخل الحزمة
+            // Keep the correct image format/quality for images with transparency
             const format = imgFile.type.includes("png") ? "PNG" : "JPEG";
             pdf.addImage(img, format, 0, 0, img.width, img.height);
             URL.revokeObjectURL(url);
         }
 
-        pdf.save("images-to-pdf.pdf");
+        pdf.save(downloadName);
+    }
+
+    document.getElementById("createPDF").onclick = async () => {
+        if (images.length === 0) {
+            alert("Please select images first");
+            return;
+        }
+        await buildPdfFromImages(images, "images-to-pdf.pdf");
     };
 
     // ==========================
-    // منطق استخراج الصفحات كصور منفصلة من ملف PDF
+    // PDF → Images (PNG) logic
     // ==========================
     let pdfFile = null;
     setupDrop("pdfDrop", "pdfInput", (files) => {
@@ -343,14 +407,9 @@
         showFiles(document.getElementById("pdfList"), files);
     });
 
-    document.getElementById("convertPDF").onclick = async () => {
-        if (!pdfFile) {
-            alert("Select PDF first");
-            return;
-        }
-
+    async function renderPdfPages(file, onPage){
         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-        let data = await pdfFile.arrayBuffer();
+        let data = await file.arrayBuffer();
         let pdf = await pdfjsLib.getDocument(data).promise;
 
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -363,16 +422,27 @@
             canvas.height = viewport.height;
 
             await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            await onPage(canvas, i, pdf.numPages);
+        }
+    }
 
+    document.getElementById("convertPDF").onclick = async () => {
+        if (!pdfFile) {
+            alert("Select PDF first");
+            return;
+        }
+
+        await renderPdfPages(pdfFile, async (canvas, i) => {
             let link = document.createElement("a");
             link.download = `page-${i}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
-        }
+            await delay(150);
+        });
     };
 
     // ==========================
-    // منطق دمج ملفات PDF المتعددة
+    // Merge multiple PDF files logic
     // ==========================
     let mergeFiles = [];
     setupDrop("mergeDrop", "mergeInput", (files) => {
@@ -400,7 +470,118 @@
     };
 
     // ==========================
-    // منطق ضغط ملف الـ PDF لتقليل المساحة
+    // Split PDF logic — every page becomes its own PDF file
+    // ==========================
+    let splitFile = null;
+    setupDrop("splitDrop", "splitInput", (files) => {
+        splitFile = files[0];
+        showFiles(document.getElementById("splitList"), files);
+        setStatus("splitStatus", "");
+    });
+
+    document.getElementById("splitPDF").onclick = async () => {
+        if (!splitFile) {
+            alert("Select a PDF first");
+            return;
+        }
+
+        const btn = document.getElementById("splitPDF");
+        btn.disabled = true;
+
+        try {
+            let bytes = await splitFile.arrayBuffer();
+            let srcPdf = await PDFLib.PDFDocument.load(bytes);
+            const pageCount = srcPdf.getPageCount();
+
+            if (pageCount <= 1) {
+                alert("This PDF only has a single page, nothing to split.");
+                return;
+            }
+
+            for (let i = 0; i < pageCount; i++) {
+                setStatus("splitStatus", `Creating page ${i + 1} of ${pageCount}...`);
+                const newPdf = await PDFLib.PDFDocument.create();
+                const [copiedPage] = await newPdf.copyPages(srcPdf, [i]);
+                newPdf.addPage(copiedPage);
+                const output = await newPdf.save();
+                downloadFile(output, `split-page-${i + 1}.pdf`, "application/pdf");
+                await delay(200);
+            }
+
+            setStatus("splitStatus", `Done — ${pageCount} files downloaded ✅`);
+        } catch (err) {
+            console.error(err);
+            setStatus("splitStatus", "Failed to split this PDF.");
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    // ==========================
+    // PDF → JPG logic
+    // ==========================
+    let pdfJpgFile = null;
+    setupDrop("pdfJpgDrop", "pdfJpgInput", (files) => {
+        pdfJpgFile = files[0];
+        showFiles(document.getElementById("pdfJpgList"), files);
+        setStatus("pdfJpgStatus", "");
+    });
+
+    document.getElementById("convertPDFtoJPG").onclick = async () => {
+        if (!pdfJpgFile) {
+            alert("Select PDF first");
+            return;
+        }
+
+        const btn = document.getElementById("convertPDFtoJPG");
+        btn.disabled = true;
+
+        try {
+            await renderPdfPages(pdfJpgFile, async (canvas, i, total) => {
+                setStatus("pdfJpgStatus", `Exporting page ${i} of ${total}...`);
+                // Flatten onto a white background first since JPG has no transparency
+                const flat = document.createElement("canvas");
+                flat.width = canvas.width;
+                flat.height = canvas.height;
+                const fctx = flat.getContext("2d");
+                fctx.fillStyle = "#ffffff";
+                fctx.fillRect(0, 0, flat.width, flat.height);
+                fctx.drawImage(canvas, 0, 0);
+
+                let link = document.createElement("a");
+                link.download = `page-${i}.jpg`;
+                link.href = flat.toDataURL("image/jpeg", 0.92);
+                link.click();
+                await delay(150);
+            });
+            setStatus("pdfJpgStatus", "Done ✅");
+        } catch (err) {
+            console.error(err);
+            setStatus("pdfJpgStatus", "Failed to convert this PDF.");
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    // ==========================
+    // JPG → PDF logic
+    // ==========================
+    let jpgImages = [];
+    setupDrop("jpgDrop", "jpgInput", (files) => {
+        jpgImages = [...files].filter(f => f.type.includes("jpeg") || f.type.includes("jpg"));
+        showFiles(document.getElementById("jpgList"), jpgImages);
+    });
+
+    document.getElementById("createPDFfromJPG").onclick = async () => {
+        if (jpgImages.length === 0) {
+            alert("Please select JPG images first");
+            return;
+        }
+        await buildPdfFromImages(jpgImages, "jpg-to-pdf.pdf");
+    };
+
+    // ==========================
+    // Compress PDF logic
     // ==========================
     let compressFile = null;
     setupDrop("compressDrop", "compressInput", (files) => {
@@ -417,12 +598,12 @@
         let bytes = await compressFile.arrayBuffer();
         let pdf = await PDFLib.PDFDocument.load(bytes);
         
-        // استخدام تقنية ضغط الجداول والكائنات البرمجية الداخلية لتقليل الحجم
+        // Use object-stream compression to reduce the internal table/object size
         let output = await pdf.save({ useObjectStreams: true });
         downloadFile(output, "compressed.pdf", "application/pdf");
     };
 
-    // دالة مساعدة عامة لإتمام تحميل الملفات الناتجة
+    // Shared helper to trigger the final file download
     function downloadFile(data, name, type){
         let blob = new Blob([data], { type: type });
         let link = document.createElement("a");
