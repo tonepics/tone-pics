@@ -146,18 +146,42 @@
 
         .file-list {
             margin-top: 15px;
-            text-align: left;
-            color: #bbb;
-            font-size: 13px;
-            max-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 170px;
             overflow-y: auto;
         }
 
-        .file-list p {
-            margin: 4px 0;
-            white-space: nowrap;
+        .thumb-item {
+            width: 66px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .thumb-img {
+            width: 66px;
+            height: 66px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0a0a0c;
+        }
+
+        .thumb-name {
+            font-size: 10px;
+            color: #999;
+            max-width: 66px;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .thumb-pages {
+            font-size: 9px;
+            color: var(--accent);
         }
 
         .result {
@@ -331,12 +355,65 @@
     }
 
     function showFiles(element, files){
+        // Kept for compatibility, now just delegates to a plain-image preview
+        renderThumbs(element, files, "image");
+    }
+
+    // Builds real thumbnail previews for a set of files.
+    // kind: "image" -> shows the picture itself
+    // kind: "pdf"   -> renders the PDF's first page as a small preview
+    function renderThumbs(element, files, kind){
         element.innerHTML = "";
         [...files].forEach(file => {
-            let p = document.createElement("p");
-            p.textContent = "📄 " + file.name;
-            element.appendChild(p);
+            const item = document.createElement("div");
+            item.className = "thumb-item";
+
+            const img = document.createElement("img");
+            img.className = "thumb-img";
+            img.alt = file.name;
+            item.appendChild(img);
+
+            const name = document.createElement("span");
+            name.className = "thumb-name";
+            name.textContent = file.name;
+            item.appendChild(name);
+
+            if(kind === "pdf"){
+                const pages = document.createElement("span");
+                pages.className = "thumb-pages";
+                pages.textContent = "…";
+                item.appendChild(pages);
+                renderPdfThumb(file, img, pages);
+            } else {
+                img.src = URL.createObjectURL(file);
+            }
+
+            element.appendChild(item);
         });
+    }
+
+    // Renders page 1 of a PDF file into the given <img> as a small preview,
+    // and fills in the page-count label once known.
+    async function renderPdfThumb(file, imgEl, pagesEl){
+        try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+            const data = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(data).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 0.35 });
+
+            const canvas = document.createElement("canvas");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext("2d");
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            imgEl.src = canvas.toDataURL("image/png");
+            if(pagesEl) pagesEl.textContent = pdf.numPages + (pdf.numPages === 1 ? " page" : " pages");
+        } catch (err) {
+            console.error(err);
+            if(pagesEl) pagesEl.textContent = "Preview failed";
+        }
     }
 
     function setStatus(id, text){
@@ -353,7 +430,7 @@
     let images = [];
     setupDrop("imageDrop", "imageInput", (files) => {
         images = [...files];
-        showFiles(document.getElementById("imageList"), images);
+        renderThumbs(document.getElementById("imageList"), images, "image");
     });
 
     async function buildPdfFromImages(fileList, downloadName){
@@ -404,7 +481,7 @@
     let pdfFile = null;
     setupDrop("pdfDrop", "pdfInput", (files) => {
         pdfFile = files[0];
-        showFiles(document.getElementById("pdfList"), files);
+        renderThumbs(document.getElementById("pdfList"), files, "pdf");
     });
 
     async function renderPdfPages(file, onPage){
@@ -447,7 +524,7 @@
     let mergeFiles = [];
     setupDrop("mergeDrop", "mergeInput", (files) => {
         mergeFiles = [...files];
-        showFiles(document.getElementById("mergeList"), mergeFiles);
+        renderThumbs(document.getElementById("mergeList"), mergeFiles, "pdf");
     });
 
     document.getElementById("mergePDF").onclick = async () => {
@@ -475,7 +552,7 @@
     let splitFile = null;
     setupDrop("splitDrop", "splitInput", (files) => {
         splitFile = files[0];
-        showFiles(document.getElementById("splitList"), files);
+        renderThumbs(document.getElementById("splitList"), files, "pdf");
         setStatus("splitStatus", "");
     });
 
@@ -523,7 +600,7 @@
     let pdfJpgFile = null;
     setupDrop("pdfJpgDrop", "pdfJpgInput", (files) => {
         pdfJpgFile = files[0];
-        showFiles(document.getElementById("pdfJpgList"), files);
+        renderThumbs(document.getElementById("pdfJpgList"), files, "pdf");
         setStatus("pdfJpgStatus", "");
     });
 
@@ -569,7 +646,7 @@
     let jpgImages = [];
     setupDrop("jpgDrop", "jpgInput", (files) => {
         jpgImages = [...files].filter(f => f.type.includes("jpeg") || f.type.includes("jpg"));
-        showFiles(document.getElementById("jpgList"), jpgImages);
+        renderThumbs(document.getElementById("jpgList"), jpgImages, "image");
     });
 
     document.getElementById("createPDFfromJPG").onclick = async () => {
@@ -586,7 +663,7 @@
     let compressFile = null;
     setupDrop("compressDrop", "compressInput", (files) => {
         compressFile = files[0];
-        showFiles(document.getElementById("compressList"), files);
+        renderThumbs(document.getElementById("compressList"), files, "pdf");
     });
 
     document.getElementById("compressPDF").onclick = async () => {
