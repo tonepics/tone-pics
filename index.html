@@ -4,32 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BLOIA - Free Image Tools</title>
+    <meta name="description" content="BLOIA - Free online image tools for designers and creators.">
+    
+    <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 0; text-align: center; color: #333; }
-        .container { max-width: 1000px; margin: auto; padding: 20px; }
-        header { padding: 40px 20px; }
-        
-        /* Search Bar Styles */
-        .search-container { margin: 20px auto; max-width: 400px; }
-        #toolSearch { width: 100%; padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
-        #toolSearch:focus { border-color: #0B379A; }
-
-        /* Tools Grid */
-        .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #eee; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .card a { text-decoration: none; color: #333; }
-        h2 { font-size: 18px; margin-top: 0; }
-
-        /* Footer */
-        footer { text-align: center; padding: 40px 20px; border-top: 1px solid #eee; }
         .social-container { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
-        .social-link { color: #888; font-size: 22px; text-decoration: none; }
+        .social-link { color: #888; font-size: 22px; transition: 0.3s; text-decoration: none; padding: 10px; }
+        .social-link:hover { color: #ffd23f; transform: translateY(-3px); }
+        footer { text-align: center; padding: 40px 20px; }
         .footer-links { margin-bottom: 10px; }
 
-        /* Back to Top Button */
+        /* Search Box Styles */
+        .search-container { margin: 20px auto; max-width: 400px; }
+        #toolSearch { width: 100%; padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; transition: 0.3s; }
+        #toolSearch:focus { border-color: #0B379A; }
+
+        /* Back to Top Button Styles */
         #backToTopBtn {
             display: none; position: fixed; bottom: 20px; right: 30px; z-index: 99;
             background-color: #0B379A; color: white; border: none; padding: 15px 20px;
@@ -40,18 +33,19 @@
 <body>
 
 <div class="container">
-    <header>
-        <a href="index.html">
-            <img src="logo.png" alt="BLOIA" style="height: 80px; width: auto; display: block; margin: 0 auto 20px auto;">
-        </a>
-        <p>Free online image tools for designers and creators.</p>
-        
-        <div class="search-container">
-            <input type="text" id="toolSearch" onkeyup="searchTools()" placeholder="Search for tools...">
-        </div>
-    </header>
+<header>
+    <a href="index.html">
+        <img src="logo.png" alt="BLOIA" style="height: 80px; width: auto; display: block; margin: 0 auto 20px auto;">
+    </a>
     
-    <section class="tools" id="toolsSection">
+    <p>Free online image tools for designers and creators.</p>
+    
+    <div class="search-container">
+        <input type="text" id="toolSearch" onkeyup="searchTools()" placeholder="Search for tools...">
+    </div>
+</header>
+    
+    <section class="tools">
         <div class="card"><a href="tools/palette.html"><h2>🎨 Color Palette Generator</h2><p>Extract beautiful colors from your images.</p></a></div>
         <div class="card"><a href="tools/pdf-tools.html"><h2>📄 PDF Tools</h2><p>Convert, merge and compress PDF files.</p></a></div>
         <div class="card"><a href="tools/picker.html"><h2>🎯 Color Picker</h2><p>Pick colors directly from images.</p></a></div>
@@ -75,34 +69,53 @@
 
 <footer>
     <div class="social-container">
-        <a href="https://www.facebook.com/bloiacom/" class="social-link"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/bloia_com/" class="social-link"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.tiktok.com/@bloia_com" class="social-link"><i class="fab fa-tiktok"></i></a>
-        <a href="https://www.youtube.com/@bloiacom" class="social-link"><i class="fab fa-youtube"></i></a>
-        <a href="https://www.pinterest.com/bloia_com/" class="social-link"><i class="fab fa-pinterest-p"></i></a>
-        <a href="https://www.linkedin.com/in/bloia/" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.facebook.com/bloiacom/" target="_blank" class="social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/bloia_com/" target="_blank" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.tiktok.com/@bloia_com" target="_blank" class="social-link" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://www.youtube.com/@bloiacom" target="_blank" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="https://www.pinterest.com/bloia_com/" target="_blank" class="social-link" title="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+        <a href="https://www.linkedin.com/in/bloia/" target="_blank" class="social-link" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
     </div>
+
     <div class="footer-links">
-        <a href="privacy-policy.html">Privacy Policy</a> | <a href="terms-of-service.html">Terms of Service</a> | <a href="contact.html">Contact</a>
+        <a href="privacy-policy.html">Privacy Policy</a> | 
+        <a href="terms-of-service.html">Terms of Service</a> | 
+        <a href="about.html">About Us</a> | 
+        <a href="contact.html">Contact</a> | 
+        <a href="cookie-policy.html">Cookie Policy</a> | 
+        <a href="disclaimer.html">Disclaimer</a>
     </div>
+    
     <p>BLOIA.com | Creative Asset Utilities</p>
 </footer>
 
-<button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" id="backToTopBtn">↑</button>
+<button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" id="backToTopBtn" title="Go to top">↑</button>
 
 <script>
+    // Search Function
     function searchTools() {
         let input = document.getElementById('toolSearch').value.toLowerCase();
         let cards = document.getElementsByClassName('card');
         for (let i = 0; i < cards.length; i++) {
-            cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "" : "none";
+            if (cards[i].innerText.toLowerCase().includes(input)) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
         }
     }
+
+    // Back to top button logic
     window.onscroll = function() {
         let btn = document.getElementById("backToTopBtn");
-        btn.style.display = (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) ? "block" : "none";
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            btn.style.display = "block";
+        } else {
+            btn.style.display = "none";
+        }
     };
 </script>
 
+<script src="app.js"></script>
 </body>
 </html>
